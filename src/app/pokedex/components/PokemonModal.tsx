@@ -19,6 +19,8 @@ import PokemonEvolution from "./PokemonEvolution";
 import StatRow from "./StatRow";
 import TabContent from "./TabContent";
 import TypeChartCell from "./TypeChartCell";
+import { Ability } from "@/app/data/types/Ability";
+import { nullAbility } from "@/app/data/abilities";
 
 interface PokemonModalProps {
     allMons: Record<string, Pokemon>;
@@ -43,6 +45,10 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
     const [isVisible, setIsVisible] = useState(false);
     const [isRendered, setIsRendered] = useState(false);
     const [currentPokemon, setCurrentPokemon] = useState(mon);
+    const [selectedDefAbility, setSelectedDefAbility] = useState<Ability>(currentPokemon?.abilities[0] ?? nullAbility);
+    const [selectedStabAbility, setSelectedStabAbility] = useState<Ability>(
+        currentPokemon?.abilities[0] ?? nullAbility
+    );
     const [activeTab, setActiveTab] = useState<PokemonTabName>("Info");
     const [currentForm, setCurrentForm] = useState<number>(0);
     const modalRef = useRef<HTMLDivElement>(null);
@@ -51,6 +57,8 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
         if (mon) {
             setCurrentPokemon(mon);
             setCurrentForm(0);
+            setSelectedDefAbility(mon.abilities[0]);
+            setSelectedStabAbility(mon.abilities[0]);
             setIsRendered(true);
             setTimeout(() => {
                 setIsVisible(true);
@@ -95,6 +103,45 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
 
     const stats = currentPokemon.getStats(currentForm);
     const realTypes = Object.values(types).filter((t) => t.isRealType);
+    const realTypesSlices = [realTypes.slice(0, realTypes.length / 2), realTypes.slice(realTypes.length / 2)];
+
+    const defMatchupCalcs: Record<string, Record<string, number>> = {};
+    const stabMatchupCalcs: Record<string, Record<string, number>> = {};
+    let defMatchupDifferentForAbilities = false;
+    let stabMatchupDifferentForAbilities = false;
+    currentPokemon.abilities.forEach((a) => {
+        const firstDefAbilityChart = Object.values(defMatchupCalcs).find(() => true);
+        const firstStabAbilityChart = Object.values(stabMatchupCalcs).find(() => true);
+        defMatchupCalcs[a.id] = {};
+        stabMatchupCalcs[a.id] = {};
+
+        realTypes.forEach((t) => {
+            defMatchupCalcs[a.id][t.id] = calcTypeMatchup(
+                { type: t },
+                {
+                    type1: currentPokemon.getType1(currentForm),
+                    type2: currentPokemon.getType2(currentForm),
+                    ability: a,
+                }
+            );
+
+            stabMatchupCalcs[a.id][t.id] = Math.max(
+                calcTypeMatchup({ type: currentPokemon.getType1(currentForm), ability: a }, { type1: t }),
+                calcTypeMatchup(
+                    {
+                        type: currentPokemon.getType2(currentForm) || currentPokemon.getType1(currentForm),
+                        ability: a,
+                    },
+                    { type1: t }
+                )
+            );
+
+            defMatchupDifferentForAbilities ||=
+                firstDefAbilityChart != null && defMatchupCalcs[a.id][t.id] != firstDefAbilityChart[t.id];
+            stabMatchupDifferentForAbilities ||=
+                firstStabAbilityChart != null && stabMatchupCalcs[a.id][t.id] != firstStabAbilityChart[t.id];
+        });
+    });
 
     return (
         <div
@@ -257,83 +304,97 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                         </TabContent>
                         <TabContent tab="Def. Matchups" activeTab={activeTab}>
                             <div>
-                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Defensive Matchups</h3>
+                                <div>
+                                    <h3 className="inline font-semibold text-gray-800 dark:text-gray-100">
+                                        Defensive Matchups{defMatchupDifferentForAbilities ? " with:" : ""}
+                                    </h3>
+                                    {!defMatchupDifferentForAbilities ? (
+                                        <></>
+                                    ) : (
+                                        <button
+                                            className="bg-blue-500 text-white w-36 ml-2 px-2 py-2 rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                                            onClick={() =>
+                                                setSelectedDefAbility(
+                                                    currentPokemon.abilities.find((a) => a != selectedDefAbility) ??
+                                                        selectedDefAbility
+                                                )
+                                            }
+                                        >
+                                            {selectedDefAbility.name}
+                                        </button>
+                                    )}
+                                </div>
                                 <div className="overflow-x-auto mt-4">
-                                    <table className="w-full text-center align-middle border border-gray-300 dark:border-gray-700 rounded-lg shadow-md bg-white dark:bg-gray-800">
-                                        <thead className="bg-gray-100 dark:bg-gray-700">
-                                            <tr>
-                                                <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left text-gray-800 dark:text-gray-100">
-                                                    Ability
-                                                </th>
-                                                {realTypes.map((t) => (
-                                                    <TypeBadgeHeader key={t.id} type={t} />
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {currentPokemon.abilities.map((a) => (
-                                                <tr key={a.id}>
-                                                    <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-gray-800 dark:text-gray-100">
-                                                        {a.name}
-                                                    </td>
-                                                    {realTypes.map((t) => {
-                                                        const mult = calcTypeMatchup(
-                                                            { type: t },
-                                                            {
-                                                                type1: currentPokemon.getType1(currentForm),
-                                                                type2: currentPokemon.getType2(currentForm),
-                                                                ability: a,
-                                                            }
+                                    {realTypesSlices.map((slice, index) => (
+                                        <table key={index} className="table-fixed w-[99%] mx-auto mb-5">
+                                            <thead>
+                                                <tr>
+                                                    {slice.map((t) => (
+                                                        <TypeBadgeHeader key={t.id} type={t} useShort={false} />
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    {slice.map((t) => {
+                                                        return (
+                                                            <TypeChartCell
+                                                                key={t.id}
+                                                                mult={defMatchupCalcs[selectedDefAbility.id][t.id]}
+                                                            />
                                                         );
-                                                        return <TypeChartCell key={t.id} mult={mult} />;
                                                     })}
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </tbody>
+                                        </table>
+                                    ))}
                                 </div>
                             </div>
                         </TabContent>
                         <TabContent tab="Atk. Matchups" activeTab={activeTab}>
                             <div>
-                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-                                    STAB Offensive Matchups
+                                <h3 className="inline font-semibold text-gray-800 dark:text-gray-100">
+                                    STAB Offensive Matchups{stabMatchupDifferentForAbilities ? " with:" : ""}
                                 </h3>
-                                <div className="grid grid-cols-3 gap-4 mt-4">
-                                    <table className="w-full text-center align-middle border border-gray-300 dark:border-gray-700 rounded-lg shadow-md bg-white dark:bg-gray-800">
-                                        <thead className="bg-gray-100 dark:bg-gray-700">
-                                            <tr>
-                                                {realTypes.map((t) => (
-                                                    <TypeBadgeHeader key={t.id} type={t} />
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                {realTypes.map((t) => {
-                                                    const mult = Math.max(
-                                                        calcTypeMatchup(
-                                                            { type: currentPokemon.getType1(currentForm) },
-                                                            {
-                                                                type1: t,
-                                                            }
-                                                        ),
-                                                        calcTypeMatchup(
-                                                            {
-                                                                type:
-                                                                    currentPokemon.getType2(currentForm) ||
-                                                                    currentPokemon.getType1(currentForm),
-                                                            },
-                                                            {
-                                                                type1: t,
-                                                            }
-                                                        )
-                                                    );
-                                                    return <TypeChartCell key={t.id} mult={mult} />;
-                                                })}
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                {!stabMatchupDifferentForAbilities ? (
+                                    <></>
+                                ) : (
+                                    <button
+                                        className="bg-blue-500 text-white w-36 ml-2 px-2 py-2 rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                                        onClick={() =>
+                                            setSelectedStabAbility(
+                                                currentPokemon.abilities.find((a) => a != selectedStabAbility) ??
+                                                    selectedStabAbility
+                                            )
+                                        }
+                                    >
+                                        {selectedStabAbility.name}
+                                    </button>
+                                )}
+                                <div className="overflow-x-auto mt-4">
+                                    {realTypesSlices.map((slice, index) => (
+                                        <table key={index} className="table-fixed w-[99%] mx-auto mb-5">
+                                            <thead>
+                                                <tr>
+                                                    {slice.map((t) => (
+                                                        <TypeBadgeHeader key={t.id} type={t} useShort={false} />
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    {slice.map((t) => {
+                                                        return (
+                                                            <TypeChartCell
+                                                                key={t.id}
+                                                                mult={stabMatchupCalcs[selectedStabAbility.id][t.id]}
+                                                            />
+                                                        );
+                                                    })}
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    ))}
                                 </div>
                             </div>
                         </TabContent>

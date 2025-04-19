@@ -1,10 +1,15 @@
 import { PokemonType } from "@/app/data/types/PokemonType";
 import { getTypeBadgeColourClass } from "./colours";
 
-export default function TypeBadgeHeader({ type }: { type: PokemonType }) {
+interface TypeBadgeHeaderProps {
+    type: PokemonType;
+    useShort: boolean;
+}
+
+export default function TypeBadgeHeader({ type, useShort }: TypeBadgeHeaderProps) {
     return (
-        <th className={`px-2 py-1 rounded-full text-white text-xs font-semibold ${getTypeBadgeColourClass(type)}`}>
-            {type.name}
+        <th className={`py-2 text-white text-xs font-semibold ${getTypeBadgeColourClass(type)}`}>
+            {useShort ? type.getShortName() : type.name}
         </th>
     );
 }
