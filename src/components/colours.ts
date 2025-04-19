@@ -1,6 +1,5 @@
 import { PokemonType } from "@/app/data/types/PokemonType";
 import { Pokemon } from "../app/data/types/Pokemon";
-import "./PokemonGradient.css";
 
 export function getTypeColorClass(type: PokemonType, isBadge: boolean, prefix: string = "bg"): string {
     return `${prefix}-${type.id.toLowerCase()}${isBadge ? "" : "-bg"}`;
