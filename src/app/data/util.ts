@@ -11,3 +11,12 @@ export function isNull(o: Pokemon | Move | Trainer | Ability | Item | undefined)
 export function negativeMod(n: number, m: number) {
     return ((n % m) + m) % m;
 }
+
+function isKey<T extends object>(k: string | number | symbol, o: T): k is keyof T {
+    return k in o;
+}
+
+export function safeKeys<T extends object>(o: T): Array<keyof T> {
+    const allKeys = Object.keys(o);
+    return allKeys.filter((k) => isKey(k, o));
+}

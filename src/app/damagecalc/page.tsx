@@ -17,22 +17,23 @@ import { moves, nullMove } from "../data/moves";
 import { nullPokemon, pokemon } from "../data/pokemon";
 import { calculateHP, calculateStat } from "../data/stats";
 import { StatusEffect, statusEffects } from "../data/statusEffects";
-import { decodeTeam } from "../data/teamExport";
+import {
+    decodeTeam,
+    MAX_LEVEL,
+    MAX_SP,
+    MAX_STEP,
+    MIN_LEVEL,
+    MIN_SP,
+    MIN_STEP,
+    STYLE_POINT_CAP,
+    styleFromStat,
+} from "../data/teamExport";
 import { nullTrainer, trainers } from "../data/trainers";
 import { Move } from "../data/types/Move";
 import { blankStats, defaultStylePoints, Pokemon, Stats, StylePoints } from "../data/types/Pokemon";
 import { Trainer } from "../data/types/Trainer";
-import { isNull, negativeMod } from "../data/util";
+import { isNull, negativeMod, safeKeys } from "../data/util";
 import { calculateDamage, DamageResult, PokemonStats } from "./damageCalc";
-
-function isKey<T extends object>(k: string | number | symbol, o: T): k is keyof T {
-    return k in o;
-}
-
-function safeKeys<T extends object>(o: T): Array<keyof T> {
-    const allKeys = Object.keys(o);
-    return allKeys.filter((k) => isKey(k, o));
-}
 
 const PokemonDamageCalculator: NextPage = () => {
     const [playerPokemon, setPlayerPokemon] = useState<Pokemon>(nullPokemon);
@@ -139,14 +140,6 @@ const PokemonDamageCalculator: NextPage = () => {
         opponent: opposingTrainer,
     };
 
-    const MIN_LEVEL = 1;
-    const MAX_LEVEL = 70;
-    const STYLE_POINT_CAP = 50;
-    const MIN_SP = 0;
-    const MAX_SP = 20;
-    const MIN_STEP = -12;
-    const MAX_STEP = +12;
-
     function recalculateStats(
         baseStats: Stats,
         level: number,
@@ -227,10 +220,17 @@ const PokemonDamageCalculator: NextPage = () => {
             pokemon: teamCards.map((c) => {
                 return {
                     id: c.pokemon.id,
-                    level: 70,
+                    level: c.level,
                     items: [c.item.id],
                     moves: c.moves.map((m) => m.id),
-                    sp: [10, 10, 10, 10, 10, 10],
+                    sp: [
+                        c.stylePoints.hp,
+                        c.stylePoints.attacks,
+                        c.stylePoints.defense,
+                        c.stylePoints.speed,
+                        c.stylePoints.attacks,
+                        c.stylePoints.spdef,
+                    ],
                 };
             }),
         });
@@ -287,13 +287,6 @@ const PokemonDamageCalculator: NextPage = () => {
         const statSteps = getStatSteps[side];
         const effect = getStatusEffect[side];
         recalculateStats(baseStats, level, stylePoints, statSteps, effect, side);
-    }
-
-    function styleFromStat(stat: keyof Stats): keyof StylePoints {
-        if (stat === "attack" || stat === "spatk") {
-            return "attacks";
-        }
-        return stat;
     }
 
     function handleStatSteps(statName: keyof Stats, stat: number, side: Side) {

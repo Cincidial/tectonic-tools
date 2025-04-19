@@ -69,7 +69,7 @@ const PokemonEvolution: React.FC<PokemonEvolutionProps> = ({ pokemon, moves, ite
             case "Location":
                 return new EvolutionDisplay("Case leveled up near a special location");
             case "Item":
-                return new EvolutionDisplay(`By using a ${items[evo.condition].name}`, evo.condition);
+                return new EvolutionDisplay(`${items[evo.condition].name}`, evo.condition);
             case "ItemMale":
                 return new EvolutionDisplay(`By using a ${items[evo.condition].name} if it's male`, evo.condition);
             case "ItemFemale":
@@ -91,42 +91,45 @@ const PokemonEvolution: React.FC<PokemonEvolutionProps> = ({ pokemon, moves, ite
 
     const evoDisplay = getEvoDisplay(node.getData());
     return (
-        <tr
-            key={index}
-            className="hover:bg-blue-50 dark:hover:bg-blue-900 cursor-pointer"
-            onClick={() => onClick(pokemon[node.getData().pokemon])}
-        >
-            {node.isRoot() ? <></> : <td className="px-2">➡</td>}
-            {node.isRoot() ? (
-                <></>
-            ) : (
-                <td className="w-32">
-                    {evoDisplay.itemImg == null ? (
+        <table key={index}>
+            <tbody>
+                <tr>
+                    {node.isRoot() ? <></> : <td className="px-2">➡</td>}
+                    {node.isRoot() ? (
                         <></>
                     ) : (
-                        <Image
-                            src={items[evoDisplay.itemImg].getImage()}
-                            alt={evoDisplay.itemImg}
-                            height="48"
-                            width="48"
-                            className="size-10 mx-auto"
-                        />
+                        <td className="w-32">
+                            {evoDisplay.itemImg == null ? (
+                                <></>
+                            ) : (
+                                <Image
+                                    src={items[evoDisplay.itemImg].getImage()}
+                                    alt={evoDisplay.itemImg}
+                                    height="48"
+                                    width="48"
+                                    className="size-10 mx-auto"
+                                />
+                            )}
+                            <div className="text-center">{evoDisplay.text}</div>
+                        </td>
                     )}
-                    <div className="text-center">{evoDisplay.text}</div>
-                </td>
-            )}
-            {node.isRoot() ? <></> : <td>➡</td>}
-            <td>
-                <Image
-                    src={pokemon[node.getData().pokemon].getImage()}
-                    alt={node.getData().pokemon}
-                    height="160"
-                    width="160"
-                    className="w-24 h-24 ml-2"
-                />
-                <div className="text-center">{pokemon[node.getData().pokemon].name}</div>
-            </td>
-        </tr>
+                    {node.isRoot() ? <></> : <td>➡</td>}
+                    <td
+                        className="hover:bg-blue-50 dark:hover:bg-blue-900 cursor-pointer"
+                        onClick={() => onClick(pokemon[node.getData().pokemon])}
+                    >
+                        <Image
+                            src={pokemon[node.getData().pokemon].getImage()}
+                            alt={node.getData().pokemon}
+                            height="160"
+                            width="160"
+                            className="w-24 h-24 ml-2"
+                        />
+                        <div className="text-center">{pokemon[node.getData().pokemon].name}</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     );
 };
 export default PokemonEvolution;

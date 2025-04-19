@@ -130,7 +130,10 @@ async function loadData(dev: boolean = false): Promise<void> {
 
     // pokemon.txt schema updated in 3.3/dev - thankfully, for simplicity, this site postdates any older update except 3.2
     const pokemonParser = version.startsWith("3.2") ? parsePokemonLegacy : parsePokemon;
-    const pokemon = propagatePokemonData(standardFilesParser([tectonicFiles[7]], pokemonParser));
+    const pokemon = propagatePokemonData(
+        standardFilesParser([tectonicFiles[7]], pokemonParser),
+        version.startsWith("3.2")
+    );
 
     const forms = parseForms([tectonicFiles[8]]);
     const typeChart = buildTypeChart(types);

@@ -257,7 +257,10 @@ export function parsePokemon(pairs: KVPair[]): LoadedPokemon {
 }
 
 // Propagates tribe data, first evolutions, and line moves throughout evolution lines
-export function propagatePokemonData(pokemon: Record<string, LoadedPokemon>): Record<string, LoadedPokemon> {
+export function propagatePokemonData(
+    pokemon: Record<string, LoadedPokemon>,
+    oldVersion: boolean = false
+): Record<string, LoadedPokemon> {
     function addFirstEvo(mon: LoadedPokemon | null, first: string) {
         if (mon == null) {
             return;
@@ -301,6 +304,17 @@ export function propagatePokemonData(pokemon: Record<string, LoadedPokemon>): Re
         if (pokemon[id].lineMoves.length === 0) {
             const evoPath = getEvoPath(pokemon[pokemon[id].firstEvolution], pokemon[id]);
             pokemon[id].lineMoves = evoPath.reverse().find((evo) => evo.lineMoves.length > 0)?.lineMoves ?? [];
+        }
+        // level moves should not be propagated if first evo or using old pokemon.txt format
+        if (!oldVersion && pokemon[id].firstEvolution !== id) {
+            const evoPath = getEvoPath(pokemon[pokemon[id].firstEvolution], pokemon[id]);
+            const prevEvoLevelMoves = evoPath.reverse().find((evo) => evo.key !== id)?.levelMoves;
+            if (prevEvoLevelMoves) {
+                // merge moves into potentially existing list, don't overwrite
+                for (const move in prevEvoLevelMoves) {
+                    pokemon[id].levelMoves[move] = prevEvoLevelMoves[move];
+                }
+            }
         }
     }
 

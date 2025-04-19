@@ -11,10 +11,11 @@ import { abilities, nullAbility } from "../data/abilities";
 import { items, nullItem } from "../data/items";
 import { moves, nullMove } from "../data/moves";
 import { nullPokemon, pokemon } from "../data/pokemon";
-import { CardData, decodeTeam, encodeTeam, SavedCardData } from "../data/teamExport";
+import { CardData, decodeTeam, encodeTeam, MAX_LEVEL, SavedCardData } from "../data/teamExport";
 import { tribes } from "../data/tribes";
 import { calcTypeMatchup } from "../data/typeChart";
 import { types } from "../data/types";
+import { defaultStylePoints } from "../data/types/Pokemon";
 import { isNull } from "../data/util";
 import TypeChartCell from "../pokedex/components/TypeChartCell";
 import AtkTotalCell from "./components/AtkTotalCell";
@@ -22,12 +23,14 @@ import DefTotalCell from "./components/DefTotalCell";
 import PokemonCard from "./components/PokemonCard";
 import TableHeader from "./components/TableHeader";
 
-const nullCard = {
+const nullCard: CardData = {
     pokemon: nullPokemon,
     moves: Array(4).fill(nullMove),
     ability: nullAbility,
     item: nullItem,
     form: 0,
+    level: 70,
+    stylePoints: defaultStylePoints,
 };
 
 const TeamBuilder: NextPage = () => {
@@ -78,6 +81,14 @@ const TeamBuilder: NextPage = () => {
                 ability: c.ability.id,
                 item: c.item.id,
                 form: c.form,
+                level: c.level,
+                sp: [
+                    c.stylePoints.hp,
+                    c.stylePoints.attacks,
+                    c.stylePoints.defense,
+                    c.stylePoints.spdef,
+                    c.stylePoints.speed,
+                ],
             };
         });
         return savedCards;
@@ -102,6 +113,14 @@ const TeamBuilder: NextPage = () => {
             item: card.item.id,
             form: card.form,
             moves: card.moves.map((m) => m.id),
+            level: card.level,
+            sp: [
+                card.stylePoints.hp,
+                card.stylePoints.attacks,
+                card.stylePoints.defense,
+                card.stylePoints.spdef,
+                card.stylePoints.speed,
+            ],
         }));
 
         const code = encodeTeam(savedCards);
@@ -113,12 +132,23 @@ const TeamBuilder: NextPage = () => {
     function loadTeamFromData(data: SavedCardData[]) {
         setCards(
             data.map((c) => {
+                // fall back to defaults for newly added fields
+                const level = c.level || MAX_LEVEL;
+                const sp = c.sp || [10, 10, 10, 10, 10];
                 return {
                     pokemon: pokemon[c.pokemon] || nullPokemon,
                     moves: c.moves.map((m) => moves[m] || nullMove),
                     ability: abilities[c.ability] || nullAbility,
                     item: items[c.item] || nullItem,
                     form: c.form,
+                    level: level,
+                    stylePoints: {
+                        hp: sp[0],
+                        attacks: sp[1],
+                        defense: sp[2],
+                        spdef: sp[3],
+                        speed: sp[4],
+                    },
                 };
             })
         );

@@ -42,6 +42,17 @@ export class NTreeNode<T> {
         this.children.forEach((x) => x.depthFirst(fn, depth + 1));
     }
 
+    getLeafs(): NTreeNode<T>[] {
+        const leafs: NTreeNode<T>[] = [];
+        this.depthFirst((_index, node) => {
+            if (node.isLeaf()) {
+                leafs.push(node);
+            }
+        });
+
+        return leafs;
+    }
+
     findDepthFirst(fn: (node: NTreeNode<T>) => boolean): NTreeNode<T> | null {
         if (fn(this)) {
             return this;
@@ -81,5 +92,15 @@ export class NTreeNode<T> {
         });
 
         return levels;
+    }
+
+    asBranches(): NTreeNode<T>[][] {
+        const branches: NTreeNode<T>[][] = [];
+        for (const leaf of this.getLeafs()) {
+            branches.push([]);
+            leaf.callSelfAndParents((node) => branches[branches.length - 1].unshift(node));
+        }
+
+        return branches;
     }
 }

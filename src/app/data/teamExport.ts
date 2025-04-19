@@ -5,8 +5,23 @@ import { nullPokemon, pokemon } from "./pokemon";
 import { Ability } from "./types/Ability";
 import { Item } from "./types/Item";
 import { Move } from "./types/Move";
-import { Pokemon } from "./types/Pokemon";
+import { Pokemon, Stats, StylePoints } from "./types/Pokemon";
 import { version, VersionMap, versionMaps } from "./versions";
+
+export const MIN_LEVEL = 1;
+export const MAX_LEVEL = 70;
+export const STYLE_POINT_CAP = 50;
+export const MIN_SP = 0;
+export const MAX_SP = 20;
+export const MIN_STEP = -12;
+export const MAX_STEP = +12;
+
+export function styleFromStat(stat: keyof Stats): keyof StylePoints {
+    if (stat === "attack" || stat === "spatk") {
+        return "attacks";
+    }
+    return stat;
+}
 
 export interface CardData {
     pokemon: Pokemon;
@@ -14,6 +29,8 @@ export interface CardData {
     ability: Ability;
     item: Item;
     form: number;
+    level: number;
+    stylePoints: StylePoints;
 }
 
 export interface SavedCardData {
@@ -22,6 +39,8 @@ export interface SavedCardData {
     ability: keyof typeof abilities;
     item: keyof typeof items;
     form: number;
+    level: number;
+    sp: number[];
 }
 
 const encodeChunk = (data: SavedCardData): string => {
@@ -35,6 +54,8 @@ const encodeChunk = (data: SavedCardData): string => {
         indices.move[data.moves[1]],
         indices.move[data.moves[2]],
         indices.move[data.moves[3]],
+        data.level,
+        ...data.sp,
     ].map((i) => (i === undefined ? -1 : i));
 
     const buffer = new ArrayBuffer(indexList.length * 2); // Each number is 16 bits (2 bytes)
@@ -70,6 +91,11 @@ const decodeChunk = (chunk: string, version: VersionMap): SavedCardData => {
         item: keys.item[indexList[2]],
         form: indexList[3],
         moves: [keys.move[indexList[4]], keys.move[indexList[5]], keys.move[indexList[6]], keys.move[indexList[7]]],
+        level: indexList[8] || MAX_LEVEL,
+        sp:
+            indexList.length > 9
+                ? [indexList[9], indexList[10], indexList[11], indexList[12], indexList[13]]
+                : [10, 10, 10, 10, 10],
     };
 };
 
@@ -86,6 +112,14 @@ export function decodeTeam(teamCode: string): CardData[] {
             item: items[card.item] || nullItem,
             form: card.form,
             moves: card.moves.map((m) => moves[m] || nullMove),
+            level: card.level,
+            stylePoints: {
+                hp: card.sp[0],
+                attacks: card.sp[1],
+                defense: card.sp[2],
+                spdef: card.sp[3],
+                speed: card.sp[4],
+            },
         }));
     return loadedCards;
 }

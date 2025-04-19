@@ -4,8 +4,10 @@ import { abilities, nullAbility } from "@/app/data/abilities";
 import { items, nullItem } from "@/app/data/items";
 import { moves, nullMove } from "@/app/data/moves";
 import { nullPokemon, pokemon } from "@/app/data/pokemon";
-import { CardData } from "@/app/data/teamExport";
-import { isNull, negativeMod } from "@/app/data/util";
+import { calculateHP, calculateStat } from "@/app/data/stats";
+import { CardData, MAX_LEVEL, MAX_SP, MIN_LEVEL, MIN_SP, STYLE_POINT_CAP, styleFromStat } from "@/app/data/teamExport";
+import { Stats, StylePoints } from "@/app/data/types/Pokemon";
+import { isNull, negativeMod, safeKeys } from "@/app/data/util";
 import Dropdown from "@/components/DropDown";
 import TypeBadge from "@/components/TypeBadge";
 import Image from "next/image";
@@ -16,6 +18,8 @@ export default function PokemonCard({ data, update }: { data: CardData; update: 
     const currentAbility = data.ability;
     const currentItem = data.item;
     const currentForm = data.form;
+    const currentLevel = data.level;
+    const currentSP = data.stylePoints;
 
     // wipe pokemon-dependent data when switching pokemon
     function updatePokemon(pokemonId: string) {
@@ -68,6 +72,34 @@ export default function PokemonCard({ data, update }: { data: CardData; update: 
     function updateForm(form: number) {
         update({ ...data, form });
     }
+
+    function updateLevel(level: number) {
+        level = Math.max(level, MIN_LEVEL);
+        level = Math.min(level, MAX_LEVEL);
+        update({ ...data, level });
+    }
+
+    function updateSP(stat: keyof StylePoints, value: number) {
+        value = Math.max(value, MIN_SP);
+        value = Math.min(value, MAX_SP);
+        const newSP = { ...currentSP, [stat]: value };
+        const spSum = Object.values(newSP).reduce((total, sp) => total + sp, 0);
+        if (spSum > STYLE_POINT_CAP) {
+            alert("You can only have a maximum of 50 total style points!");
+            return;
+        }
+        update({ ...data, stylePoints: newSP });
+    }
+
+    const stylish = currentAbility.id === "STYLISH";
+    const calculatedStats: Stats = {
+        hp: calculateHP(currentPokemon.stats.hp, currentLevel, currentSP.hp, stylish),
+        attack: calculateStat(currentPokemon.stats.attack, currentLevel, currentSP.attacks, 0, stylish),
+        defense: calculateStat(currentPokemon.stats.defense, currentLevel, currentSP.defense, 0, stylish),
+        spatk: calculateStat(currentPokemon.stats.spatk, currentLevel, currentSP.attacks, 0, stylish),
+        spdef: calculateStat(currentPokemon.stats.spdef, currentLevel, currentSP.spdef, 0, stylish),
+        speed: calculateStat(currentPokemon.stats.speed, currentLevel, currentSP.speed, 0, stylish),
+    };
 
     // TODO: Add a non-magic map of pockets somewhere
     const heldItems = Object.values(items).filter((i) => i.pocket === 5);
@@ -124,6 +156,17 @@ export default function PokemonCard({ data, update }: { data: CardData; update: 
                         <TypeBadge
                             type1={currentPokemon.getType1(currentForm)}
                             type2={currentPokemon.getType2(currentForm)}
+                        />
+                    </div>
+                    <div className="text-center">
+                        <h3 className="font-semibold text-gray-800 dark:text-gray-100">Level</h3>
+                        <input
+                            type="number"
+                            min={MIN_LEVEL}
+                            max={MAX_LEVEL}
+                            className="w-full px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-200 focus:ring-blue-500 focus:border-blue-500 text-center"
+                            value={currentLevel}
+                            onChange={(e) => updateLevel(parseInt(e.target.value))}
                         />
                     </div>
                     <div className="w-full mt-4 text-center">
@@ -190,6 +233,40 @@ export default function PokemonCard({ data, update }: { data: CardData; update: 
                                 )}
                             </div>
                         </div>
+                    </div>
+                    <div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Stat</th>
+                                    <th>Value</th>
+                                    <th>SP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {safeKeys(currentPokemon.getStats(currentForm)).map((statName) => {
+                                    const styleName = styleFromStat(statName);
+                                    return (
+                                        <tr key={statName}>
+                                            <td className="text-gray-300 w-16 text-right">{statName.toUpperCase()}</td>
+                                            <td className="text-gray-400 w-12 text-center">
+                                                {calculatedStats[statName]}
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    min={MIN_SP}
+                                                    max={MAX_SP}
+                                                    className="w-16 px-2 py-1 rounded-md bg-gray-700 border border-gray-600 text-gray-200 focus:ring-blue-500 focus:border-blue-500 text-center"
+                                                    value={currentSP[styleName]}
+                                                    onChange={(e) => updateSP(styleName, parseInt(e.target.value))}
+                                                />
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
                     <div className="w-full mt-4 text-center">
                         <h3 className="font-semibold text-gray-800 dark:text-gray-100">Tribes</h3>

@@ -410,31 +410,25 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                                     {currentPokemon.evolutionTree.isLeaf() ? (
                                         <p className="text-gray-600 dark:text-gray-300">Does not evolve.</p>
                                     ) : (
-                                        <table>
+                                        <table className="mx-auto">
                                             <tbody>
-                                                <tr>
-                                                    {currentPokemon.evolutionTree
-                                                        .asBreadthFirst()
-                                                        .map((level, index) => (
+                                                {currentPokemon.evolutionTree.asBranches().map((branch, index) => (
+                                                    <tr key={index}>
+                                                        {branch.map((node, index) => (
                                                             <td key={index}>
-                                                                <table>
-                                                                    <tbody>
-                                                                        {level.map((node, index) => (
-                                                                            <PokemonEvolution
-                                                                                key={index}
-                                                                                pokemon={allMons}
-                                                                                moves={moves}
-                                                                                items={items}
-                                                                                node={node}
-                                                                                index={index}
-                                                                                onClick={handlePokemonClick}
-                                                                            />
-                                                                        ))}
-                                                                    </tbody>
-                                                                </table>
+                                                                <PokemonEvolution
+                                                                    key={index}
+                                                                    pokemon={allMons}
+                                                                    moves={moves}
+                                                                    items={items}
+                                                                    node={node}
+                                                                    index={index}
+                                                                    onClick={handlePokemonClick}
+                                                                />
                                                             </td>
                                                         ))}
-                                                </tr>
+                                                    </tr>
+                                                ))}
                                             </tbody>
                                         </table>
                                     )}
