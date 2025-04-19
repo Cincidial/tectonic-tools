@@ -1,6 +1,6 @@
 "use client";
 
-import { getTypeGradientSolidColourClass } from "@/components/colours";
+import { getTypeColorClass } from "@/components/colours";
 import InlineLink from "@/components/InlineLink";
 import InternalLink from "@/components/InternalLink";
 import TypeBadge from "@/components/TypeBadge";
@@ -364,9 +364,7 @@ const Home: NextPage = () => {
                                     <tr
                                         key={m.id}
                                         onClick={() => handleMoveClick(m)}
-                                        className={`hover:bg-blue-50 dark:hover:bg-blue-900 cursor-pointer transition-colors ${getTypeGradientSolidColourClass(
-                                            m.type
-                                        )}`}
+                                        className={`cursor-pointer ${getTypeColorClass(m.type, false)}`}
                                     >
                                         <TableCell>{m.name}</TableCell>
                                         <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400">

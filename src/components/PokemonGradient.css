@@ -1,0 +1,7 @@
+.pokemonGradient:hover {
+    filter: invert(100%);
+}
+
+.pokemonGradient:hover .invertIgnore {
+    filter: invert(100%);
+}
