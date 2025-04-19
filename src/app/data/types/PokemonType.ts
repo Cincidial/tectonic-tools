@@ -1,3 +1,5 @@
+import { LoadedType } from "../loading/types";
+
 export class PokemonType {
     id: string;
     index: number;
@@ -7,22 +9,14 @@ export class PokemonType {
     immunities: string;
     isRealType: boolean;
 
-    constructor(
-        id: string,
-        index: number,
-        name: string,
-        weaknesses: string,
-        resistances: string,
-        immunities: string,
-        isRealType: boolean
-    ) {
-        this.id = id;
-        this.index = index;
-        this.name = name;
-        this.weaknesses = weaknesses;
-        this.resistances = resistances;
-        this.immunities = immunities;
-        this.isRealType = isRealType;
+    constructor(type: LoadedType) {
+        this.id = type.key;
+        this.index = type.index;
+        this.name = type.name;
+        this.weaknesses = type.weaknesses;
+        this.resistances = type.resistances;
+        this.immunities = type.immunities;
+        this.isRealType = type.isRealType;
     }
 
     getShortName(): string {
