@@ -1,7 +1,7 @@
 import { abilities } from "./abilities";
 import { nullForm } from "./forms";
 import { items, nullItem } from "./items";
-import { moves } from "./moves";
+import { moves, nullMove } from "./moves";
 import { pokemon } from "./pokemon";
 import { nullType, types } from "./types";
 import { Item } from "./types/Item";
@@ -105,19 +105,19 @@ function encodeChunk(
     view.buffer.resize(view.byteLength + MIN_BYTES_PER_POKEMON);
 
     // FindIndex returns -1 which maps to null values where applicable
-    first_u32 |= pokeData.dex << POKEMON_SHIFT;
-    first_u32 |= pokeData.abilities.findIndex((x) => x.id == data.ability.id) << ABILITY_SHIFT;
-    first_u32 |= pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[0].id) << MOVE1_SHIFT;
-    first_u32 |= pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[1].id) << MOVE2_SHIFT;
+    first_u32 |= (pokeData.dex << POKEMON_SHIFT) & POKEMON_MASK;
+    first_u32 |= (pokeData.abilities.findIndex((x) => x.id == data.ability.id) << ABILITY_SHIFT) & ABILITY_MASK;
+    first_u32 |= (pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[0].id) << MOVE1_SHIFT) & MOVE1_MASK;
+    first_u32 |= (pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[1].id) << MOVE2_SHIFT) & MOVE2_MASK;
     view.setUint32(byteOffset, first_u32);
     byteOffset += 4;
 
-    second_u32 |= data.stylePoints.hp << STYLE_HP_SHIFT;
-    second_u32 |= data.stylePoints.attacks << STYLE_ATK_SHIFT;
-    second_u32 |= data.stylePoints.defense << STYLE_DEF_SHIFT;
-    second_u32 |= data.stylePoints.spdef << STYLE_SDEF_SHIFT;
-    second_u32 |= data.stylePoints.speed << STYLE_SPEED_SHIFT;
-    second_u32 |= data.level << LEVEL_SHIFT;
+    second_u32 |= (data.stylePoints.hp << STYLE_HP_SHIFT) & STYLE_HP_MASK;
+    second_u32 |= (data.stylePoints.attacks << STYLE_ATK_SHIFT) & STYLE_ATK_MASK;
+    second_u32 |= (data.stylePoints.defense << STYLE_DEF_SHIFT) & STYLE_DEF_MASK;
+    second_u32 |= (data.stylePoints.spdef << STYLE_SDEF_SHIFT) & STYLE_SDEF_MASK;
+    second_u32 |= (data.stylePoints.speed << STYLE_SPEED_SHIFT) & STYLE_SPEED_MASK;
+    second_u32 |= (data.level << LEVEL_SHIFT) & STYLE_SPEED_MASK;
     view.setUint32(byteOffset, second_u32);
     byteOffset += 4;
 
@@ -126,9 +126,9 @@ function encodeChunk(
     const hasItem2Type = data.itemTypes.length > 1 && data.itemTypes[1].id != nullType.id;
     const hasForm = data.form != nullForm.formId;
 
-    third_u32 |= pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[2].id) << MOVE3_SHIFT;
-    third_u32 |= pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[3].id) << MOVE4_SHIFT;
-    third_u32 |= heldItems.findIndex((x) => x.id == data.items[0].id) << ITEM1_SHIFT;
+    third_u32 |= (pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[2].id) << MOVE3_SHIFT) & MOVE3_MASK;
+    third_u32 |= (pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[3].id) << MOVE4_SHIFT) & MOVE4_MASK;
+    third_u32 |= (heldItems.findIndex((x) => x.id == data.items[0].id) << ITEM1_SHIFT) & ITEM1_MASK;
     third_u32 |= (hasSecondItem ? 1 : 0) << FLAG_HAS_2_ITEM_SHIFT;
     third_u32 |= (hasItem1Type ? 1 : 0) << FLAG_HAS_ITEM1_TYPE_SHIFT;
     third_u32 |= (hasItem2Type ? 1 : 0) << FLAG_HAS_ITEM2_TYPE_SHIFT;
@@ -193,6 +193,8 @@ const decodeChunk = (
 ): number => {
     const mon = new PartyPokemon();
 
+    console.log(`start: ${byteOffset}`);
+
     const firstU32 = view.getUint32(byteOffset);
     const pokemonDexNum = (firstU32 & POKEMON_MASK) >>> POKEMON_SHIFT;
     const pokemonAbilityIndex = (firstU32 & ABILITY_MASK) >>> ABILITY_SHIFT;
@@ -250,11 +252,11 @@ const decodeChunk = (
     if (loadedMon != undefined) {
         mon.species = loadedMon;
         mon.ability = loadedMon.getAbilities(mon.form)[pokemonAbilityIndex];
-        mon.moves[0] = loadedMon.allMoves(mon.form)[pokemonMove1Index];
-        mon.moves[1] = loadedMon.allMoves(mon.form)[pokemonMove2Index];
-        mon.moves[2] = loadedMon.allMoves(mon.form)[pokemonMove3Index];
-        mon.moves[3] = loadedMon.allMoves(mon.form)[pokemonMove4Index];
-        mon.items[0] = heldItems[heldItem1Index];
+        mon.moves[0] = loadedMon.allMoves(mon.form)[pokemonMove1Index] || nullMove;
+        mon.moves[1] = loadedMon.allMoves(mon.form)[pokemonMove2Index] || nullMove;
+        mon.moves[2] = loadedMon.allMoves(mon.form)[pokemonMove3Index] || nullMove;
+        mon.moves[3] = loadedMon.allMoves(mon.form)[pokemonMove4Index] || nullMove;
+        mon.items[0] = heldItems[heldItem1Index] || nullItem;
         mon.stylePoints = {
             hp: styleHp,
             attacks: styleAtk,
@@ -266,7 +268,6 @@ const decodeChunk = (
     }
 
     party.push(mon);
-    console.log(`end: ${byteOffset}`);
     return byteOffset;
 };
 
