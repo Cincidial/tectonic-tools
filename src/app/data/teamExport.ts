@@ -1,8 +1,10 @@
 import { abilities, nullAbility } from "./abilities";
+import { nullForm } from "./forms";
 import { items, nullItem } from "./items";
 import { moves, nullMove } from "./moves";
 import { nullPokemon, pokemon } from "./pokemon";
 import { nullType, types } from "./types";
+import { Item } from "./types/Item";
 import { PartyPokemon } from "./types/PartyPokemon";
 import { Stat, StylePoints } from "./types/Pokemon";
 import { version, VersionMap, versionMaps } from "./versions";
@@ -14,6 +16,60 @@ export const MIN_SP = 0;
 export const MAX_SP = 20;
 export const MIN_STEP = -12;
 export const MAX_STEP = +12;
+
+// Byte protocol shift
+const VERSION_MAJOR_SHIFT = 0;
+const VERSION_MINOR_SHIFT = 5;
+const VERSION_PATCH_SHIFT = 10;
+const VERSION_DEV_SHIFT = 15; // End of header, not repeated - u16
+const POKEMON_SHIFT = 0;
+const ABILITY_SHIFT = 11;
+const MOVE1_SHIFT = 12;
+const MOVE2_SHIFT = 22; // End of first u32
+const STYLE_HP_SHIFT = 0;
+const STYLE_ATK_SHIFT = 5;
+const STYLE_DEF_SHIFT = 10;
+const STYLE_SDEF_SHIFT = 15;
+const STYLE_SPEED_SHIFT = 20;
+const LEVEL_SHIFT = 25; // End of second u32
+const MOVE3_SHIFT = 0;
+const MOVE4_SHIFT = 10;
+const ITEM1_SHIFT = 20;
+const FLAG_HAS_2_ITEM_SHIFT = 28;
+const FLAG_HAS_ITEM1_TYPE_SHIFT = 29;
+const FLAG_HAS_ITEM2_TYPE_SHIFT = 30;
+const FLAG_HAS_FORM_SHIFT = 31; // End of third u32, next data is variable or non-existant based on previous flags
+// Variable flag data is next, it's all aligned within it's own byte, so not shifting or masking needed
+
+// Byte protocol other
+const VERSION_BYTES = 2;
+const MIN_BYTES_PER_POKEMON = 12;
+const MAX_BYTES_PER_POKEMON = 16;
+const MAX_TEAM_BYTES = VERSION_BYTES + 6 * MAX_BYTES_PER_POKEMON;
+
+// Byte protocol masks
+const VERSION_MAJOR_MASK = 0b11111 << VERSION_MAJOR_SHIFT;
+const VERSION_MINOR_MASK = 0b11111 << VERSION_MINOR_SHIFT;
+const VERSION_PATCH_MASK = 0b11111 << VERSION_PATCH_SHIFT;
+const VERSION_DEV_MASK = 0b1 << VERSION_DEV_SHIFT; // End of header, not repeated - u16
+const POKEMON_MASK = 0b111_1111_1111 << POKEMON_SHIFT;
+const ABILITY_MASK = 0b1 << ABILITY_SHIFT;
+const MOVE1_MASK = 0b11_1111_1111 << MOVE1_SHIFT;
+const MOVE2_MASK = 0b11_1111_1111 << MOVE2_SHIFT; // End of first u32
+const STYLE_HP_MASK = 0b11111 << STYLE_HP_SHIFT;
+const STYLE_ATK_MASK = 0b11111 << STYLE_ATK_SHIFT;
+const STYLE_DEF_MASK = 0b11111 << STYLE_DEF_SHIFT;
+const STYLE_SDEF_MASK = 0b11111 << STYLE_SDEF_SHIFT;
+const STYLE_SPEED_MASK = 0b11111 << STYLE_SPEED_SHIFT;
+const LEVEL_MASK = 0b1111111 << LEVEL_SHIFT; // End of second u32
+const MOVE3_MASK = 0b11_1111_1111 << MOVE3_SHIFT;
+const MOVE4_MASK = 0b11_1111_1111 << MOVE4_SHIFT;
+const ITEM1_MASK = 0b1111_1111 << ITEM1_SHIFT;
+const FLAG_HAS_2_ITEM_MASK = 0b1 << FLAG_HAS_2_ITEM_SHIFT;
+const FLAG_HAS_ITEM1_TYPE_MASK = 0b1 << FLAG_HAS_ITEM1_TYPE_SHIFT;
+const FLAG_HAS_ITEM2_TYPE_MASK = 0b1 << FLAG_HAS_ITEM2_TYPE_SHIFT;
+const FLAG_HAS_FORM_MASK = 0b1 << FLAG_HAS_FORM_SHIFT; // End of third u32, next data is variable or non-existant based on previous flags
+// Variable flag data is next, it's all aligned within it's own byte, so not shifting or masking needed
 
 export function styleFromStat(stat: Stat): keyof StylePoints {
     if (stat === "attack" || stat === "spatk") {
@@ -33,128 +89,206 @@ export interface SavedPartyPokemon {
     sp: number[];
 }
 
-const encodeChunk = (data: SavedPartyPokemon): string => {
-    const indices = versionMaps[version].indices;
-    // data that should (nearly) always be defined
-    const indexList = [indices.pokemon[data.pokemon], indices.ability[data.ability], data.form, data.level, ...data.sp];
+function encodeChunk(
+    version: VersionMap,
+    heldItems: Item[],
+    view: DataView<ArrayBuffer>,
+    byteOffset: number,
+    data: PartyPokemon
+): number {
+    // TODO: Can implement version mapping for pokemon by saving the data that would be in pokemon.json with a version then mapping based on regular keys
+    const pokeData = data.species;
 
-    // push optional fields up to the point they exist
-    for (const i of [0, 1, 2, 3]) {
-        // if items are defined, we have to pad undefined moves
-        if (i in data.moves || data.items.length > 0) {
-            indexList.push(indices.move[data.moves[i]]);
-        }
+    let first_u32 = 0;
+    let second_u32 = 0;
+    let third_u32 = 0;
+    view.buffer.resize(view.byteLength + MIN_BYTES_PER_POKEMON);
+
+    // FindIndex returns -1 which maps to null values where applicable
+    first_u32 |= pokeData.dex << POKEMON_SHIFT;
+    first_u32 |= pokeData.abilities.findIndex((x) => x.id == data.ability.id) << ABILITY_SHIFT;
+    first_u32 |= pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[0].id) << MOVE1_SHIFT;
+    first_u32 |= pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[1].id) << MOVE2_SHIFT;
+    view.setUint32(byteOffset, first_u32);
+    byteOffset += 4;
+
+    second_u32 |= data.stylePoints.hp << STYLE_HP_SHIFT;
+    second_u32 |= data.stylePoints.attacks << STYLE_ATK_SHIFT;
+    second_u32 |= data.stylePoints.defense << STYLE_DEF_SHIFT;
+    second_u32 |= data.stylePoints.spdef << STYLE_SDEF_SHIFT;
+    second_u32 |= data.stylePoints.speed << STYLE_SPEED_SHIFT;
+    second_u32 |= data.level << LEVEL_SHIFT;
+    view.setUint32(byteOffset, second_u32);
+    byteOffset += 4;
+
+    const hasSecondItem = data.items.length > 1 && data.items[1].id != nullItem.id;
+    const hasItem1Type = data.itemTypes.length > 0 && data.itemTypes[0].id != nullType.id;
+    const hasItem2Type = data.itemTypes.length > 1 && data.itemTypes[1].id != nullType.id;
+    const hasForm = data.form != nullForm.formId;
+
+    third_u32 |= pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[2].id) << MOVE3_SHIFT;
+    third_u32 |= pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[3].id) << MOVE4_SHIFT;
+    third_u32 |= heldItems.findIndex((x) => x.id == data.items[0].id) << ITEM1_SHIFT;
+    third_u32 |= (hasSecondItem ? 1 : 0) << FLAG_HAS_2_ITEM_SHIFT;
+    third_u32 |= (hasItem1Type ? 1 : 0) << FLAG_HAS_ITEM1_TYPE_SHIFT;
+    third_u32 |= (hasItem2Type ? 1 : 0) << FLAG_HAS_ITEM2_TYPE_SHIFT;
+    third_u32 |= (hasForm ? 1 : 0) << FLAG_HAS_FORM_SHIFT;
+    view.setUint32(byteOffset, third_u32);
+    byteOffset += 4;
+
+    if (hasSecondItem) {
+        view.buffer.resize(view.byteLength + 1);
+        view.setUint8(
+            byteOffset,
+            heldItems.findIndex((x) => x.id == data.items[1].id)
+        );
+        byteOffset++;
+    }
+    if (hasItem1Type) {
+        view.buffer.resize(view.byteLength + 1);
+        view.setUint8(byteOffset, version.indices.types[data.itemTypes[0].id]);
+        byteOffset++;
+    }
+    if (hasItem2Type) {
+        view.buffer.resize(view.byteLength + 1);
+        view.setUint8(byteOffset, version.indices.types[data.itemTypes[1].id]);
+        byteOffset++;
+    }
+    if (hasForm) {
+        view.buffer.resize(view.byteLength + 1);
+        view.setUint8(byteOffset, data.form);
+        byteOffset++;
     }
 
-    for (const i of [0, 1]) {
-        // if itemtypes are defined, we have to pad undefined items
-        if (data.items.length > i || data.itemTypes.length > 0) {
-            indexList.push(indices.item[data.items[i]]);
-        }
-    }
+    return byteOffset;
+}
 
-    for (const i of [0, 1]) {
-        if (data.itemTypes.length > i) {
-            indexList.push(indices.types[data.itemTypes[i]]);
-        }
-    }
-
-    const finalList = indexList.map((i) => (i === undefined ? -1 : i));
-
-    const buffer = new ArrayBuffer(finalList.length * 2); // Each number is 16 bits (2 bytes)
+export function encodeTeam(party: PartyPokemon[]): string {
+    const heldItems = Object.values(items).filter((x) => x.pocket == 5);
+    const buffer = new ArrayBuffer(1, { maxByteLength: MAX_TEAM_BYTES });
     const view = new DataView(buffer);
 
-    finalList.forEach((value, i) => {
-        view.setUint16(i * 2, value); // Store each number as 16 bits
+    const versionSplit = version.replace("dev", "").split(".");
+    let versionU16 = version.includes("-dev") ? VERSION_DEV_MASK : 0;
+    versionU16 |= (parseInt(versionSplit[0]) & 0x1f) << VERSION_MAJOR_SHIFT;
+    versionU16 |= (parseInt(versionSplit[1]) & 0x1f) << VERSION_MINOR_SHIFT;
+    versionU16 |= (parseInt(versionSplit[2]) & 0x1f) << VERSION_PATCH_SHIFT;
+    view.buffer.resize(view.byteLength + 2);
+    view.setUint16(0, versionU16);
+
+    let byteOffset = 2;
+    party.forEach((x) => {
+        byteOffset = encodeChunk(versionMaps[version], heldItems, view, byteOffset, x);
     });
 
     return Buffer.from(buffer).toString("base64");
-};
-
-export function encodeTeam(savedCards: SavedPartyPokemon[]) {
-    const chunks = savedCards.map(encodeChunk);
-    chunks.unshift(version);
-    const code = chunks.join("!"); // Using ! as separator
-    return code;
 }
 
-const decodeChunk = (chunk: string, version: VersionMap): SavedPartyPokemon => {
-    const keys = version.keys;
-    const buffer = Buffer.from(chunk, "base64");
-    const view = new DataView(buffer.buffer);
+const decodeChunk = (
+    version: VersionMap,
+    heldItems: Item[],
+    view: DataView<ArrayBuffer>,
+    byteOffset: number,
+    party: PartyPokemon[]
+): number => {
+    const mon = new PartyPokemon();
 
-    const indexList = [];
-    for (let i = 0; i < buffer.byteLength; i += 2) {
-        indexList.push(view.getUint16(i));
+    const firstU32 = view.getUint32(byteOffset);
+    const pokemonDexNum = (firstU32 & POKEMON_MASK) >>> POKEMON_SHIFT;
+    const pokemonAbilityIndex = (firstU32 & ABILITY_MASK) >>> ABILITY_SHIFT;
+    const pokemonMove1Index = (firstU32 & MOVE1_MASK) >>> MOVE1_SHIFT;
+    const pokemonMove2Index = (firstU32 & MOVE2_MASK) >>> MOVE2_SHIFT;
+    byteOffset += 4;
+
+    const secondU32 = view.getUint32(byteOffset);
+    const styleHp = (secondU32 & STYLE_HP_MASK) >>> STYLE_HP_SHIFT;
+    const styleAtk = (secondU32 & STYLE_ATK_MASK) >>> STYLE_ATK_SHIFT;
+    const styleDef = (secondU32 & STYLE_DEF_MASK) >>> STYLE_DEF_SHIFT;
+    const styleSDef = (secondU32 & STYLE_SDEF_MASK) >>> STYLE_SDEF_SHIFT;
+    const styleSpeed = (secondU32 & STYLE_SPEED_MASK) >>> STYLE_SPEED_SHIFT;
+    const level = (secondU32 & LEVEL_MASK) >>> LEVEL_SHIFT;
+    byteOffset += 4;
+
+    const thirdU32 = view.getUint32(byteOffset);
+    const pokemonMove3Index = (thirdU32 & MOVE3_MASK) >>> MOVE3_SHIFT;
+    const pokemonMove4Index = (thirdU32 & MOVE4_MASK) >>> MOVE4_SHIFT;
+    const heldItem1Index = (thirdU32 & ITEM1_MASK) >>> ITEM1_SHIFT;
+    const hasItem2 = (thirdU32 & FLAG_HAS_2_ITEM_MASK) > 0;
+    const hasItem1Type = (thirdU32 & FLAG_HAS_ITEM1_TYPE_MASK) > 0;
+    const hasItem2Type = (thirdU32 & FLAG_HAS_ITEM2_TYPE_MASK) > 0;
+    const hasForm = (thirdU32 & FLAG_HAS_FORM_MASK) > 0;
+    byteOffset += 4;
+
+    if (hasItem2) {
+        mon.items[1] = heldItems[view.getUint8(byteOffset)];
+        byteOffset++;
+    }
+    if (hasItem1Type) {
+        const byte = view.getUint8(byteOffset);
+        const type = Object.keys(version.indices.types).find((x) => version.indices.types[x] == byte);
+        if (type != undefined) {
+            mon.itemTypes[0] = types[type];
+        }
+
+        byteOffset++;
+    }
+    if (hasItem2Type) {
+        const byte = view.getUint8(byteOffset);
+        const type = Object.keys(version.indices.types).find((x) => version.indices.types[x] == byte);
+        if (type != undefined) {
+            mon.itemTypes[1] = types[type];
+        }
+
+        byteOffset++;
+    }
+    if (hasForm) {
+        mon.form = view.getUint8(byteOffset);
+        byteOffset++;
     }
 
-    // autoincrement index instead of hardcoding to be resistant to changes
-    let i = 0;
-
-    // we used to support level and SP being optional as they were new additions
-    // but the format has changed enough since then that it's no longer feasible
-    const decodedData: SavedPartyPokemon = {
-        pokemon: keys.pokemon[indexList[i++]],
-        ability: keys.ability[indexList[i++]],
-        form: indexList[i++],
-        level: indexList[i++],
-        sp: [indexList[i++], indexList[i++], indexList[i++], indexList[i++], indexList[i++]],
-        moves: [],
-        items: [],
-        itemTypes: [],
-    };
-    // for each index left, check if data continues to exist, and include it if so
-    // don't increment i first time because it already was for the last sp
-    if (indexList.length > i) {
-        decodedData.moves.push(keys.move[indexList[i]]);
-    }
-    if (indexList.length > i++) {
-        decodedData.moves.push(keys.move[indexList[i]]);
-    }
-    if (indexList.length > i++) {
-        decodedData.moves.push(keys.move[indexList[i]]);
-    }
-    if (indexList.length > i++) {
-        decodedData.moves.push(keys.move[indexList[i]]);
-    }
-    if (indexList.length > i++) {
-        decodedData.items.push(keys.item[indexList[i]]);
-    }
-    if (indexList.length > i++) {
-        decodedData.items.push(keys.item[indexList[i]]);
-    }
-    if (indexList.length > i++) {
-        decodedData.itemTypes.push(keys.types[indexList[i]]);
+    const loadedMon = Object.values(pokemon).find((x) => x.dex == pokemonDexNum);
+    if (loadedMon != undefined) {
+        mon.species = loadedMon;
+        mon.ability = loadedMon.getAbilities(mon.form)[pokemonAbilityIndex];
+        mon.moves[0] = loadedMon.allMoves(mon.form)[pokemonMove1Index];
+        mon.moves[1] = loadedMon.allMoves(mon.form)[pokemonMove2Index];
+        mon.moves[2] = loadedMon.allMoves(mon.form)[pokemonMove3Index];
+        mon.moves[3] = loadedMon.allMoves(mon.form)[pokemonMove4Index];
+        mon.items[0] = heldItems[heldItem1Index];
+        mon.stylePoints = {
+            hp: styleHp,
+            attacks: styleAtk,
+            defense: styleDef,
+            spdef: styleSDef,
+            speed: styleSpeed,
+        };
+        mon.level = level;
     }
 
-    return decodedData;
+    party.push(mon);
+    console.log(`end: ${byteOffset}`);
+    return byteOffset;
 };
 
 export function decodeTeam(teamCode: string): PartyPokemon[] {
-    const chunks = teamCode.split("!");
-    const version = chunks[0];
-    const dataChunks = chunks.slice(1);
+    const heldItems = Object.values(items).filter((x) => x.pocket == 5);
+    const buffer = Buffer.from(teamCode, "base64");
+    const view = new DataView(buffer.buffer);
 
-    const loadedCards = dataChunks
-        .map((c) => decodeChunk(c, versionMaps[version]))
-        .map(
-            (card) =>
-                new PartyPokemon({
-                    species: pokemon[card.pokemon] || nullPokemon,
-                    ability: abilities[card.ability] || nullAbility,
-                    items: card.items.map((i) => items[i] || nullItem),
-                    itemTypes: card.itemTypes.map((t) => types[t] || nullType),
-                    form: card.form,
-                    moves: card.moves.map((m) => moves[m] || nullMove),
-                    level: card.level,
-                    stylePoints: {
-                        hp: card.sp[0],
-                        attacks: card.sp[1],
-                        defense: card.sp[2],
-                        spdef: card.sp[3],
-                        speed: card.sp[4],
-                    },
-                })
-        );
-    return loadedCards;
+    const versionU16 = view.getUint16(0);
+    let versionString = "";
+    versionString += `${(versionU16 & VERSION_MAJOR_MASK) >>> VERSION_MAJOR_SHIFT}.`;
+    versionString += `${(versionU16 & VERSION_MINOR_MASK) >>> VERSION_MINOR_SHIFT}.`;
+    versionString += `${(versionU16 & VERSION_PATCH_MASK) >>> VERSION_PATCH_SHIFT}`;
+    if ((versionU16 & VERSION_DEV_MASK) > 0) {
+        versionString += "-dev";
+    }
+
+    let byteOffset = 2;
+    const party: PartyPokemon[] = [];
+    while (byteOffset < view.byteLength - 1) {
+        byteOffset = decodeChunk(versionMaps[versionString], heldItems, view, byteOffset, party);
+    }
+
+    return party;
 }
