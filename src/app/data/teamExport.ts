@@ -37,8 +37,7 @@ const MOVE4_SHIFT = 10;
 const ITEM1_SHIFT = 20;
 const FLAG_HAS_2_ITEM_SHIFT = 28;
 const FLAG_HAS_ITEM1_TYPE_SHIFT = 29;
-const FLAG_HAS_ITEM2_TYPE_SHIFT = 30;
-const FLAG_HAS_FORM_SHIFT = 31; // End of third u32, next data is variable or non-existant based on previous flags
+const FLAG_HAS_FORM_SHIFT = 30; // End of third u32, next data is variable or non-existant based on previous flags
 // Variable flag data is next, it's all aligned within it's own byte, so not shifting or masking needed
 
 // Byte protocol other
@@ -67,9 +66,8 @@ const MOVE4_MASK = 0b11_1111_1111 << MOVE4_SHIFT;
 const ITEM1_MASK = 0b1111_1111 << ITEM1_SHIFT;
 const FLAG_HAS_2_ITEM_MASK = 0b1 << FLAG_HAS_2_ITEM_SHIFT;
 const FLAG_HAS_ITEM1_TYPE_MASK = 0b1 << FLAG_HAS_ITEM1_TYPE_SHIFT;
-const FLAG_HAS_ITEM2_TYPE_MASK = 0b1 << FLAG_HAS_ITEM2_TYPE_SHIFT;
 const FLAG_HAS_FORM_MASK = 0b1 << FLAG_HAS_FORM_SHIFT; // End of third u32, next data is variable or non-existant based on previous flags
-// Variable flag data is next, it's all aligned within it's own byte, so not shifting or masking needed
+// Variable flag data is next, it's all aligned within it's own byte, so no shifting or masking needed
 
 export function styleFromStat(stat: Stat): keyof StylePoints {
     if (stat === "attack" || stat === "spatk") {
@@ -131,7 +129,6 @@ function encodeChunk(
     third_u32 |= (heldItems.findIndex((x) => x.id == data.items[0].id) << ITEM1_SHIFT) & ITEM1_MASK;
     third_u32 |= (hasSecondItem ? 1 : 0) << FLAG_HAS_2_ITEM_SHIFT;
     third_u32 |= (hasItem1Type ? 1 : 0) << FLAG_HAS_ITEM1_TYPE_SHIFT;
-    third_u32 |= (hasItem2Type ? 1 : 0) << FLAG_HAS_ITEM2_TYPE_SHIFT;
     third_u32 |= (hasForm ? 1 : 0) << FLAG_HAS_FORM_SHIFT;
     view.setUint32(byteOffset, third_u32);
     byteOffset += 4;
@@ -147,11 +144,6 @@ function encodeChunk(
     if (hasItem1Type) {
         view.buffer.resize(view.byteLength + 1);
         view.setUint8(byteOffset, version.indices.types[data.itemTypes[0].id]);
-        byteOffset++;
-    }
-    if (hasItem2Type) {
-        view.buffer.resize(view.byteLength + 1);
-        view.setUint8(byteOffset, version.indices.types[data.itemTypes[1].id]);
         byteOffset++;
     }
     if (hasForm) {
@@ -215,7 +207,6 @@ const decodeChunk = (
     const heldItem1Index = (thirdU32 & ITEM1_MASK) >>> ITEM1_SHIFT;
     const hasItem2 = (thirdU32 & FLAG_HAS_2_ITEM_MASK) > 0;
     const hasItem1Type = (thirdU32 & FLAG_HAS_ITEM1_TYPE_MASK) > 0;
-    const hasItem2Type = (thirdU32 & FLAG_HAS_ITEM2_TYPE_MASK) > 0;
     const hasForm = (thirdU32 & FLAG_HAS_FORM_MASK) > 0;
     byteOffset += 4;
 
@@ -228,15 +219,6 @@ const decodeChunk = (
         const type = Object.keys(version.indices.types).find((x) => version.indices.types[x] == byte);
         if (type != undefined) {
             mon.itemTypes[0] = types[type];
-        }
-
-        byteOffset++;
-    }
-    if (hasItem2Type) {
-        const byte = view.getUint8(byteOffset);
-        const type = Object.keys(version.indices.types).find((x) => version.indices.types[x] == byte);
-        if (type != undefined) {
-            mon.itemTypes[1] = types[type];
         }
 
         byteOffset++;
