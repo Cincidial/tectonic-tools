@@ -193,8 +193,6 @@ const decodeChunk = (
 ): number => {
     const mon = new PartyPokemon();
 
-    console.log(`start: ${byteOffset}`);
-
     const firstU32 = view.getUint32(byteOffset);
     const pokemonDexNum = (firstU32 & POKEMON_MASK) >>> POKEMON_SHIFT;
     const pokemonAbilityIndex = (firstU32 & ABILITY_MASK) >>> ABILITY_SHIFT;
