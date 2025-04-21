@@ -1,8 +1,8 @@
-import { abilities, nullAbility } from "./abilities";
+import { abilities } from "./abilities";
 import { nullForm } from "./forms";
 import { items, nullItem } from "./items";
-import { moves, nullMove } from "./moves";
-import { nullPokemon, pokemon } from "./pokemon";
+import { moves } from "./moves";
+import { pokemon } from "./pokemon";
 import { nullType, types } from "./types";
 import { Item } from "./types/Item";
 import { PartyPokemon } from "./types/PartyPokemon";
