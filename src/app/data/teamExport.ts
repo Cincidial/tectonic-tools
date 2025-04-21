@@ -117,7 +117,7 @@ function encodeChunk(
     second_u32 |= (data.stylePoints.defense << STYLE_DEF_SHIFT) & STYLE_DEF_MASK;
     second_u32 |= (data.stylePoints.spdef << STYLE_SDEF_SHIFT) & STYLE_SDEF_MASK;
     second_u32 |= (data.stylePoints.speed << STYLE_SPEED_SHIFT) & STYLE_SPEED_MASK;
-    second_u32 |= (data.level << LEVEL_SHIFT) & STYLE_SPEED_MASK;
+    second_u32 |= (data.level << LEVEL_SHIFT) & LEVEL_MASK;
     view.setUint32(byteOffset, second_u32);
     byteOffset += 4;
 
