@@ -1,11 +1,13 @@
 "use client";
 
+import { FilterInput } from "@/components/FilterInput";
+import { AVAILABLE_FILTERS, PokemonFilterType } from "@/components/filters";
 import InlineLink from "@/components/InlineLink";
 import InternalLink from "@/components/InternalLink";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import { ReactNode, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import Checkbox from "../../components/Checkbox";
 import Column from "../../components/Column";
 import ColumnBody from "../../components/ColumnBody";
@@ -14,6 +16,7 @@ import Dropdown from "../../components/DropDown";
 import InputLabel from "../../components/InputLabel";
 import PokemonCard from "../../components/PokemonCard";
 import { nullMove } from "../data/moves";
+import { pokemon } from "../data/pokemon";
 import { decodeTeam } from "../data/teamExport";
 import { nullTrainer, trainers } from "../data/trainers";
 import { PartyPokemon } from "../data/types/PartyPokemon";
@@ -43,6 +46,28 @@ const PokemonDamageCalculator: NextPage = () => {
     );
 
     const [teamCode, setTeamCode] = useState<string>("");
+
+    const [filters, setFilters] = useState<PokemonFilterType[]>([]);
+
+    const [currentFilter, setCurrentFilter] = useState<PokemonFilterType>(AVAILABLE_FILTERS[0]);
+
+    const handleAddFilter = (filter: PokemonFilterType, value: string) => {
+        setFilters((prev) => [...prev, { ...filter, value }]);
+    };
+
+    const removeFilter = (index: number) => {
+        setFilters((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const mons = Object.values(pokemon);
+    const filteredPokemon = useMemo(() => {
+        const filtered = mons.filter((mon) => {
+            return filters.every((filter) => {
+                return filter.apply(mon, filter.value);
+            });
+        });
+        return filtered;
+    }, [filters, mons]);
 
     type Side = "player" | "opponent";
 
@@ -241,7 +266,13 @@ const PokemonDamageCalculator: NextPage = () => {
                             <InternalLink url="../">Return to homepage</InternalLink>
                         </p>
                     </div>
-
+                    <FilterInput
+                        currentFilter={currentFilter}
+                        filters={filters}
+                        onAddFilter={handleAddFilter}
+                        removeFilter={removeFilter}
+                        setCurrentFilter={setCurrentFilter}
+                    />
                     {/* Calculator container */}
                     <div className="flex justify-center">
                         <div className="w-full max-w-8xl bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700">
@@ -303,7 +334,12 @@ const PokemonDamageCalculator: NextPage = () => {
                                 <Column>
                                     <ColumnHeader colour="text-blue-400">Attacking Pokémon</ColumnHeader>
                                     <ColumnBody>
-                                        <PokemonCard data={playerPokemon} update={updatePlayerPokemon} battle={true} />
+                                        <PokemonCard
+                                            pokemonList={filteredPokemon}
+                                            data={playerPokemon}
+                                            update={updatePlayerPokemon}
+                                            battle={true}
+                                        />
                                         {/* Move selection */}
                                         <MoveCard
                                             data={playerMove}
@@ -378,6 +414,7 @@ const PokemonDamageCalculator: NextPage = () => {
                                     <ColumnHeader colour="text-red-400">Defending Pokémon</ColumnHeader>
                                     <ColumnBody>
                                         <PokemonCard
+                                            pokemonList={filteredPokemon}
                                             data={opponentPokemon}
                                             update={updateOpponentPokemon}
                                             battle={true}

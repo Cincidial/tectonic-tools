@@ -1,15 +1,19 @@
 import { LoadedMove } from "../loading/moves";
 import { moves } from "../moves";
-import { types } from "../types";
+import { nullType, types } from "../types";
 import { Move } from "../types/Move";
 import { PartyPokemon } from "../types/PartyPokemon";
 import { PokemonType } from "../types/PokemonType";
+import { isNull } from "../util";
 
 type MoveTypeFunction = (user: PartyPokemon) => PokemonType | undefined;
 
 // return the item type iff user is holding the relevant item
 function typeFromItemType(user: PartyPokemon, typeItem: string): PokemonType | undefined {
-    return user.items.some((i) => i.id === typeItem) ? user.itemType : undefined;
+    const itemType = user.items.some((i) => i.id === typeItem) ? user.itemType : nullType;
+    if (!isNull(itemType)) {
+        return itemType;
+    }
 }
 
 const naturalGiftTypes = {

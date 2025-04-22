@@ -22,7 +22,7 @@ import { nullType, types } from "@/app/data/types";
 import { Ability } from "@/app/data/types/Ability";
 import { Item } from "@/app/data/types/Item";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
-import { Stat, StylePoints } from "@/app/data/types/Pokemon";
+import { Pokemon, Stat, StylePoints } from "@/app/data/types/Pokemon";
 import { isNull, negativeMod, safeKeys } from "@/app/data/util";
 import Dropdown from "@/components/DropDown";
 import TypeBadge from "@/components/TypeBadge";
@@ -44,10 +44,12 @@ function legalItems(currentItems: Item[], ability: Ability, index: number): Item
 }
 
 export default function PokemonCard({
+    pokemonList,
     data,
     update,
     battle,
 }: {
+    pokemonList: Pokemon[];
     data: PartyPokemon;
     update: (c: Partial<PartyPokemon>) => void;
     battle: boolean;
@@ -155,7 +157,7 @@ export default function PokemonCard({
                 )}
                 <Dropdown value={data.species.id} onChange={(e) => updatePokemon(e.target.value)}>
                     <option value="">Select Pokémon</option>
-                    {Object.values(pokemon).map((p) => (
+                    {pokemonList.map((p) => (
                         <option key={p.id} value={p.id}>
                             {p.name}
                         </option>
