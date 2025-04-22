@@ -121,7 +121,6 @@ function encodeChunk(
 
     const hasSecondItem = data.items.length > 1 && data.items[1].id != nullItem.id;
     const hasItem1Type = data.itemTypes.length > 0 && data.itemTypes[0].id != nullType.id;
-    const hasItem2Type = data.itemTypes.length > 1 && data.itemTypes[1].id != nullType.id;
     const hasForm = data.form != nullForm.formId;
 
     third_u32 |= (pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[2].id) << MOVE3_SHIFT) & MOVE3_MASK;
