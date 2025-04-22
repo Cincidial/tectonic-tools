@@ -1,6 +1,7 @@
 import loadedMoves from "public/data/moves.json";
 import { LoadedMove } from "./loading/moves";
 import { BreakScreensMove, breakScreensMoveCodes } from "./moves/BreakScreensMove";
+import { ConditionalDoubleMove, conditionalDoubleMoveCodes } from "./moves/ConditionalDoubleMove";
 import { DesperationMove, desperationMoveCodes } from "./moves/DesperationMove";
 import { DifferentAttackingStatMove, differentAttackStatMoveCodes } from "./moves/DifferentAttackStatMove";
 import { ExtraTypeMove, extraTypeMoveCodes } from "./moves/ExtraTypeMove";
@@ -28,6 +29,9 @@ function loadMove(move: LoadedMove): Move {
     }
     if (move.functionCode in extraTypeMoveCodes) {
         return new ExtraTypeMove(move, extraTypeMoveCodes[move.functionCode]);
+    }
+    if (move.functionCode in conditionalDoubleMoveCodes) {
+        return new ConditionalDoubleMove(move, conditionalDoubleMoveCodes[move.functionCode]);
     }
     if (stackingMoveCodes.includes(move.functionCode)) {
         return new StackingMove(move);

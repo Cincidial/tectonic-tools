@@ -81,7 +81,7 @@ export interface SavedPartyPokemon {
     moves: Array<keyof typeof moves>;
     ability: keyof typeof abilities;
     items: Array<keyof typeof items>;
-    itemTypes: Array<keyof typeof types>;
+    itemType?: keyof typeof types;
     form: number;
     level: number;
     sp: number[];
@@ -120,7 +120,7 @@ function encodeChunk(
     byteOffset += 4;
 
     const hasSecondItem = data.items.length > 1 && data.items[1].id != nullItem.id;
-    const hasItem1Type = data.itemTypes.length > 0 && data.itemTypes[0].id != nullType.id;
+    const hasItem1Type = data.itemType.id != nullType.id;
     const hasForm = data.form != nullForm.formId;
 
     third_u32 |= (pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[2].id) << MOVE3_SHIFT) & MOVE3_MASK;
@@ -142,7 +142,7 @@ function encodeChunk(
     }
     if (hasItem1Type) {
         view.buffer.resize(view.byteLength + 1);
-        view.setUint8(byteOffset, version.indices.types[data.itemTypes[0].id]);
+        view.setUint8(byteOffset, version.indices.types[data.itemType.id]);
         byteOffset++;
     }
     if (hasForm) {
@@ -217,7 +217,7 @@ const decodeChunk = (
         const byte = view.getUint8(byteOffset);
         const type = Object.keys(version.indices.types).find((x) => version.indices.types[x] == byte);
         if (type != undefined) {
-            mon.itemTypes[0] = types[type];
+            mon.itemType = types[type];
         }
 
         byteOffset++;

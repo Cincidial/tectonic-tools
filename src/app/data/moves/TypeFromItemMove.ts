@@ -4,18 +4,12 @@ import { types } from "../types";
 import { Move } from "../types/Move";
 import { PartyPokemon } from "../types/PartyPokemon";
 import { PokemonType } from "../types/PokemonType";
-import { isNull } from "../util";
 
 type MoveTypeFunction = (user: PartyPokemon) => PokemonType | undefined;
 
+// return the item type iff user is holding the relevant item
 function typeFromItemType(user: PartyPokemon, typeItem: string): PokemonType | undefined {
-    const itemIndex = user.items.findIndex((i) => i.id === typeItem);
-    if (itemIndex > -1) {
-        const itemType = user.itemTypes[itemIndex];
-        if (!isNull(itemType)) {
-            return itemType;
-        }
-    }
+    return user.items.some((i) => i.id === typeItem) ? user.itemType : undefined;
 }
 
 const naturalGiftTypes = {

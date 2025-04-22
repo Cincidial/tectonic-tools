@@ -70,7 +70,7 @@ const TeamBuilder: NextPage = () => {
                 moves: c.moves.map((m) => m.id),
                 ability: c.ability.id,
                 items: c.items.map((i) => i.id),
-                itemTypes: c.itemTypes.map((t) => t.id),
+                itemType: c.itemType.id,
                 form: c.form,
                 level: c.level,
                 sp: [
@@ -115,7 +115,7 @@ const TeamBuilder: NextPage = () => {
                     moves: c.moves.map((m) => moves[m] || nullMove),
                     ability: abilities[c.ability] || nullAbility,
                     items: c.items.map((i) => items[i] || nullItem),
-                    itemTypes: c.itemTypes.map((t) => types[t] || nullType),
+                    itemType: c.itemType ? types[c.itemType] || nullType : nullType,
                     form: c.form,
                     level: level,
                     stylePoints: {

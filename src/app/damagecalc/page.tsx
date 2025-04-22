@@ -86,7 +86,7 @@ const PokemonDamageCalculator: NextPage = () => {
                     id: c.species.id,
                     level: c.level,
                     items: c.items.map((i) => i.id),
-                    itemTypes: c.itemTypes.map((t) => t.id),
+                    itemType: c.itemType.id,
                     moves: c.moves.map((m) => m.id),
                     sp: [
                         c.stylePoints.hp,
@@ -121,7 +121,7 @@ const PokemonDamageCalculator: NextPage = () => {
                 stylePoints: pokemon.sp,
                 moves: pokemon.moves,
                 items: pokemon.items,
-                itemTypes: pokemon.itemTypes,
+                itemType: pokemon.itemType,
                 ability: pokemon.ability,
             })
         );

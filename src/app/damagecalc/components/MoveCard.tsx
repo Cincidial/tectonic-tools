@@ -1,4 +1,5 @@
 import { moves, nullMove } from "@/app/data/moves";
+import { getSignatureMoves } from "@/app/data/signatures";
 import { Move } from "@/app/data/types/Move";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { isNull } from "@/app/data/util";
@@ -65,7 +66,23 @@ export default function MoveCard({
                 </div>
             );
         }
+        if (data.move.customVarType === "boolean") {
+            if (data.customVar === undefined) {
+                data.customVar = false;
+            }
+            return (
+                <Checkbox checked={data.customVar as boolean} onChange={() => updateCustomVar(!data.customVar)}>
+                    {data.move.customVarName}
+                </Checkbox>
+            );
+        }
         return <span>Input for type {data.move.customVarType === "number"} not yet implemented.</span>;
+    }
+
+    // the bp > 0 filter probably isn't strictly accurate i bet there's some weird fixed damage moves it excludes
+    let legalMoves = userData.moves.filter((m) => !isNull(m) && m.bp > 0);
+    if (legalMoves.length === 0) {
+        legalMoves = userData.species.allMoves(userData.form).filter((m) => m.bp > 0);
     }
 
     return (
@@ -77,19 +94,21 @@ export default function MoveCard({
                         <option value="" className="bg-gray-800">
                             Select Move
                         </option>
-                        {userData.moves
-                            .filter((m) => m.bp > 0)
-                            .map((m) => (
-                                <option
-                                    key={m.id}
-                                    value={m.id}
-                                    className={`bg-gray-800 ${
-                                        m.isSTAB(userData.species) ? "font-bold text-blue-400" : ""
-                                    }`}
-                                >
-                                    {m.name}
-                                </option>
-                            ))}
+                        {legalMoves.map((m) => (
+                            <option
+                                key={m.id}
+                                value={m.id}
+                                className={`bg-gray-800 ${
+                                    m.id in getSignatureMoves()
+                                        ? "font-semibold text-yellow-500"
+                                        : m.isSTAB(userData.species)
+                                        ? "font-semibold text-blue-400"
+                                        : ""
+                                }`}
+                            >
+                                {m.name}
+                            </option>
+                        ))}
                     </Dropdown>
                 </div>
             )}
