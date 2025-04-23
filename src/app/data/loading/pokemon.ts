@@ -346,7 +346,9 @@ export function propagatePokemonData(
             const evoPath = getEvoPath(pokemon[pokemon[id].firstEvolution], pokemon[id]);
             const prevEvoLevelMoves = evoPath.reverse().find((evo) => evo.key !== id)?.levelMoves;
             if (prevEvoLevelMoves) {
-                pokemon[id].levelMoves = uniq(pokemon[id].levelMoves.concat(prevEvoLevelMoves));
+                pokemon[id].levelMoves = uniq(pokemon[id].levelMoves.concat(prevEvoLevelMoves)).sort(
+                    ([la], [lb]) => la - lb
+                );
             }
         }
     }
