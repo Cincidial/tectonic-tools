@@ -194,14 +194,12 @@ async function loadData(dev: boolean = false): Promise<void> {
     );
 
     const indices = {
-        pokemon: Object.fromEntries(Object.keys(pokemon).map((id, i) => [id, i])),
         item: Object.fromEntries(heldItems.map((id, i) => [id, i])),
         type: Object.fromEntries(Object.keys(types).map((id, i) => [id, i])),
         move: pokemonMoveIndices,
     };
 
     const keys = {
-        pokemon: Object.keys(pokemon),
         item: heldItems,
         type: Object.keys(types),
         move: pokemonMoveKeys,
