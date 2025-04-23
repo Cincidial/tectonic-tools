@@ -270,5 +270,10 @@ export function decodeTeam(teamCode: string): PartyPokemon[] {
         byteOffset = decodeChunk(versionMaps[versionString], heldItems, view, byteOffset, party);
     }
 
+    // fill in blanks
+    while (party.length < 6) {
+        party.push(new PartyPokemon());
+    }
+
     return party;
 }
