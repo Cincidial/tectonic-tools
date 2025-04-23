@@ -222,7 +222,12 @@ const decodeChunk = (
         mon.species = loadedMon;
         const formIndex = loadedMon.forms.findIndex((f) => f.formId === formId);
         mon.form = formIndex;
-        mon.ability = loadedMon.getAbilities(mon.form)[pokemonAbilityIndex];
+        const abilities = loadedMon.getAbilities(mon.form);
+        if (abilities.length === 1) {
+            mon.ability = abilities[0];
+        } else {
+            mon.ability = abilities[pokemonAbilityIndex];
+        }
         mon.moves[0] = moves[version.keys.move[loadedMon.id][pokemonMove1Index]] || nullMove;
         mon.moves[1] = moves[version.keys.move[loadedMon.id][pokemonMove2Index]] || nullMove;
         mon.moves[2] = moves[version.keys.move[loadedMon.id][pokemonMove3Index]] || nullMove;
