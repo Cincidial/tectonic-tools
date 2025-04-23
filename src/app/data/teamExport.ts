@@ -136,8 +136,9 @@ function encodeChunk(version: VersionMap, view: DataView<ArrayBuffer>, byteOffse
         byteOffset++;
     }
     if (hasForm) {
+        const formId = data.species.forms[data.form].formId;
         view.buffer.resize(view.byteLength + 1);
-        view.setUint8(byteOffset, data.form);
+        view.setUint8(byteOffset, formId);
         byteOffset++;
     }
 
@@ -211,7 +212,9 @@ const decodeChunk = (
         byteOffset++;
     }
     if (hasForm) {
-        mon.form = view.getUint8(byteOffset);
+        const formId = view.getUint8(byteOffset);
+        const formIndex = mon.species.forms.findIndex((f) => f.formId === formId);
+        mon.form = formIndex;
         byteOffset++;
     }
 
