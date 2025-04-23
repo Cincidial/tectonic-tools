@@ -328,9 +328,18 @@ export function propagatePokemonData(
             const evoPath = getEvoPath(pokemon[pokemon[id].firstEvolution], pokemon[id]);
             pokemon[id].tribes = evoPath.reverse().find((evo) => evo.tribes.length > 0)?.tribes ?? [];
         }
-        if (pokemon[id].lineMoves.length === 0) {
+        if (oldVersion && pokemon[id].lineMoves.length === 0) {
             const evoPath = getEvoPath(pokemon[pokemon[id].firstEvolution], pokemon[id]);
             pokemon[id].lineMoves = evoPath.reverse().find((evo) => evo.lineMoves.length > 0)?.lineMoves ?? [];
+        }
+        // propagate line moves additively on new version - this system replaces the tutormoves list
+        if (!oldVersion) {
+            const evoPath = getEvoPath(pokemon[pokemon[id].firstEvolution], pokemon[id]);
+            const evoIndex = evoPath.findIndex((p) => p.key === id);
+            const prevEvo = evoPath[evoIndex - 1];
+            if (prevEvo) {
+                pokemon[id].lineMoves = prevEvo.lineMoves.concat(pokemon[id].lineMoves);
+            }
         }
         // level moves should not be propagated if first evo or using old pokemon.txt format
         if (!oldVersion && pokemon[id].firstEvolution !== id) {
