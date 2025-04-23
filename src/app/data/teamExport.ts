@@ -211,16 +211,17 @@ const decodeChunk = (
 
         byteOffset++;
     }
+    let formId: number | undefined = undefined;
     if (hasForm) {
-        const formId = view.getUint8(byteOffset);
-        const formIndex = mon.species.forms.findIndex((f) => f.formId === formId);
-        mon.form = formIndex;
+        formId = view.getUint8(byteOffset);
         byteOffset++;
     }
 
     const loadedMon = Object.values(pokemon).find((x) => x.dex == pokemonDexNum);
     if (loadedMon != undefined) {
         mon.species = loadedMon;
+        const formIndex = loadedMon.forms.findIndex((f) => f.formId === formId);
+        mon.form = formIndex;
         mon.ability = loadedMon.getAbilities(mon.form)[pokemonAbilityIndex];
         mon.moves[0] = moves[version.keys.move[loadedMon.id][pokemonMove1Index]] || nullMove;
         mon.moves[1] = moves[version.keys.move[loadedMon.id][pokemonMove2Index]] || nullMove;
