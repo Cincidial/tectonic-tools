@@ -4,7 +4,6 @@ import { items, nullItem } from "./items";
 import { moves, nullMove } from "./moves";
 import { pokemon } from "./pokemon";
 import { nullType, types } from "./types";
-import { Item } from "./types/Item";
 import { PartyPokemon } from "./types/PartyPokemon";
 import { Stat, StylePoints } from "./types/Pokemon";
 import { version, VersionMap, versionMaps } from "./versions";
@@ -87,13 +86,7 @@ export interface SavedPartyPokemon {
     sp: number[];
 }
 
-function encodeChunk(
-    version: VersionMap,
-    heldItems: Item[],
-    view: DataView<ArrayBuffer>,
-    byteOffset: number,
-    data: PartyPokemon
-): number {
+function encodeChunk(version: VersionMap, view: DataView<ArrayBuffer>, byteOffset: number, data: PartyPokemon): number {
     // TODO: Can implement version mapping for pokemon by saving the data that would be in pokemon.json with a version then mapping based on regular keys
     const pokeData = data.species;
 
@@ -105,8 +98,8 @@ function encodeChunk(
     // FindIndex returns -1 which maps to null values where applicable
     first_u32 |= (pokeData.dex << POKEMON_SHIFT) & POKEMON_MASK;
     first_u32 |= (pokeData.abilities.findIndex((x) => x.id == data.ability.id) << ABILITY_SHIFT) & ABILITY_MASK;
-    first_u32 |= (pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[0].id) << MOVE1_SHIFT) & MOVE1_MASK;
-    first_u32 |= (pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[1].id) << MOVE2_SHIFT) & MOVE2_MASK;
+    first_u32 |= (version.indices.move[data.species.id][data.moves[0].id] << MOVE1_SHIFT) & MOVE1_MASK;
+    first_u32 |= (version.indices.move[data.species.id][data.moves[1].id] << MOVE2_SHIFT) & MOVE2_MASK;
     view.setUint32(byteOffset, first_u32);
     byteOffset += 4;
 
@@ -123,9 +116,9 @@ function encodeChunk(
     const hasItem1Type = data.itemType.id != nullType.id;
     const hasForm = data.form != nullForm.formId;
 
-    third_u32 |= (pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[2].id) << MOVE3_SHIFT) & MOVE3_MASK;
-    third_u32 |= (pokeData.allMoves(data.form).findIndex((x) => x.id == data.moves[3].id) << MOVE4_SHIFT) & MOVE4_MASK;
-    third_u32 |= (heldItems.findIndex((x) => x.id == data.items[0].id) << ITEM1_SHIFT) & ITEM1_MASK;
+    third_u32 |= (version.indices.move[data.species.id][data.moves[2].id] << MOVE3_SHIFT) & MOVE3_MASK;
+    third_u32 |= (version.indices.move[data.species.id][data.moves[3].id] << MOVE4_SHIFT) & MOVE4_MASK;
+    third_u32 |= (version.indices.item[data.items[0].id] << ITEM1_SHIFT) & ITEM1_MASK;
     third_u32 |= (hasSecondItem ? 1 : 0) << FLAG_HAS_2_ITEM_SHIFT;
     third_u32 |= (hasItem1Type ? 1 : 0) << FLAG_HAS_ITEM1_TYPE_SHIFT;
     third_u32 |= (hasForm ? 1 : 0) << FLAG_HAS_FORM_SHIFT;
@@ -134,15 +127,12 @@ function encodeChunk(
 
     if (hasSecondItem) {
         view.buffer.resize(view.byteLength + 1);
-        view.setUint8(
-            byteOffset,
-            heldItems.findIndex((x) => x.id == data.items[1].id)
-        );
+        view.setUint8(byteOffset, version.indices.item[data.items[1].id]);
         byteOffset++;
     }
     if (hasItem1Type) {
         view.buffer.resize(view.byteLength + 1);
-        view.setUint8(byteOffset, version.indices.types[data.itemType.id]);
+        view.setUint8(byteOffset, version.indices.type[data.itemType.id]);
         byteOffset++;
     }
     if (hasForm) {
@@ -155,7 +145,6 @@ function encodeChunk(
 }
 
 export function encodeTeam(party: PartyPokemon[]): string {
-    const heldItems = Object.values(items).filter((x) => x.pocket == 5);
     const buffer = new ArrayBuffer(1, { maxByteLength: MAX_TEAM_BYTES });
     const view = new DataView(buffer);
 
@@ -169,7 +158,7 @@ export function encodeTeam(party: PartyPokemon[]): string {
 
     let byteOffset = 2;
     party.forEach((x) => {
-        byteOffset = encodeChunk(versionMaps[version], heldItems, view, byteOffset, x);
+        byteOffset = encodeChunk(versionMaps[version], view, byteOffset, x);
     });
 
     return Buffer.from(buffer).toString("base64");
@@ -177,7 +166,6 @@ export function encodeTeam(party: PartyPokemon[]): string {
 
 const decodeChunk = (
     version: VersionMap,
-    heldItems: Item[],
     view: DataView<ArrayBuffer>,
     byteOffset: number,
     party: PartyPokemon[]
@@ -210,12 +198,12 @@ const decodeChunk = (
     byteOffset += 4;
 
     if (hasItem2) {
-        mon.items[1] = heldItems[view.getUint8(byteOffset)];
+        mon.items[1] = items[version.keys.item[view.getUint8(byteOffset)]];
         byteOffset++;
     }
     if (hasItem1Type) {
         const byte = view.getUint8(byteOffset);
-        const type = Object.keys(version.indices.types).find((x) => version.indices.types[x] == byte);
+        const type = Object.keys(version.indices.type).find((x) => version.indices.type[x] == byte);
         if (type != undefined) {
             mon.itemType = types[type];
         }
@@ -231,11 +219,11 @@ const decodeChunk = (
     if (loadedMon != undefined) {
         mon.species = loadedMon;
         mon.ability = loadedMon.getAbilities(mon.form)[pokemonAbilityIndex];
-        mon.moves[0] = loadedMon.allMoves(mon.form)[pokemonMove1Index] || nullMove;
-        mon.moves[1] = loadedMon.allMoves(mon.form)[pokemonMove2Index] || nullMove;
-        mon.moves[2] = loadedMon.allMoves(mon.form)[pokemonMove3Index] || nullMove;
-        mon.moves[3] = loadedMon.allMoves(mon.form)[pokemonMove4Index] || nullMove;
-        mon.items[0] = heldItems[heldItem1Index] || nullItem;
+        mon.moves[0] = moves[version.keys.move[loadedMon.id][pokemonMove1Index]] || nullMove;
+        mon.moves[1] = moves[version.keys.move[loadedMon.id][pokemonMove2Index]] || nullMove;
+        mon.moves[2] = moves[version.keys.move[loadedMon.id][pokemonMove3Index]] || nullMove;
+        mon.moves[3] = moves[version.keys.move[loadedMon.id][pokemonMove4Index]] || nullMove;
+        mon.items[0] = items[version.keys.item[heldItem1Index]] || nullItem;
         mon.stylePoints = {
             hp: styleHp,
             attacks: styleAtk,
@@ -251,7 +239,6 @@ const decodeChunk = (
 };
 
 export function decodeTeam(teamCode: string): PartyPokemon[] {
-    const heldItems = Object.values(items).filter((x) => x.pocket == 5);
     const buffer = Buffer.from(teamCode, "base64");
     const view = new DataView(buffer.buffer);
 
@@ -267,7 +254,7 @@ export function decodeTeam(teamCode: string): PartyPokemon[] {
     let byteOffset = 2;
     const party: PartyPokemon[] = [];
     while (byteOffset < view.byteLength - 1) {
-        byteOffset = decodeChunk(versionMaps[versionString], heldItems, view, byteOffset, party);
+        byteOffset = decodeChunk(versionMaps[versionString], view, byteOffset, party);
     }
 
     // fill in blanks

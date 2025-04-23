@@ -8,17 +8,15 @@ type IndexMap = Record<string, number>;
 export interface VersionMap {
     indices: {
         pokemon: IndexMap;
-        ability: IndexMap;
         item: IndexMap;
-        move: IndexMap;
-        types: IndexMap;
+        move: Record<string, IndexMap>;
+        type: IndexMap;
     };
     keys: {
         pokemon: string[];
-        ability: string[];
         item: string[];
-        move: string[];
-        types: string[];
+        move: Record<string, string[]>;
+        type: string[];
     };
 }
 

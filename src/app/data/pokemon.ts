@@ -47,6 +47,7 @@ export const nullPokemon = new Pokemon(
         levelMoves: [],
         lineMoves: [],
         tutorMoves: [],
+        formSpecificMoves: [],
         tribes: [],
         evolutions: [],
         height: 0,
