@@ -167,19 +167,17 @@ async function loadData(dev: boolean = false): Promise<void> {
 
     const currentVersion = { version };
 
+    const heldItems = Object.keys(items).filter((k) => items[k].pocket === 5);
+
     const indices = {
         pokemon: Object.fromEntries(Object.keys(pokemon).map((id, i) => [id, i])),
-        ability: Object.fromEntries(Object.keys(abilities).map((id, i) => [id, i])),
-        item: Object.fromEntries(Object.keys(items).map((id, i) => [id, i])),
-        move: Object.fromEntries(Object.keys(moves).map((id, i) => [id, i])),
+        item: Object.fromEntries(heldItems.map((id, i) => [id, i])),
         types: Object.fromEntries(Object.keys(types).map((id, i) => [id, i])),
     };
 
     const keys = {
         pokemon: Object.keys(pokemon),
-        ability: Object.keys(abilities),
-        item: Object.keys(items),
-        move: Object.keys(moves),
+        item: heldItems,
         types: Object.keys(types),
     };
 
