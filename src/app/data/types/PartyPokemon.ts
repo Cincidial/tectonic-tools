@@ -1,4 +1,6 @@
 import { nullAbility } from "../abilities";
+import { nullForm } from "../forms";
+import { nullItem } from "../items";
 import { TypeChangingItem } from "../items/TypeChangingItem";
 import { nullMove } from "../moves";
 import { nullPokemon } from "../pokemon";
@@ -29,9 +31,9 @@ export class PartyPokemon {
         this.species = data?.species || nullPokemon;
         this.moves = data?.moves || Array(4).fill(nullMove);
         this.ability = data?.ability || nullAbility;
-        this.items = data?.items || Array(2).fill(nullMove);
+        this.items = data?.items || Array(2).fill(nullItem);
         this.itemType = data?.itemType || nullType;
-        this.form = data?.form || 0;
+        this.form = data?.form || nullForm.formId;
         this.level = data?.level || MAX_LEVEL;
         this.stylePoints = data?.stylePoints || defaultStylePoints;
         this.statSteps = data?.statSteps || blankStats;

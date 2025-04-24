@@ -163,9 +163,7 @@ const TeamBuilder: NextPage = () => {
 
     function importTeam() {
         try {
-            const loadedCards = decodeTeam(teamCode);
-            setCards(loadedCards);
-            alert("Team imported successfully!");
+            setCards(decodeTeam(teamCode));
         } catch (error) {
             console.error("Import error:", error);
             alert("Invalid team code! Please check and try again.");

@@ -91,11 +91,13 @@ function encodeChunk(version: VersionMap, view: DataView<ArrayBuffer>, byteOffse
     const heldItems = version.indices.item;
     function getMonMoveShiftValue(dataIndex: number, shift: number, mask: number): number {
         const monMoves = version.indices.move[data.species.id];
+
+        let index = -1;
         if (monMoves && monMoves[data.moves[dataIndex].id]) {
-            return (monMoves[data.moves[dataIndex].id] << shift) & mask;
+            index = monMoves[data.moves[dataIndex].id];
         }
 
-        return -1;
+        return (index << shift) & mask;
     }
 
     let first_u32 = 0;
@@ -126,7 +128,6 @@ function encodeChunk(version: VersionMap, view: DataView<ArrayBuffer>, byteOffse
 
     third_u32 |= getMonMoveShiftValue(2, MOVE3_SHIFT, MOVE3_MASK);
     third_u32 |= getMonMoveShiftValue(3, MOVE4_SHIFT, MOVE4_MASK);
-    console.log(data.items);
     third_u32 |= ((data.items.length > 0 ? heldItems[data.items[0].id] ?? -1 : -1) << ITEM1_SHIFT) & ITEM1_MASK;
     third_u32 |= (hasSecondItem ? 1 : 0) << FLAG_HAS_2_ITEM_SHIFT;
     third_u32 |= (hasItem1Type ? 1 : 0) << FLAG_HAS_ITEM1_TYPE_SHIFT;
