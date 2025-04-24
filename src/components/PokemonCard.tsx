@@ -61,7 +61,7 @@ export default function PokemonCard({
                 species: pokemon[pokemonId],
                 form: 0,
                 moves: Array(4).fill(nullMove),
-                ability: nullAbility,
+                ability: pokemon[pokemonId].getAbilities(0)[0] ?? pokemon[pokemonId].getAbilities(0)[1] ?? nullAbility,
             });
         } else {
             update({ species: nullPokemon, form: 0, moves: Array(4).fill(nullMove), ability: nullAbility });
@@ -241,7 +241,6 @@ export default function PokemonCard({
                     <div className="w-full mt-4 text-center">
                         <h3 className="font-semibold text-gray-800 dark:text-gray-100">Ability</h3>
                         <Dropdown value={data.ability.id} onChange={(e) => updateAbility(e.target.value)}>
-                            <option value="">Select Ability</option>
                             {data.species.getAbilities(data.form).map((a) => (
                                 <option
                                     key={a.id}
