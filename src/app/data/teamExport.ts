@@ -260,26 +260,27 @@ const decodeChunk = (
 
 export function decodeTeam(teamCode: string): PartyPokemon[] {
     const view = new DataView(convertBase64UrlToBuffer(teamCode));
-
-    const versionU16 = view.getUint16(0);
-    let versionString = "";
-    versionString += `${(versionU16 & VERSION_MAJOR_MASK) >>> VERSION_MAJOR_SHIFT}.`;
-    versionString += `${(versionU16 & VERSION_MINOR_MASK) >>> VERSION_MINOR_SHIFT}.`;
-    versionString += `${(versionU16 & VERSION_PATCH_MASK) >>> VERSION_PATCH_SHIFT}`;
-    if ((versionU16 & VERSION_DEV_MASK) > 0) {
-        versionString += "-dev";
-    }
-
-    let byteOffset = 2;
     const party: PartyPokemon[] = [];
-    while (byteOffset < view.byteLength - 1) {
-        byteOffset = decodeChunk(versionMaps[versionString], view, byteOffset, party);
+
+    if (view.byteLength > VERSION_BYTES) {
+        const versionU16 = view.getUint16(0);
+        let versionString = "";
+        versionString += `${(versionU16 & VERSION_MAJOR_MASK) >>> VERSION_MAJOR_SHIFT}.`;
+        versionString += `${(versionU16 & VERSION_MINOR_MASK) >>> VERSION_MINOR_SHIFT}.`;
+        versionString += `${(versionU16 & VERSION_PATCH_MASK) >>> VERSION_PATCH_SHIFT}`;
+        if ((versionU16 & VERSION_DEV_MASK) > 0) {
+            versionString += "-dev";
+        }
+
+        let byteOffset = VERSION_BYTES;
+        while (byteOffset < view.byteLength - 1) {
+            byteOffset = decodeChunk(versionMaps[versionString], view, byteOffset, party);
+        }
     }
 
-    // fill in blanks
+    // Fill in blanks
     while (party.length < 6) {
         party.push(new PartyPokemon());
     }
-
     return party;
 }
