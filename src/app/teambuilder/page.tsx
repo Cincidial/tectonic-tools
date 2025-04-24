@@ -49,6 +49,25 @@ const TeamBuilder: NextPage = () => {
         }
     }, []);
 
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const teamParam = params.get("team");
+            if (teamParam) {
+                setTeamCode(teamParam);
+                // unrolled importTeam function to avoid rerenders
+                try {
+                    setCards(decodeTeam(teamParam));
+                    // skip the alert on page load unless there's an error
+                    // alert("Team imported successfully!");
+                } catch (error) {
+                    console.error("Import error:", error);
+                    alert("Invalid team code! Please check and try again.");
+                }
+            }
+        }
+    }, []);
+
     function updateCards(index: number, card: Partial<PartyPokemon>) {
         const newCards = [...cards];
         newCards[index] = new PartyPokemon({ ...cards[index], ...card });
