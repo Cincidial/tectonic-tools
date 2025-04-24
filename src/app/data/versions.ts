@@ -12,6 +12,7 @@ export interface VersionMap {
         type: IndexMap;
     };
     keys: {
+        pokemon: string[];
         item: string[];
         move: Record<string, string[]>;
         type: string[];

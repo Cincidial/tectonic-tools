@@ -199,7 +199,11 @@ async function loadData(dev: boolean = false): Promise<void> {
         move: pokemonMoveIndices,
     };
 
+    const pokemonKeys: string[] = [];
+    Object.values(pokemon).forEach((p) => (pokemonKeys[p.dexNum] = p.key));
+
     const keys = {
+        pokemon: pokemonKeys,
         item: heldItems,
         type: Object.keys(types),
         move: pokemonMoveKeys,

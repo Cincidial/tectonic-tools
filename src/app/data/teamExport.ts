@@ -228,31 +228,31 @@ const decodeChunk = (
         byteOffset++;
     }
 
-    const loadedMon = Object.values(pokemon).find((x) => x.dex == pokemonDexNum);
-    if (loadedMon != undefined) {
-        mon.species = loadedMon;
-        const formIndex = loadedMon.forms.findIndex((f) => f.formId === formId);
-        mon.form = formIndex;
-        const abilities = loadedMon.getAbilities(mon.form);
-        if (abilities.length === 1) {
-            mon.ability = abilities[0];
-        } else {
-            mon.ability = abilities[pokemonAbilityIndex];
-        }
-        mon.moves[0] = moves[version.keys.move[loadedMon.id][pokemonMove1Index]] || nullMove;
-        mon.moves[1] = moves[version.keys.move[loadedMon.id][pokemonMove2Index]] || nullMove;
-        mon.moves[2] = moves[version.keys.move[loadedMon.id][pokemonMove3Index]] || nullMove;
-        mon.moves[3] = moves[version.keys.move[loadedMon.id][pokemonMove4Index]] || nullMove;
-        mon.items[0] = items[version.keys.item[heldItem1Index]] || nullItem;
-        mon.stylePoints = {
-            hp: styleHp,
-            attacks: styleAtk,
-            defense: styleDef,
-            spdef: styleSDef,
-            speed: styleSpeed,
-        };
-        mon.level = level;
+    const pokemonKey = version.keys.pokemon[pokemonDexNum];
+    const loadedMon = pokemon[pokemonKey];
+
+    mon.species = loadedMon;
+    const formIndex = loadedMon.forms.findIndex((f) => f.formId === formId);
+    mon.form = formIndex;
+    const abilities = loadedMon.getAbilities(mon.form);
+    if (abilities.length === 1) {
+        mon.ability = abilities[0];
+    } else {
+        mon.ability = abilities[pokemonAbilityIndex];
     }
+    mon.moves[0] = moves[version.keys.move[loadedMon.id][pokemonMove1Index]] || nullMove;
+    mon.moves[1] = moves[version.keys.move[loadedMon.id][pokemonMove2Index]] || nullMove;
+    mon.moves[2] = moves[version.keys.move[loadedMon.id][pokemonMove3Index]] || nullMove;
+    mon.moves[3] = moves[version.keys.move[loadedMon.id][pokemonMove4Index]] || nullMove;
+    mon.items[0] = items[version.keys.item[heldItem1Index]] || nullItem;
+    mon.stylePoints = {
+        hp: styleHp,
+        attacks: styleAtk,
+        defense: styleDef,
+        spdef: styleSDef,
+        speed: styleSpeed,
+    };
+    mon.level = level;
 
     party.push(mon);
     return byteOffset;
