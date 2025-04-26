@@ -344,8 +344,6 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                                                         return (
                                                             <TypeChartCell
                                                                 key={t.id}
-                                                                atk={undefined}
-                                                                def={undefined}
                                                                 mult={defMatchupCalcs[selectedDefAbility.id][t.id]}
                                                             />
                                                         );
@@ -397,8 +395,6 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                                                         return (
                                                             <TypeChartCell
                                                                 key={t.id}
-                                                                atk={undefined}
-                                                                def={undefined}
                                                                 mult={stabMatchupCalcs[selectedStabAbility.id][t.id]}
                                                             />
                                                         );

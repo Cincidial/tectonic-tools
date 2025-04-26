@@ -373,8 +373,6 @@ const TeamBuilder: NextPage = () => {
                                     {realTypes.map((type) => (
                                         <TypeChartCell
                                             key={type.id}
-                                            atk={undefined}
-                                            def={undefined}
                                             mult={calcTypeMatchup(
                                                 { type: type },
                                                 { type1: c.types.type1, type2: c.types.type2, ability: c.ability }
@@ -419,12 +417,7 @@ const TeamBuilder: NextPage = () => {
                                 <tr key={c.species.id}>
                                     <MatchupMonCell key={c.species.id} c={c} useMoves={true} />
                                     {realTypes.map((type) => (
-                                        <TypeChartCell
-                                            key={type.id}
-                                            atk={undefined}
-                                            def={undefined}
-                                            mult={calcBestMoveMatchup(c, { type1: type })}
-                                        />
+                                        <TypeChartCell key={type.id} mult={calcBestMoveMatchup(c, { type1: type })} />
                                     ))}
                                 </tr>
                             ))}

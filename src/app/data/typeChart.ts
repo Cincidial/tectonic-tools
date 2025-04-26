@@ -120,6 +120,7 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
     }
 
     let atkAbilityCalc = 1.0;
+    let atkMoveCalc = 1;
     const atkAbility = atk.ability;
     if (atkAbility !== undefined) {
         if (atkAbility.flags.includes("MoldBreaking")) {
@@ -135,9 +136,9 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
         }
     }
 
-    let atkMoveCalc = 1;
-    if (atk.move != undefined && !isNull(atk.move) && atk.move.isAttackingMove()) {
-        const doubleDealtMatch = doubleDealtMoves.find((x) => x.move == atk.move!.id);
+    const atkMove = atk.move;
+    if (atkMove && atkMove.isAttackingMove()) {
+        const doubleDealtMatch = doubleDealtMoves.find((x) => x.move == atkMove!.id);
         if (
             doubleDealtMatch !== undefined &&
             (doubleDealtMatch.type1 == def.type1.id ||
@@ -146,9 +147,9 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
         ) {
             atkMoveCalc = 2;
         }
-        if (atk.move instanceof ExtraTypeMove) {
+        if (atkMove instanceof ExtraTypeMove) {
             // should not recur by a depth of more than 1, since move is no longer defined
-            atkMoveCalc *= calcTypeMatchup({ type: atk.move.extraType, ability: atk.ability }, def);
+            atkMoveCalc *= calcTypeMatchup({ type: atkMove.extraType, ability: atk.ability }, def);
         }
     }
 

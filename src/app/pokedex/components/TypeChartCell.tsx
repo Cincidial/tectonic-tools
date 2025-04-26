@@ -2,9 +2,9 @@ import { calcTypeMatchup } from "@/app/data/typeChart";
 import { PokemonType } from "@/app/data/types/PokemonType";
 
 interface TypeChartCellProps {
-    atk: PokemonType | undefined;
-    def: PokemonType | undefined;
-    mult: number | undefined;
+    atk?: PokemonType;
+    def?: PokemonType;
+    mult?: number;
 }
 
 function getColourClassForMult(mult: number): string {
@@ -34,12 +34,12 @@ function getTextColourForMult(mult: number): string {
     return "";
 }
 
-function getTooltipForMult(mult: number, data: TypeChartCellProps): string {
-    if (!data.atk || !data.def) {
+function getTooltipForMult(atk: PokemonType | undefined, def: PokemonType | undefined, mult: number): string {
+    if (!atk || !def) {
         return "";
     }
 
-    const prefix = `${data.atk.name} → ${data.def.name} = `;
+    const prefix = `${atk.name} → ${def.name} = `;
     if (mult >= 4) {
         return prefix + "Hyper Effective";
     }
@@ -76,11 +76,11 @@ function getTextForMult(mult: number): string {
     return mult.toString();
 }
 
-export default function TypeChartCell(props: TypeChartCellProps) {
-    const mult = props.mult ?? calcTypeMatchup({ type: props.atk! }, { type1: props.def! });
+export default function TypeChartCell({ atk = undefined, def = undefined, mult = undefined }: TypeChartCellProps) {
+    mult = mult ?? calcTypeMatchup({ type: atk! }, { type1: def! });
     const colourClass = getColourClassForMult(mult);
     const textClass = getTextColourForMult(mult);
-    const tooltip = getTooltipForMult(mult, props);
+    const tooltip = getTooltipForMult(atk, def, mult);
     const content = getTextForMult(mult);
 
     return (

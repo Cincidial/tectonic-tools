@@ -284,7 +284,7 @@ const Home: NextPage = () => {
                 </TabContent>
                 <TabContent tab="Type Chart" activeTab={activeTab}>
                     <table className="mx-auto border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
-                        <thead className="">
+                        <thead>
                             <tr>
                                 <th className="px-1 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                     Defense →
@@ -310,7 +310,7 @@ const Home: NextPage = () => {
                                         useShort={false}
                                     />
                                     {realTypes.map((def) => (
-                                        <TypeChartCell key={def.index} atk={atk} def={def} mult={undefined} />
+                                        <TypeChartCell key={def.index} atk={atk} def={def} />
                                     ))}
                                 </tr>
                             ))}
