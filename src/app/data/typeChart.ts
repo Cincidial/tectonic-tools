@@ -138,7 +138,7 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
 
     const atkMove = atk.move;
     if (atkMove && atkMove.isAttackingMove()) {
-        const doubleDealtMatch = doubleDealtMoves.find((x) => x.move == atkMove!.id);
+        const doubleDealtMatch = doubleDealtMoves.find((x) => x.move == atkMove.id);
         if (
             doubleDealtMatch !== undefined &&
             (doubleDealtMatch.type1 == def.type1.id ||
