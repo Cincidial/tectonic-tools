@@ -17,7 +17,7 @@ import { moves, nullMove } from "../data/moves";
 import { nullPokemon, pokemon } from "../data/pokemon";
 import { decodeTeam, encodeTeam, MAX_LEVEL, SavedPartyPokemon } from "../data/teamExport";
 import { tribes } from "../data/tribes";
-import { AttackerData, calcBestMoveMatchup, calcTypeMatchup, DefenderData } from "../data/typeChart";
+import { calcBestMoveMatchup, calcTypeMatchup } from "../data/typeChart";
 import { nullType, types } from "../data/types";
 import { PartyPokemon } from "../data/types/PartyPokemon";
 import { Pokemon } from "../data/types/Pokemon";
@@ -376,8 +376,8 @@ const TeamBuilder: NextPage = () => {
                                             atk={undefined}
                                             def={undefined}
                                             mult={calcTypeMatchup(
-                                                new AttackerData(type),
-                                                new DefenderData(c.types.type1, c.types.type2, c.ability)
+                                                { type: type },
+                                                { type1: c.types.type1, type2: c.types.type2, ability: c.ability }
                                             )}
                                         />
                                     ))}
@@ -423,7 +423,7 @@ const TeamBuilder: NextPage = () => {
                                             key={type.id}
                                             atk={undefined}
                                             def={undefined}
-                                            mult={calcBestMoveMatchup(c, new DefenderData(type))}
+                                            mult={calcBestMoveMatchup(c, { type1: type })}
                                         />
                                     ))}
                                 </tr>

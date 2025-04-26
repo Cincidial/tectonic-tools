@@ -9,28 +9,16 @@ import { isNull } from "./util";
 
 export const typeChart = loadedChart;
 
-export class AttackerData {
+interface AttackerData {
     type: PokemonType;
     move?: Move;
     ability?: Ability;
-
-    constructor(type: PokemonType, move?: Move, ability?: Ability) {
-        this.type = type;
-        this.move = move;
-        this.ability = ability;
-    }
 }
 
-export class DefenderData {
+interface DefenderData {
     type1: PokemonType;
     type2?: PokemonType;
     ability?: Ability;
-
-    constructor(type1: PokemonType, type2?: PokemonType, ability?: Ability) {
-        this.type1 = type1;
-        this.type2 = type2;
-        this.ability = ability;
-    }
 }
 
 const immunityAbilities = [
@@ -160,7 +148,7 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
         }
         if (atk.move instanceof ExtraTypeMove) {
             // should not recur by a depth of more than 1, since move is no longer defined
-            atkMoveCalc *= calcTypeMatchup(new AttackerData(atk.move.extraType, undefined, atk.ability), def);
+            atkMoveCalc *= calcTypeMatchup({ type: atk.move.extraType, ability: atk.ability }, def);
         }
     }
 
@@ -170,6 +158,6 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
 export function calcBestMoveMatchup(mon: PartyPokemon, def: DefenderData): number {
     const calcs = mon.moves
         .filter((m) => m != undefined && !isNull(m) && m.isAttackingMove())
-        .map((m) => calcTypeMatchup(new AttackerData(m.type, m, mon.ability), def));
+        .map((m) => calcTypeMatchup({ type: m.type, move: m, ability: mon.ability }, def));
     return calcs.length > 0 ? Math.max(...calcs) : 1;
 }

@@ -1,4 +1,4 @@
-import { AttackerData, calcTypeMatchup, DefenderData } from "@/app/data/typeChart";
+import { calcTypeMatchup } from "@/app/data/typeChart";
 import { PokemonType } from "@/app/data/types/PokemonType";
 
 interface TypeChartCellProps {
@@ -77,7 +77,7 @@ function getTextForMult(mult: number): string {
 }
 
 export default function TypeChartCell(props: TypeChartCellProps) {
-    const mult = props.mult ?? calcTypeMatchup(new AttackerData(props.atk!), new DefenderData(props.def!));
+    const mult = props.mult ?? calcTypeMatchup({ type: props.atk! }, { type1: props.def! });
     const colourClass = getColourClassForMult(mult);
     const textClass = getTextColourForMult(mult);
     const tooltip = getTooltipForMult(mult, props);

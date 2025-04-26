@@ -1,4 +1,4 @@
-import { calcBestMoveMatchup, DefenderData } from "@/app/data/typeChart";
+import { calcBestMoveMatchup } from "@/app/data/typeChart";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { PokemonType } from "@/app/data/types/PokemonType";
 
@@ -19,7 +19,7 @@ export default function AtkTotalCell({
     total: "nve" | "se";
 }): React.ReactNode {
     const num = cards.filter((c) => {
-        return compare(calcBestMoveMatchup(c, new DefenderData(type)), total);
+        return compare(calcBestMoveMatchup(c, { type1: type }), total);
     }).length;
 
     return (

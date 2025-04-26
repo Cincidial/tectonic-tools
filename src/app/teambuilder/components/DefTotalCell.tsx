@@ -1,4 +1,4 @@
-import { AttackerData, calcTypeMatchup, DefenderData } from "@/app/data/typeChart";
+import { calcTypeMatchup } from "@/app/data/typeChart";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { PokemonType } from "@/app/data/types/PokemonType";
 
@@ -20,7 +20,7 @@ export default function DefTotalCell({
 }): React.ReactNode {
     const num = cards.filter((c) =>
         compare(
-            calcTypeMatchup(new AttackerData(type), new DefenderData(c.types.type1, c.types.type2, c.ability)),
+            calcTypeMatchup({ type: type }, { type1: c.types.type1, type2: c.types.type2, ability: c.ability }),
             total
         )
     ).length;

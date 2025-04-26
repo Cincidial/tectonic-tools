@@ -4,7 +4,7 @@ import { items } from "@/app/data/items";
 import { moves } from "@/app/data/moves";
 import { pokemon } from "@/app/data/pokemon";
 import { getSignatureAbilities } from "@/app/data/signatures";
-import { AttackerData, calcTypeMatchup, DefenderData } from "@/app/data/typeChart";
+import { calcTypeMatchup } from "@/app/data/typeChart";
 import { types } from "@/app/data/types";
 import { Ability } from "@/app/data/types/Ability";
 import { EncounterMap } from "@/app/data/types/Encounter";
@@ -117,22 +117,19 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
 
         realTypes.forEach((t) => {
             defMatchupCalcs[a.id][t.id] = calcTypeMatchup(
-                new AttackerData(t),
-                new DefenderData(currentPokemon.getType1(currentForm), currentPokemon.getType2(currentForm), a)
+                { type: t },
+                {
+                    type1: currentPokemon.getType1(currentForm),
+                    type2: currentPokemon.getType2(currentForm),
+                    ability: a,
+                }
             );
 
             stabMatchupCalcs[a.id][t.id] = Math.max(
+                calcTypeMatchup({ type: currentPokemon.getType1(currentForm), ability: a }, { type1: t }),
                 calcTypeMatchup(
-                    new AttackerData(currentPokemon.getType1(currentForm), undefined, a),
-                    new DefenderData(t)
-                ),
-                calcTypeMatchup(
-                    new AttackerData(
-                        currentPokemon.getType2(currentForm) || currentPokemon.getType1(currentForm),
-                        undefined,
-                        a
-                    ),
-                    new DefenderData(t)
+                    { type: currentPokemon.getType2(currentForm) || currentPokemon.getType1(currentForm), ability: a },
+                    { type1: t }
                 )
             );
 
