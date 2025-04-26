@@ -6,7 +6,7 @@ import { isNull } from "@/app/data/util";
 import Checkbox from "@/components/Checkbox";
 import Dropdown from "@/components/DropDown";
 import InputLabel from "@/components/InputLabel";
-import TypeBadge from "@/components/TypeBadge";
+import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import { ReactNode } from "react";
 
 export interface MoveData {
@@ -125,7 +125,11 @@ export default function MoveCard({
                     <h3 className="text-sm font-medium text-gray-300 mb-3 text-center">Move Details</h3>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                         <div className="text-right text-gray-400">Type:</div>
-                        <TypeBadge type1={data.move.getType(userData)} />
+                        <TypeBadge
+                            types={[data.move.getType(userData)]}
+                            useShort={false}
+                            element={TypeBadgeElementEnum.CAPSULE_SINGLE}
+                        />
                         <div className="text-right text-gray-400">Power:</div>
                         <div className="text-left text-gray-200">
                             {data.move.getPower(userData, targetData, data.customVar)}
