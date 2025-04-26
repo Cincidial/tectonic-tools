@@ -4,17 +4,16 @@ import { items } from "@/app/data/items";
 import { moves } from "@/app/data/moves";
 import { pokemon } from "@/app/data/pokemon";
 import { getSignatureAbilities } from "@/app/data/signatures";
-import { calcTypeMatchup } from "@/app/data/typeChart";
+import { AttackerData, calcTypeMatchup, DefenderData } from "@/app/data/typeChart";
 import { types } from "@/app/data/types";
 import { Ability } from "@/app/data/types/Ability";
 import { EncounterMap } from "@/app/data/types/Encounter";
 import { Pokemon } from "@/app/data/types/Pokemon";
 import { negativeMod } from "@/app/data/util";
 import BasicButton from "@/components/BasicButton";
-import TypeBadgeHeader from "@/components/TypeBadgeSingle";
+import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import TypeBadge from "../../../components/TypeBadge";
 import EncounterDisplay from "./EncounterDisplay";
 import EStatRow from "./EStatRow";
 import MoveDisplay from "./MoveDisplay";
@@ -118,22 +117,22 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
 
         realTypes.forEach((t) => {
             defMatchupCalcs[a.id][t.id] = calcTypeMatchup(
-                { type: t },
-                {
-                    type1: currentPokemon.getType1(currentForm),
-                    type2: currentPokemon.getType2(currentForm),
-                    ability: a,
-                }
+                new AttackerData(t),
+                new DefenderData(currentPokemon.getType1(currentForm), currentPokemon.getType2(currentForm), a)
             );
 
             stabMatchupCalcs[a.id][t.id] = Math.max(
-                calcTypeMatchup({ type: currentPokemon.getType1(currentForm), ability: a }, { type1: t }),
                 calcTypeMatchup(
-                    {
-                        type: currentPokemon.getType2(currentForm) || currentPokemon.getType1(currentForm),
-                        ability: a,
-                    },
-                    { type1: t }
+                    new AttackerData(currentPokemon.getType1(currentForm), undefined, a),
+                    new DefenderData(t)
+                ),
+                calcTypeMatchup(
+                    new AttackerData(
+                        currentPokemon.getType2(currentForm) || currentPokemon.getType1(currentForm),
+                        undefined,
+                        a
+                    ),
+                    new DefenderData(t)
                 )
             );
 
@@ -174,8 +173,10 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                                     "(" + currentPokemon.getFormName(currentForm) + ")"}
                             </h2>
                             <TypeBadge
-                                type1={currentPokemon.getType1(currentForm)}
-                                type2={currentPokemon.getType2(currentForm)}
+                                key={currentPokemon.getType1(currentForm).id}
+                                types={[currentPokemon.getType1(currentForm), currentPokemon.getType2(currentForm)]}
+                                useShort={false}
+                                element={TypeBadgeElementEnum.CAPSULE_ROW}
                             />
                         </div>
                         {currentPokemon.forms.length > 0 && (
@@ -331,7 +332,12 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                                             <thead>
                                                 <tr>
                                                     {slice.map((t) => (
-                                                        <TypeBadgeHeader key={t.id} type={t} useShort={false} />
+                                                        <TypeBadge
+                                                            key={t.id}
+                                                            types={[t]}
+                                                            useShort={true}
+                                                            element={TypeBadgeElementEnum.TABLE_HEADER}
+                                                        />
                                                     ))}
                                                 </tr>
                                             </thead>
@@ -341,6 +347,8 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                                                         return (
                                                             <TypeChartCell
                                                                 key={t.id}
+                                                                atk={undefined}
+                                                                def={undefined}
                                                                 mult={defMatchupCalcs[selectedDefAbility.id][t.id]}
                                                             />
                                                         );
@@ -377,7 +385,12 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                                             <thead>
                                                 <tr>
                                                     {slice.map((t) => (
-                                                        <TypeBadgeHeader key={t.id} type={t} useShort={false} />
+                                                        <TypeBadge
+                                                            key={t.id}
+                                                            types={[t]}
+                                                            useShort={true}
+                                                            element={TypeBadgeElementEnum.TABLE_HEADER}
+                                                        />
                                                     ))}
                                                 </tr>
                                             </thead>
@@ -387,6 +400,8 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                                                         return (
                                                             <TypeChartCell
                                                                 key={t.id}
+                                                                atk={undefined}
+                                                                def={undefined}
                                                                 mult={stabMatchupCalcs[selectedStabAbility.id][t.id]}
                                                             />
                                                         );

@@ -25,9 +25,9 @@ import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { Stat, StylePoints } from "@/app/data/types/Pokemon";
 import { isNull, negativeMod, safeKeys } from "@/app/data/util";
 import Dropdown from "@/components/DropDown";
-import TypeBadge from "@/components/TypeBadge";
 import Image from "next/image";
 import Collapsible from "./Collapsible";
+import TypeBadge, { TypeBadgeElementEnum } from "./TypeBadge";
 
 function legalItems(currentItems: Item[], ability: Ability, index: number): Item[] {
     // TODO: Add a non-magic map of pockets somewhere
@@ -195,7 +195,11 @@ export default function PokemonCard({
                             {data.species.name +
                                 (data.species.getFormName(data.form) ? " " + data.species.getFormName(data.form) : "")}
                         </p>
-                        <TypeBadge type1={data.types.type1} type2={data.types.type2} />
+                        <TypeBadge
+                            types={[data.types.type1, data.types.type2]}
+                            useShort={false}
+                            element={TypeBadgeElementEnum.CAPSULE_ROW}
+                        />
                     </div>
                     <div className="text-center">
                         <h3 className="font-semibold text-gray-800 dark:text-gray-100">Level</h3>
@@ -238,7 +242,11 @@ export default function PokemonCard({
                                 </div>
                                 <div className="w-12 flex justify-center">
                                     {data.moves[moveIndex].isAttackingMove() && (
-                                        <TypeBadge type1={data.moves[moveIndex].getType(data)} />
+                                        <TypeBadge
+                                            types={[data.moves[moveIndex].getType(data)]}
+                                            useShort={false}
+                                            element={TypeBadgeElementEnum.CAPSULE_SINGLE}
+                                        />
                                     )}
                                 </div>
                             </div>
@@ -345,7 +353,13 @@ export default function PokemonCard({
                                             </option>
                                         ))}
                                     </Dropdown>
-                                    {!isNull(data.itemType) && <TypeBadge type1={data.itemType} />}
+                                    {!isNull(data.itemType) && (
+                                        <TypeBadge
+                                            types={[data.itemType]}
+                                            useShort={false}
+                                            element={TypeBadgeElementEnum.CAPSULE_SINGLE}
+                                        />
+                                    )}
                                 </div>
                             )}
                         </div>

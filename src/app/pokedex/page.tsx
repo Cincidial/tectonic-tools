@@ -3,7 +3,6 @@
 import { getTypeColorClass } from "@/components/colours";
 import InlineLink from "@/components/InlineLink";
 import InternalLink from "@/components/InternalLink";
-import TypeBadge from "@/components/TypeBadge";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
@@ -32,11 +31,11 @@ import {
     PokemonFilterType,
     tribesFilter,
 } from "@/components/filters";
+import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import Image from "next/image";
 import { FilterInput } from "../../components/FilterInput";
 import { abilities } from "../data/abilities";
 import { items } from "../data/items";
-import { calcTypeMatchup } from "../data/typeChart";
 import { Ability } from "../data/types/Ability";
 import { Item } from "../data/types/Item";
 import { Tribe } from "../data/types/Tribe";
@@ -144,15 +143,15 @@ const Home: NextPage = () => {
                     ))}
                 </div>
 
-                <FilterInput
-                    currentFilter={currentFilter}
-                    filters={filters}
-                    onAddFilter={handleAddFilter}
-                    removeFilter={removeFilter}
-                    setCurrentFilter={setCurrentFilter}
-                />
-
                 <TabContent tab="Pokemon" activeTab={activeTab}>
+                    <FilterInput
+                        currentFilter={currentFilter}
+                        filters={filters}
+                        onAddFilter={handleAddFilter}
+                        removeFilter={removeFilter}
+                        setCurrentFilter={setCurrentFilter}
+                    />
+
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                         <PokemonTable mons={filteredPokemon} onRowClick={handlePokemonClick} />
                     </div>
@@ -183,11 +182,16 @@ const Home: NextPage = () => {
                                     <tr
                                         key={m.id}
                                         onClick={() => handleMoveClick(m)}
-                                        className={`cursor-pointer ${getTypeColorClass(m.type, false)}`}
+                                        className={`cursor-pointer ${getTypeColorClass(m.type, "bg", "bg")}`}
                                     >
                                         <TableCell>{m.name}</TableCell>
                                         <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400">
-                                            <TypeBadge type1={m.type} />
+                                            <TypeBadge
+                                                key={m.type.id}
+                                                types={[m.type]}
+                                                useShort={false}
+                                                element={TypeBadgeElementEnum.CAPSULE_SINGLE}
+                                            />
                                         </td>
                                         <TableCell>{m.category}</TableCell>
                                         <TableCell>{m.bp}</TableCell>
@@ -279,40 +283,39 @@ const Home: NextPage = () => {
                     </div>
                 </TabContent>
                 <TabContent tab="Type Chart" activeTab={activeTab}>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-center align-middle border border-gray-300 dark:border-gray-700 rounded-lg shadow-md bg-white dark:bg-gray-800">
-                            <thead className="bg-gray-100 dark:bg-gray-700">
-                                <tr>
-                                    <th className="px-8 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                                        Defense →
-                                        <br />
-                                        Attack ↴
-                                    </th>
-                                    {realTypes.map((t) => (
-                                        <th
-                                            key={t.id}
-                                            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >
-                                            <TypeBadge type1={t} />
-                                        </th>
+                    <table className="mx-auto border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
+                        <thead className="">
+                            <tr>
+                                <th className="px-1 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                                    Defense →
+                                    <br />
+                                    Attack ↴
+                                </th>
+                                {realTypes.map((def) => (
+                                    <TypeBadge
+                                        key={def.id}
+                                        element={TypeBadgeElementEnum.TABLE_HEADER}
+                                        types={[def]}
+                                        useShort={true}
+                                    />
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {realTypes.map((atk) => (
+                                <tr key={atk.id} className={`${getTypeColorClass(atk, "hover:bg")}`}>
+                                    <TypeBadge
+                                        element={TypeBadgeElementEnum.TABLE_ROW}
+                                        types={[atk]}
+                                        useShort={false}
+                                    />
+                                    {realTypes.map((def) => (
+                                        <TypeChartCell key={def.index} atk={atk} def={def} mult={undefined} />
                                     ))}
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {realTypes.map((t) => (
-                                    <tr key={t.id} className="even:bg-gray-50 dark:even:bg-gray-700">
-                                        <td className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            <TypeBadge type1={t} />
-                                        </td>
-                                        {realTypes.map((t2) => {
-                                            const mult = calcTypeMatchup({ type: t }, { type1: t2 });
-                                            return <TypeChartCell key={t2.index} mult={mult} />;
-                                        })}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 </TabContent>
             </main>
         </div>

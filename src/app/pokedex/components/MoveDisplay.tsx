@@ -5,7 +5,7 @@ import { getSignatureMoves } from "@/app/data/signatures";
 import { Move, moveCategories, MoveCategory } from "@/app/data/types/Move";
 import { Pokemon } from "@/app/data/types/Pokemon";
 import { isNull } from "@/app/data/util";
-import TypeBadge from "@/components/TypeBadge";
+import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import { useState } from "react";
 
 export default function MoveDisplay({
@@ -77,12 +77,14 @@ export default function MoveDisplay({
                     {!isNull(selectedMove) ? (
                         <div>
                             <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                                {selectedMove.name}
+                                <TypeBadge
+                                    types={[selectedMove.type]}
+                                    useShort={false}
+                                    element={TypeBadgeElementEnum.CAPSULE_SINGLE}
+                                />
+                                <span className="ml-2">{selectedMove.name}</span>
                             </h4>
                             <p className="text-gray-600 dark:text-gray-300">{selectedMove.description}</p>
-                            <div className="mt-2 text-gray-600 dark:text-gray-300">
-                                <span className="font-semibold">Type:</span> <TypeBadge type1={selectedMove.type} />
-                            </div>
                             <p className="mt-2 text-gray-600 dark:text-gray-300">
                                 <span className="font-semibold">Category:</span> {selectedMove.category}
                             </p>

@@ -6,7 +6,7 @@ import { FilterInput } from "@/components/FilterInput";
 import { AVAILABLE_FILTERS, PokemonFilterType } from "@/components/filters";
 import InlineLink from "@/components/InlineLink";
 import InternalLink from "@/components/InternalLink";
-import TypeBadge from "@/components/TypeBadge";
+import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
@@ -17,7 +17,7 @@ import { moves, nullMove } from "../data/moves";
 import { nullPokemon, pokemon } from "../data/pokemon";
 import { decodeTeam, encodeTeam, MAX_LEVEL, SavedPartyPokemon } from "../data/teamExport";
 import { tribes } from "../data/tribes";
-import { calcTypeMatchup } from "../data/typeChart";
+import { AttackerData, calcBestMoveMatchup, calcTypeMatchup, DefenderData } from "../data/typeChart";
 import { nullType, types } from "../data/types";
 import { PartyPokemon } from "../data/types/PartyPokemon";
 import { Pokemon } from "../data/types/Pokemon";
@@ -25,7 +25,7 @@ import { isNull } from "../data/util";
 import TypeChartCell from "../pokedex/components/TypeChartCell";
 import AtkTotalCell from "./components/AtkTotalCell";
 import DefTotalCell from "./components/DefTotalCell";
-import TableHeader from "./components/TableHeader";
+import MatchupMonCell from "./components/MatchupMonCell";
 
 const TeamBuilder: NextPage = () => {
     const [cards, setCards] = useState<PartyPokemon[]>(Array(6).fill(new PartyPokemon()));
@@ -79,7 +79,7 @@ const TeamBuilder: NextPage = () => {
 
     // Mutant type is secret and irrelevant to defensive matchups
     const realTypes = Object.values(types).filter((t) => t.isRealType);
-
+    const validCards = cards.filter((c) => !isNull(c.species));
     const tribeCounts = Object.fromEntries(Object.values(tribes).map((t) => [t.id, 0]));
     for (const card of cards) {
         // count as all tribes if wild card equipped
@@ -350,136 +350,99 @@ const TeamBuilder: NextPage = () => {
                             </div>
                         </div>
                     </div>
-                    {/* Defensive Matchups Table */}
-                    <div className="w-full max-w-6xl mx-auto mt-12">
-                        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 text-center">
-                            Defensive Matchups
-                        </h2>
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-                            <div className="overflow-auto max-h-[calc(100vh-300px)]">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
-                                        <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                Type
-                                            </th>
-                                            {cards.map((_, index) => (
-                                                <th
-                                                    key={index}
-                                                    className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                                                >
-                                                    <TableHeader card={cards[index]} />
-                                                </th>
-                                            ))}
-                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                Total Weak
-                                            </th>
-                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                Total Resist
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        {realTypes.map((type) => (
-                                            <tr
-                                                key={type.id}
-                                                className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                            >
-                                                <td className="px-4 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center">
-                                                        <TypeBadge type1={type} />
-                                                    </div>
-                                                </td>
-                                                {cards.map((c, index) => {
-                                                    const mult = !isNull(c.species)
-                                                        ? calcTypeMatchup(
-                                                              { type },
-                                                              {
-                                                                  type1: c.types.type1,
-                                                                  type2: c.types.type2,
-                                                                  ability: c.ability,
-                                                              }
-                                                          )
-                                                        : 1;
-                                                    return <TypeChartCell key={index} mult={mult} />;
-                                                })}
-                                                <DefTotalCell cards={cards} type={type} total="weak" />
-                                                <DefTotalCell cards={cards} type={type} total="strong" />
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Offensive Matchups Table */}
-                    <div className="w-full max-w-6xl mx-auto mt-12">
-                        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 text-center">
-                            Offensive Matchups
-                        </h2>
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-                            <div className="overflow-auto max-h-[calc(100vh-300px)]">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
-                                        <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                Type
-                                            </th>
-                                            {cards.map((_, index) => (
-                                                <th
-                                                    key={index}
-                                                    className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                                                >
-                                                    <TableHeader card={cards[index]} />
-                                                </th>
-                                            ))}
-                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                Total NVE
-                                            </th>
-                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                Total SE
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        {realTypes.map((type) => (
-                                            <tr
-                                                key={type.id}
-                                                className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                            >
-                                                <td className="px-4 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center">
-                                                        <TypeBadge type1={type} />
-                                                    </div>
-                                                </td>
-                                                {cards.map((c, index) => {
-                                                    const realMoves = c.moves.filter((m) => !isNull(m));
-                                                    const mult = !isNull(c.species)
-                                                        ? Math.max(
-                                                              ...realMoves.map((m) =>
-                                                                  calcTypeMatchup(
-                                                                      {
-                                                                          type: m.getType(c),
-                                                                          move: m,
-                                                                          ability: c.ability,
-                                                                      },
-                                                                      { type1: type }
-                                                                  )
-                                                              )
-                                                          )
-                                                        : 1;
-                                                    return <TypeChartCell key={index} mult={mult} />;
-                                                })}
-                                                <AtkTotalCell cards={cards} type={type} total="nve" />
-                                                <AtkTotalCell cards={cards} type={type} total="se" />
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                    <h2 className="my-4 text-2xl font-bold text-gray-800 dark:text-gray-100">Defensive Matchups</h2>
+                    <table className="mx-auto divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th></th>
+                                {realTypes.map((type) => (
+                                    <TypeBadge
+                                        key={type.id}
+                                        types={[type]}
+                                        useShort={true}
+                                        element={TypeBadgeElementEnum.TABLE_HEADER}
+                                    />
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {validCards.map((c) => (
+                                <tr key={c.species.id}>
+                                    <MatchupMonCell key={c.species.id} c={c} useMoves={false} />
+                                    {realTypes.map((type) => (
+                                        <TypeChartCell
+                                            key={type.id}
+                                            atk={undefined}
+                                            def={undefined}
+                                            mult={calcTypeMatchup(
+                                                new AttackerData(type),
+                                                new DefenderData(c.types.type1, c.types.type2, c.ability)
+                                            )}
+                                        />
+                                    ))}
+                                </tr>
+                            ))}
+                            <tr className="text-center text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
+                                <td>Weaknesses</td>
+                                {realTypes.map((type) => (
+                                    <DefTotalCell key={type.id} cards={validCards} type={type} total={"weak"} />
+                                ))}
+                            </tr>
+
+                            <tr className="text-center text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
+                                <td>Resistances</td>
+                                {realTypes.map((type) => (
+                                    <DefTotalCell key={type.id} cards={validCards} type={type} total={"strong"} />
+                                ))}
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h2 className="my-4 text-2xl font-bold text-gray-800 dark:text-gray-100">Offensive Coverage</h2>
+                    <table className="mx-auto divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th></th>
+                                {realTypes.map((type) => (
+                                    <TypeBadge
+                                        key={type.id}
+                                        types={[type]}
+                                        useShort={true}
+                                        element={TypeBadgeElementEnum.TABLE_HEADER}
+                                    />
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {validCards.map((c) => (
+                                <tr key={c.species.id}>
+                                    <MatchupMonCell key={c.species.id} c={c} useMoves={true} />
+                                    {realTypes.map((type) => (
+                                        <TypeChartCell
+                                            key={type.id}
+                                            atk={undefined}
+                                            def={undefined}
+                                            mult={calcBestMoveMatchup(c, new DefenderData(type))}
+                                        />
+                                    ))}
+                                </tr>
+                            ))}
+                            <tr className="text-center text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
+                                <td>Super Effetive</td>
+                                {realTypes.map((type) => (
+                                    <AtkTotalCell key={type.id} cards={validCards} type={type} total={"se"} />
+                                ))}
+                            </tr>
+
+                            <tr className="text-center text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
+                                <td>Not Very Effective</td>
+                                {realTypes.map((type) => (
+                                    <AtkTotalCell key={type.id} cards={validCards} type={type} total={"nve"} />
+                                ))}
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </main>
         </div>

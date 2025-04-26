@@ -1,7 +1,7 @@
 import { PokemonTableProps } from "@/app/pokedex/page";
+import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import Image from "next/image";
 import { getTypeGradient } from "../../../components/colours";
-import TypeBadge from "../../../components/TypeBadge";
 import TableCell from "./TableCell";
 import TableHeader from "./TableHeader";
 
@@ -46,8 +46,13 @@ const PokemonTable: React.FC<PokemonTableProps> = ({ mons, onRowClick }) => {
                             </TableCell>
                             <TableCell>{pokemon.dex}</TableCell>
                             <TableCell>{pokemon.name}</TableCell>
-                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400">
-                                <TypeBadge type1={pokemon.type1} type2={pokemon.type2} />
+                            <td className="invertIgnore ">
+                                <TypeBadge
+                                    key={pokemon.type1.id}
+                                    element={TypeBadgeElementEnum.CAPSULE_STACK}
+                                    types={[pokemon.type1, pokemon.type2]}
+                                    useShort={false}
+                                />
                             </td>
                             <TableCell>
                                 {pokemon.abilities.map((a) => (

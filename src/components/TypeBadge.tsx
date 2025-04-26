@@ -1,33 +1,61 @@
 import { PokemonType } from "@/app/data/types/PokemonType";
 import { getTypeColorClass } from "./colours";
 
-interface TypeBadgeProps {
-    type1: PokemonType;
-    type2?: PokemonType;
-    hyper?: boolean;
+export enum TypeBadgeElementEnum {
+    TABLE_HEADER,
+    TABLE_ROW,
+    CAPSULE_SINGLE,
+    CAPSULE_STACK,
+    CAPSULE_ROW,
 }
 
-export default function TypeBadge({ type1, type2, hyper }: TypeBadgeProps) {
-    const isHyper = !!hyper; // cast undefined to false
-    return (
-        <div className="flex space-x-2 invertIgnore">
-            <span
-                className={`px-2 py-1 rounded-full text-white text-xs font-semibold ${getTypeColorClass(type1, true)} ${
-                    isHyper ? "ring-2 ring-yellow-400 shadow-md" : ""
-                }`}
-            >
-                {type1.name}
-            </span>
-            {type2 && (
-                <span
-                    className={`px-2 py-1 rounded-full text-white text-xs font-semibold ${getTypeColorClass(
-                        type2,
-                        true
-                    )}`}
-                >
-                    {type2.name}
-                </span>
-            )}
-        </div>
-    );
+interface TypeBadgeProps {
+    types: (PokemonType | undefined)[];
+    useShort: boolean;
+    element: TypeBadgeElementEnum;
+}
+
+export default function TypeBadge({ types, useShort, element }: TypeBadgeProps) {
+    function getClasses(type: PokemonType) {
+        return `p-1 h-fit text-white text-shadow-xs/100 text-s font-semibold cursor-default 
+            ${getTypeColorClass(type, "bg")}`;
+    }
+
+    function getCapsuleClasses(type: PokemonType) {
+        return `${getClasses(type)} px-2 w-20 text-center rounded-full`;
+    }
+
+    function getText(type: PokemonType) {
+        return useShort ? type.getShortName() : type.name;
+    }
+
+    const defTypes = types.filter((type) => type != undefined);
+    switch (element) {
+        case TypeBadgeElementEnum.TABLE_HEADER:
+            return <th className={`${getClasses(defTypes[0]!)} w-12`}>{getText(defTypes[0]!)}</th>;
+        case TypeBadgeElementEnum.TABLE_ROW:
+            return <td className={`${getClasses(defTypes[0]!)} py-2 text-right`}>{getText(defTypes[0]!)}</td>;
+        case TypeBadgeElementEnum.CAPSULE_SINGLE:
+            return <span className={`${getCapsuleClasses(defTypes[0]!)}`}>{getText(defTypes[0]!)}</span>;
+        case TypeBadgeElementEnum.CAPSULE_STACK:
+            return (
+                <div className="my-auto">
+                    {defTypes.map((type, index) => (
+                        <div key={index} className={`${getCapsuleClasses(type)} my-1 mx-auto`}>
+                            {getText(type)}
+                        </div>
+                    ))}
+                </div>
+            );
+        case TypeBadgeElementEnum.CAPSULE_ROW:
+            return (
+                <div className="flex justify-center space-x-2">
+                    {defTypes.map((type) => (
+                        <span key={type.id} className={`${getCapsuleClasses(type)}`}>
+                            {getText(type)}
+                        </span>
+                    ))}
+                </div>
+            );
+    }
 }
