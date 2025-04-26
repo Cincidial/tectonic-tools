@@ -168,6 +168,8 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
 }
 
 export function calcBestMoveMatchup(mon: PartyPokemon, def: DefenderData): number {
-    const calcs = mon.moves.map((m) => calcTypeMatchup(new AttackerData(m.type, m, mon.ability), def));
+    const calcs = mon.moves
+        .filter((m) => m != undefined && !isNull(m) && m.isAttackingMove())
+        .map((m) => calcTypeMatchup(new AttackerData(m.type, m, mon.ability), def));
     return calcs.length > 0 ? Math.max(...calcs) : 1;
 }
