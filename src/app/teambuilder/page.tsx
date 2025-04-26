@@ -383,15 +383,15 @@ const TeamBuilder: NextPage = () => {
                                     ))}
                                 </tr>
                             ))}
-                            <tr className="text-center text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
-                                <td>Weaknesses</td>
+                            <tr className="text-end text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
+                                <td className="pr-2">Weaknesses</td>
                                 {realTypes.map((type) => (
                                     <DefTotalCell key={type.id} cards={validCards} type={type} total={"weak"} />
                                 ))}
                             </tr>
 
-                            <tr className="text-center text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
-                                <td>Resistances</td>
+                            <tr className="text-end text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
+                                <td className="pr-2">Resistances</td>
                                 {realTypes.map((type) => (
                                     <DefTotalCell key={type.id} cards={validCards} type={type} total={"strong"} />
                                 ))}
@@ -428,15 +428,15 @@ const TeamBuilder: NextPage = () => {
                                     ))}
                                 </tr>
                             ))}
-                            <tr className="text-center text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
-                                <td>Super Effetive</td>
+                            <tr className="text-end text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
+                                <td className="pr-2">Weak</td>
                                 {realTypes.map((type) => (
                                     <AtkTotalCell key={type.id} cards={validCards} type={type} total={"se"} />
                                 ))}
                             </tr>
 
-                            <tr className="text-center text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
-                                <td>Not Very Effective</td>
+                            <tr className="text-end text-2xl text-gray-500 dark:text-gray-300 bg-gray-50 dark:bg-gray-700">
+                                <td className="pr-2">Resisted</td>
                                 {realTypes.map((type) => (
                                     <AtkTotalCell key={type.id} cards={validCards} type={type} total={"nve"} />
                                 ))}
