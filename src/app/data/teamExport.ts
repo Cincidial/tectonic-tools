@@ -226,7 +226,7 @@ const decodeChunk = (
         byteOffset++;
     }
 
-    const pokemonKey = version.keys.pokemon[pokemonDexNum - 1]; // The dex num starts at 1, so -1 for index
+    const pokemonKey = version.keys.pokemon[pokemonDexNum];
     const loadedMon = TectonicData.pokemon[pokemonKey];
 
     mon.species = loadedMon;
