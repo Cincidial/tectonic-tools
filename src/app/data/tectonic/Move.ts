@@ -4,8 +4,8 @@ import { BattleState } from "@/app/data/battleState";
 import { LoadedMove } from "@/preload/loadTectonicRepoData";
 import { StatusEffect } from "../conditions";
 import { TectonicData } from "../tectonic/TectonicData";
+import { PartyPokemon } from "../types/PartyPokemon";
 import { isNull } from "../util";
-import { PartyPokemon } from "./PartyPokemon";
 import { Pokemon, Stat } from "./Pokemon";
 import { PokemonType } from "./PokemonType";
 
@@ -47,7 +47,7 @@ export class Move {
     needsInput: boolean = false;
     isSignature: boolean = false;
 
-    static NULL: Move = new Move();
+    static NULL: Move = null!;
 
     constructor(loaded?: LoadedMove) {
         if (!loaded) return;

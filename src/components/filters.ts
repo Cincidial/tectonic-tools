@@ -1,8 +1,6 @@
-import { items } from "@/app/data/items";
-import { moves } from "@/app/data/moves";
-import { tribes } from "@/app/data/tribes";
-import { types } from "@/app/data/types";
-import { Pokemon } from "@/app/data/types/Pokemon";
+import { Pokemon } from "@/app/data/tectonic/Pokemon";
+import { TectonicData } from "@/app/data/tectonic/TectonicData";
+import { types } from "util";
 
 export type FilterOperator = "==" | "!=" | ">" | "<" | "includes";
 
@@ -70,7 +68,7 @@ export const allMovesFilter: PokemonFilterType = {
         return pokemon.allMoves().some((m) => m.name.toLowerCase().includes(searchValue));
     },
     inputMethod: "select",
-    inputValues: Object.values(moves).map((m) => m.name),
+    inputValues: Object.values(TectonicData.moves).map((m) => m.name),
 };
 
 export const tribesFilter: PokemonFilterType = {
@@ -82,7 +80,7 @@ export const tribesFilter: PokemonFilterType = {
         return pokemon.tribes.some((t) => t.name.toLowerCase().includes(searchValue));
     },
     inputMethod: "select",
-    inputValues: Object.values(tribes).map((t) => t.name),
+    inputValues: Object.values(TectonicData.tribes).map((t) => t.name),
 };
 
 export const heldItemFilter: PokemonFilterType = {
@@ -94,7 +92,7 @@ export const heldItemFilter: PokemonFilterType = {
         return pokemon.items.some((i) => i.name.toLowerCase().includes(searchValue));
     },
     inputMethod: "select",
-    inputValues: Object.values(items).map((i) => i.name),
+    inputValues: Object.values(TectonicData.items).map((i) => i.name),
 };
 
 export const AVAILABLE_FILTERS: PokemonFilterType[] = [
@@ -137,7 +135,7 @@ export const AVAILABLE_FILTERS: PokemonFilterType[] = [
             return pokemon.levelMoves.some((m) => m[1].name.toLowerCase().includes(searchValue));
         },
         inputMethod: "select",
-        inputValues: Object.values(moves).map((m) => m.name),
+        inputValues: Object.values(TectonicData.moves).map((m) => m.name),
     },
     allMovesFilter,
     tribesFilter,

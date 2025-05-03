@@ -1,14 +1,9 @@
 "use client";
 
-import { abilities, nullAbility } from "@/app/data/abilities";
 import { TwoItemAbility } from "@/app/data/abilities/TwoItemAbility";
 import { BattleState, nullState } from "@/app/data/battleState";
 import { StatusEffect, statusEffects, VolatileStatusEffect, volatileStatusEffects } from "@/app/data/conditions";
-import { items, nullItem } from "@/app/data/items";
 import { TypeChangingItem } from "@/app/data/items/TypeChangingItem";
-import { moves, nullMove } from "@/app/data/moves";
-import { nullPokemon, pokemon } from "@/app/data/pokemon";
-import { getSignatureAbilities, getSignatureMoves } from "@/app/data/signatures";
 import {
     MAX_LEVEL,
     MAX_SP,
@@ -19,11 +14,13 @@ import {
     STYLE_POINT_CAP,
     styleFromStat,
 } from "@/app/data/teamExport";
-import { nullType, types } from "@/app/data/types";
-import { Ability } from "@/app/data/types/Ability";
-import { Item } from "@/app/data/types/Item";
+import { Ability } from "@/app/data/tectonic/Ability";
+import { Item } from "@/app/data/tectonic/Item";
+import { Move } from "@/app/data/tectonic/Move";
+import { Pokemon, Stat, StylePoints } from "@/app/data/tectonic/Pokemon";
+import { PokemonType } from "@/app/data/tectonic/PokemonType";
+import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
-import { Stat, StylePoints } from "@/app/data/types/Pokemon";
 import { isNull, negativeMod, safeKeys } from "@/app/data/util";
 import Dropdown from "@/components/DropDown";
 import Image from "next/image";
@@ -31,17 +28,15 @@ import Collapsible from "./Collapsible";
 import TypeBadge, { TypeBadgeElementEnum } from "./TypeBadge";
 
 function legalItems(currentItems: Item[], ability: Ability, index: number): Item[] {
-    // TODO: Add a non-magic map of pockets somewhere
-    const heldItems = Object.values(items).filter((i) => i.pocket === 5);
     // only allow selecting items that maintain the legality constraint
     if (ability instanceof TwoItemAbility) {
-        return heldItems.filter((i) => {
+        return TectonicData.heldItems.filter((i) => {
             const newItems = [...currentItems];
             newItems[index] = i;
             return ability.validateItems(newItems);
         });
     }
-    return heldItems;
+    return TectonicData.heldItems;
 }
 
 export default function PokemonCard({
@@ -57,37 +52,40 @@ export default function PokemonCard({
 }) {
     // wipe pokemon-dependent data when switching pokemon
     function updatePokemon(pokemonId: string) {
-        if (pokemonId in pokemon) {
+        if (pokemonId in TectonicData.pokemon) {
             update({
-                species: pokemon[pokemonId],
+                species: TectonicData.pokemon[pokemonId],
                 form: 0,
-                moves: Array(4).fill(nullMove),
-                ability: pokemon[pokemonId].getAbilities(0)[0] ?? pokemon[pokemonId].getAbilities(0)[1] ?? nullAbility,
+                moves: Array(4).fill(Move.NULL),
+                ability:
+                    TectonicData.pokemon[pokemonId].getAbilities(0)[0] ??
+                    TectonicData.pokemon[pokemonId].getAbilities(0)[1] ??
+                    Ability.NULL,
             });
         } else {
-            update({ species: nullPokemon, form: 0, moves: Array(4).fill(nullMove), ability: nullAbility });
+            update({ species: Pokemon.NULL, form: 0, moves: Array(4).fill(Move.NULL), ability: Ability.NULL });
         }
     }
 
     function updateMoves(moveId: string, moveIndex: number) {
         const newMoves = [...data.moves];
-        if (moveId in moves) {
-            newMoves[moveIndex] = moves[moveId];
+        if (moveId in TectonicData.moves) {
+            newMoves[moveIndex] = TectonicData.moves[moveId];
         } else {
-            newMoves[moveIndex] = nullMove;
+            newMoves[moveIndex] = Move.NULL;
         }
 
         update({ moves: newMoves });
     }
 
     function updateAbility(abilityId: string) {
-        if (abilityId in abilities) {
+        if (abilityId in TectonicData.abilities) {
             update({
-                ability: abilities[abilityId],
+                ability: TectonicData.abilities[abilityId],
             });
         } else {
             update({
-                ability: nullAbility,
+                ability: Ability.NULL,
             });
         }
     }
@@ -103,12 +101,12 @@ export default function PokemonCard({
 
     function updateItem(itemId: string, index: number) {
         const newItems = [...data.items];
-        newItems[index] = items[itemId] || nullItem;
+        newItems[index] = TectonicData.items[itemId] || Item.NULL;
         update({ items: newItems });
     }
 
     function updateItemType(typeId: string) {
-        const newType = types[typeId] || nullType;
+        const newType = TectonicData.types[typeId] || PokemonType.NULL;
         update({ itemType: newType });
     }
 
@@ -118,9 +116,9 @@ export default function PokemonCard({
             .map((m, i) => (data.species.allMoves(form).some((mo) => mo.id === m.id) ? undefined : i))
             .filter((m) => m !== undefined);
         for (const index of illegalMoves) {
-            newMoves[index] = nullMove;
+            newMoves[index] = Move.NULL;
         }
-        const ability = data.species.getAbilities(form)[0] ?? data.species.getAbilities(form)[1] ?? nullAbility;
+        const ability = data.species.getAbilities(form)[0] ?? data.species.getAbilities(form)[1] ?? Ability.NULL;
         update({ form, ability, moves: newMoves });
     }
 
@@ -149,7 +147,7 @@ export default function PokemonCard({
         update({ statSteps: newSteps });
     }
 
-    const realTypes = Object.values(types).filter((t) => t.isRealType);
+    const realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
 
     return (
         <>
@@ -166,7 +164,7 @@ export default function PokemonCard({
                 )}
                 <Dropdown value={data.species.id} onChange={(e) => updatePokemon(e.target.value)}>
                     <option value="">Select Pokémon</option>
-                    {Object.values(pokemon).map((p) => (
+                    {Object.values(TectonicData.pokemon).map((p) => (
                         <option key={p.id} value={p.id}>
                             {p.name}
                         </option>
@@ -231,7 +229,7 @@ export default function PokemonCard({
                                                 key={m.id}
                                                 value={m.id}
                                                 className={
-                                                    m.id in getSignatureMoves()
+                                                    m.isSignature
                                                         ? "font-semibold text-yellow-500"
                                                         : m.isSTAB(data.species)
                                                         ? "font-semibold"
@@ -262,7 +260,7 @@ export default function PokemonCard({
                                 <option
                                     key={a.id}
                                     value={a.id}
-                                    className={a.id in getSignatureAbilities() ? "font-semibold text-yellow-500" : ""}
+                                    className={a.isSignature ? "font-semibold text-yellow-500" : ""}
                                 >
                                     {a.name}
                                 </option>

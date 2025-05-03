@@ -1,4 +1,4 @@
-import { Move } from "../types/Move";
+import { Move } from "../tectonic/Move";
 import { PartyPokemon } from "../types/PartyPokemon";
 
 export class StepScalingMove extends Move {

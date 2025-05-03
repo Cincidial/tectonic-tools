@@ -1,5 +1,5 @@
-import { LoadedItem } from "../loading/items";
-import { Item } from "../types/Item";
+import { LoadedItem } from "@/preload/loadTectonicRepoData";
+import { Item } from "../tectonic/Item";
 import { PartyPokemon } from "../types/PartyPokemon";
 
 const typeChangingItems: Record<string, [string, string] | undefined> = {
@@ -11,6 +11,7 @@ const typeChangingItems: Record<string, [string, string] | undefined> = {
 // type is stored in state of relevant pages
 export class TypeChangingItem extends Item {
     requiredPokemon: [string, string] | undefined;
+
     constructor(item: LoadedItem) {
         super(item);
         this.requiredPokemon = typeChangingItems[item.key];

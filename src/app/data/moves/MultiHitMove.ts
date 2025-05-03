@@ -1,5 +1,5 @@
-import { LoadedMove } from "../loading/moves";
-import { Move } from "../types/Move";
+import { LoadedMove } from "@/preload/loadTectonicRepoData";
+import { Move } from "../tectonic/Move";
 
 interface MultiHits {
     minHits: number;
@@ -44,6 +44,7 @@ const multiHitMoveCodes: Record<string, MultiHits> = {
 export class MultiHitMove extends Move {
     minHits: number;
     maxHits: number;
+
     constructor(move: LoadedMove) {
         super(move);
         const hits = multiHitMoveCodes[move.functionCode];

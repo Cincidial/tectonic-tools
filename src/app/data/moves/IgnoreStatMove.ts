@@ -1,6 +1,6 @@
-import { LoadedMove } from "../loading/moves";
-import { Move } from "../types/Move";
-import { Stat } from "../types/Pokemon";
+import { LoadedMove } from "@/preload/loadTectonicRepoData";
+import { Move } from "../tectonic/Move";
+import { Stat } from "../tectonic/Pokemon";
 
 const ignoreStatMoveCodes: Record<string, Stat[]> = {
     IgnoreTargetDefSpDefEvaStatStages: ["defense", "spdef"],
@@ -10,6 +10,7 @@ const ignoreStatMoveCodes: Record<string, Stat[]> = {
 
 export class IgnoreStatMove extends Move {
     ignoreStats: Stat[];
+
     constructor(move: LoadedMove) {
         super(move);
         this.ignoreStats = ignoreStatMoveCodes[move.functionCode];

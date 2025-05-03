@@ -29,7 +29,7 @@ export class Trainer {
     flags: string[] = [];
     pokemon: TrainerPokemon[] = [];
 
-    static NULL: Trainer = new Trainer();
+    static NULL: Trainer = null!;
 
     constructor(loaded?: LoadedTrainer) {
         if (!loaded) return;

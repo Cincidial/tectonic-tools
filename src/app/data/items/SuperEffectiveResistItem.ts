@@ -1,11 +1,11 @@
 import { MoveData } from "@/app/damagecalc/components/MoveCard";
 import { DamageMultipliers } from "@/app/damagecalc/damageCalc";
+import { LoadedItem } from "@/preload/loadTectonicRepoData";
 import { BattleState } from "../battleState";
-import { LoadedItem } from "../loading/items";
-import { types } from "../types";
-import { Item } from "../types/Item";
+import { Item } from "../tectonic/Item";
+import { PokemonType } from "../tectonic/PokemonType";
+import { TectonicData } from "../tectonic/TectonicData";
 import { PartyPokemon } from "../types/PartyPokemon";
-import { PokemonType } from "../types/PokemonType";
 
 const itemTypes: Record<string, string> = {
     OCCABERRY: "FIRE",
@@ -30,9 +30,10 @@ const itemTypes: Record<string, string> = {
 
 export class SuperEffectiveResistItem extends Item {
     resistedType: PokemonType;
+
     constructor(item: LoadedItem) {
         super(item);
-        this.resistedType = types[itemTypes[item.key]];
+        this.resistedType = TectonicData.types[itemTypes[item.key]];
     }
 
     public defensiveMultiplier(

@@ -1,6 +1,6 @@
+import { PokemonType } from "@/app/data/tectonic/PokemonType";
 import { calcBestMoveMatchup } from "@/app/data/typeChart";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
-import { PokemonType } from "@/app/data/types/PokemonType";
 
 function compare(num: number, total: "nve" | "se") {
     if (total === "se") {

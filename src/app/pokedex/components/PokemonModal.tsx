@@ -1,14 +1,8 @@
-import { nullAbility } from "@/app/data/abilities";
-import { encounters } from "@/app/data/encounters";
-import { items } from "@/app/data/items";
-import { moves } from "@/app/data/moves";
-import { pokemon } from "@/app/data/pokemon";
-import { getSignatureAbilities } from "@/app/data/signatures";
+import { Ability } from "@/app/data/tectonic/Ability";
+import { EncounterMap } from "@/app/data/tectonic/Encounter";
+import { Pokemon } from "@/app/data/tectonic/Pokemon";
+import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { calcTypeMatchup } from "@/app/data/typeChart";
-import { types } from "@/app/data/types";
-import { Ability } from "@/app/data/types/Ability";
-import { EncounterMap } from "@/app/data/types/Encounter";
-import { Pokemon } from "@/app/data/types/Pokemon";
 import { negativeMod } from "@/app/data/util";
 import BasicButton from "@/components/BasicButton";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
@@ -23,7 +17,6 @@ import TabContent from "./TabContent";
 import TypeChartCell from "./TypeChartCell";
 
 interface PokemonModalProps {
-    allMons: Record<string, Pokemon>;
     pokemon: Pokemon | null;
     handlePokemonClick: (pokemon: Pokemon | null) => void;
 }
@@ -41,13 +34,13 @@ const tabs = [
 ] as const;
 export type PokemonTabName = (typeof tabs)[number];
 
-const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, handlePokemonClick }) => {
+const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemonClick }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isRendered, setIsRendered] = useState(false);
     const [currentPokemon, setCurrentPokemon] = useState(mon);
-    const [selectedDefAbility, setSelectedDefAbility] = useState<Ability>(currentPokemon?.abilities[0] ?? nullAbility);
+    const [selectedDefAbility, setSelectedDefAbility] = useState<Ability>(currentPokemon?.abilities[0] ?? Ability.NULL);
     const [selectedStabAbility, setSelectedStabAbility] = useState<Ability>(
-        currentPokemon?.abilities[0] ?? nullAbility
+        currentPokemon?.abilities[0] ?? Ability.NULL
     );
     const [activeTab, setActiveTab] = useState<PokemonTabName>("Info");
     const [currentForm, setCurrentForm] = useState<number>(0);
@@ -86,14 +79,14 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
 
     if (!isRendered || !currentPokemon) return null;
 
-    const currentEncounters = Object.values(encounters).filter((e) =>
+    const currentEncounters = Object.values(TectonicData.encounters).filter((e) =>
         Object.values(e.tables).some((t) => t.encounters.some((enc) => enc.pokemon === currentPokemon.id))
     );
 
     const prevoEncounters: Record<string, EncounterMap[]> = {};
     currentPokemon.getEvoNode().callParents((node) => {
-        const currentSpecies = pokemon[node.getData().pokemon];
-        const newEncounters = Object.values(encounters).filter((e) =>
+        const currentSpecies = TectonicData.pokemon[node.getData().pokemon];
+        const newEncounters = Object.values(TectonicData.encounters).filter((e) =>
             Object.values(e.tables).some((t) => t.encounters.some((enc) => enc.pokemon === currentSpecies.id))
         );
         if (newEncounters.length > 0) {
@@ -102,7 +95,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
     });
 
     const stats = currentPokemon.getStats(currentForm);
-    const realTypes = Object.values(types).filter((t) => t.isRealType);
+    const realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
     const realTypesSlices = [realTypes.slice(0, realTypes.length / 2), realTypes.slice(realTypes.length / 2)];
 
     const defMatchupCalcs: Record<string, Record<string, number>> = {};
@@ -273,9 +266,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                                 <div key={a.id}>
                                     <h3
                                         className={`font-semibold ${
-                                            a.id in getSignatureAbilities()
-                                                ? "text-yellow-500"
-                                                : "text-gray-800 dark:text-gray-100"
+                                            a.isSignature ? "text-yellow-500" : "text-gray-800 dark:text-gray-100"
                                         }`}
                                     >
                                         {a.name}
@@ -422,9 +413,6 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                                                     {branch.map((node, index) => (
                                                         <PokemonEvolution
                                                             key={index}
-                                                            pokemon={allMons}
-                                                            moves={moves}
-                                                            items={items}
                                                             node={node}
                                                             index={index}
                                                             onClick={handlePokemonClick}
@@ -442,9 +430,9 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ allMons, pokemon: mon, hand
                             {Object.entries(prevoEncounters).map(([prevo, encs]) => (
                                 <div key={prevo}>
                                     <h4 className="font-semibold text-gray-800 dark:text-gray-100">
-                                        Previous Evolution - {pokemon[prevo].name}
+                                        Previous Evolution - {TectonicData.pokemon[prevo].name}
                                     </h4>
-                                    <EncounterDisplay encounters={encs} pokemon={pokemon[prevo]} />
+                                    <EncounterDisplay encounters={encs} pokemon={TectonicData.pokemon[prevo]} />
                                 </div>
                             ))}
                         </TabContent>

@@ -1,6 +1,6 @@
+import { PokemonType } from "@/app/data/tectonic/PokemonType";
 import { calcTypeMatchup } from "@/app/data/typeChart";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
-import { PokemonType } from "@/app/data/types/PokemonType";
 
 function compare(num: number, total: "weak" | "strong") {
     if (total === "weak") {

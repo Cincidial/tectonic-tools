@@ -1,13 +1,11 @@
-import { abilities } from "./abilities";
-import { nullForm } from "./forms";
-import { items, nullItem } from "./items";
-import { moves, nullMove } from "./moves";
-import { nullPokemon, pokemon } from "./pokemon";
-import { nullType, types } from "./types";
+import { Item } from "./tectonic/Item";
+import { Move } from "./tectonic/Move";
+import { Pokemon, Stat, StylePoints } from "./tectonic/Pokemon";
+import { PokemonType } from "./tectonic/PokemonType";
+import { TectonicData } from "./tectonic/TectonicData";
 import { PartyPokemon } from "./types/PartyPokemon";
-import { Stat, StylePoints } from "./types/Pokemon";
 import { convertBase64UrlToBuffer, convertToBase64Url } from "./util";
-import { version, VersionMap, versionMaps } from "./versions";
+import { VersionMap, versionMaps } from "./versions";
 
 export const MIN_LEVEL = 1;
 export const MAX_LEVEL = 70;
@@ -77,11 +75,11 @@ export function styleFromStat(stat: Stat): keyof StylePoints {
 }
 
 export interface SavedPartyPokemon {
-    pokemon: keyof typeof pokemon;
-    moves: Array<keyof typeof moves>;
-    ability: keyof typeof abilities;
-    items: Array<keyof typeof items>;
-    itemType?: keyof typeof types;
+    pokemon: keyof typeof TectonicData.pokemon;
+    moves: Array<keyof typeof TectonicData.moves>;
+    ability: keyof typeof TectonicData.abilities;
+    items: Array<keyof typeof TectonicData.items>;
+    itemType?: keyof typeof TectonicData.types;
     form: number;
     level: number;
     sp: number[];
@@ -122,9 +120,9 @@ function encodeChunk(version: VersionMap, view: DataView<ArrayBuffer>, byteOffse
     view.setUint32(byteOffset, second_u32);
     byteOffset += 4;
 
-    const hasSecondItem = data.items.length > 1 && data.items[1].id != nullItem.id;
-    const hasItem1Type = data.itemType.id != nullType.id; // always true in practice
-    const hasForm = data.form != nullForm.formId && data.form != -1;
+    const hasSecondItem = data.items.length > 1 && data.items[1].id != Item.NULL.id;
+    const hasItem1Type = data.itemType.id != PokemonType.NULL.id; // always true in practice
+    const hasForm = data.form != Pokemon.NULL.formId && data.form != -1;
 
     third_u32 |= getMonMoveShiftValue(2, MOVE3_SHIFT, MOVE3_MASK);
     third_u32 |= getMonMoveShiftValue(3, MOVE4_SHIFT, MOVE4_MASK);
@@ -158,8 +156,8 @@ function encodeChunk(version: VersionMap, view: DataView<ArrayBuffer>, byteOffse
 export function encodeTeam(party: PartyPokemon[]): string {
     const view = new DataView(new ArrayBuffer(1, { maxByteLength: MAX_TEAM_BYTES }));
 
-    const versionSplit = version.replace("dev", "").split(".");
-    let versionU16 = version.includes("-dev") ? VERSION_DEV_MASK : 0;
+    const versionSplit = TectonicData.version.replace("dev", "").split(".");
+    let versionU16 = TectonicData.version.includes("-dev") ? VERSION_DEV_MASK : 0;
     versionU16 |= (parseInt(versionSplit[0]) & 0x1f) << VERSION_MAJOR_SHIFT;
     versionU16 |= (parseInt(versionSplit[1]) & 0x1f) << VERSION_MINOR_SHIFT;
     versionU16 |= (parseInt(versionSplit[2]) & 0x1f) << VERSION_PATCH_SHIFT;
@@ -168,9 +166,9 @@ export function encodeTeam(party: PartyPokemon[]): string {
 
     let byteOffset = 2;
     party
-        .filter((x) => x.species.id != nullPokemon.id)
+        .filter((x) => x.species.id != Pokemon.NULL.id)
         .forEach((x) => {
-            byteOffset = encodeChunk(versionMaps[version], view, byteOffset, x);
+            byteOffset = encodeChunk(versionMaps[TectonicData.version], view, byteOffset, x);
         });
 
     return convertToBase64Url(view.buffer);
@@ -210,14 +208,14 @@ const decodeChunk = (
     byteOffset += 4;
 
     if (hasItem2) {
-        mon.items[1] = items[version.keys.item[view.getUint8(byteOffset)]];
+        mon.items[1] = TectonicData.items[version.keys.item[view.getUint8(byteOffset)]];
         byteOffset++;
     }
     if (hasItem1Type) {
         const byte = view.getUint8(byteOffset);
         const type = Object.keys(version.indices.type).find((x) => version.indices.type[x] == byte);
         if (type != undefined) {
-            mon.itemType = types[type];
+            mon.itemType = TectonicData.types[type];
         }
 
         byteOffset++;
@@ -229,7 +227,7 @@ const decodeChunk = (
     }
 
     const pokemonKey = version.keys.pokemon[pokemonDexNum];
-    const loadedMon = pokemon[pokemonKey];
+    const loadedMon = TectonicData.pokemon[pokemonKey];
 
     mon.species = loadedMon;
     const formIndex = loadedMon.forms.findIndex((f) => f.formId === formId);
@@ -240,11 +238,11 @@ const decodeChunk = (
     } else {
         mon.ability = abilities[pokemonAbilityIndex];
     }
-    mon.moves[0] = moves[version.keys.move[loadedMon.id][pokemonMove1Index]] || nullMove;
-    mon.moves[1] = moves[version.keys.move[loadedMon.id][pokemonMove2Index]] || nullMove;
-    mon.moves[2] = moves[version.keys.move[loadedMon.id][pokemonMove3Index]] || nullMove;
-    mon.moves[3] = moves[version.keys.move[loadedMon.id][pokemonMove4Index]] || nullMove;
-    mon.items[0] = items[version.keys.item[heldItem1Index]] || nullItem;
+    mon.moves[0] = TectonicData.moves[version.keys.move[loadedMon.id][pokemonMove1Index]] || Move.NULL;
+    mon.moves[1] = TectonicData.moves[version.keys.move[loadedMon.id][pokemonMove2Index]] || Move.NULL;
+    mon.moves[2] = TectonicData.moves[version.keys.move[loadedMon.id][pokemonMove3Index]] || Move.NULL;
+    mon.moves[3] = TectonicData.moves[version.keys.move[loadedMon.id][pokemonMove4Index]] || Move.NULL;
+    mon.items[0] = TectonicData.items[version.keys.item[heldItem1Index]] || Item.NULL;
     mon.stylePoints = {
         hp: styleHp,
         attacks: styleAtk,

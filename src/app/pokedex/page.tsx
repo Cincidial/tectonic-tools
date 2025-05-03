@@ -1,28 +1,6 @@
 "use client";
 
 import { getTypeColorClass } from "@/components/colours";
-import InlineLink from "@/components/InlineLink";
-import InternalLink from "@/components/InternalLink";
-import type { NextPage } from "next";
-import Head from "next/head";
-import { useEffect, useMemo, useState } from "react";
-import { moves } from "../data/moves";
-import { pokemon } from "../data/pokemon";
-import { Move } from "../data/types/Move";
-import { Pokemon } from "../data/types/Pokemon";
-import PokemonModal from "./components/PokemonModal";
-import PokemonTable from "./components/PokemonTable";
-import TabContent from "./components/TabContent";
-import TableCell from "./components/TableCell";
-import TableHeader from "./components/TableHeader";
-
-export interface PokemonTableProps {
-    mons: Pokemon[];
-    onRowClick: (pokemon: Pokemon) => void;
-}
-
-import { tribes } from "@/app/data/tribes";
-import { types } from "@/app/data/types";
 import {
     abilityNameFilter,
     allMovesFilter,
@@ -31,15 +9,31 @@ import {
     PokemonFilterType,
     tribesFilter,
 } from "@/components/filters";
+import InlineLink from "@/components/InlineLink";
+import InternalLink from "@/components/InternalLink";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
+import type { NextPage } from "next";
+import Head from "next/head";
 import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import { FilterInput } from "../../components/FilterInput";
-import { abilities } from "../data/abilities";
-import { items } from "../data/items";
-import { Ability } from "../data/types/Ability";
-import { Item } from "../data/types/Item";
-import { Tribe } from "../data/types/Tribe";
+import { Ability } from "../data/tectonic/Ability";
+import { Item } from "../data/tectonic/Item";
+import { Move } from "../data/tectonic/Move";
+import { Pokemon } from "../data/tectonic/Pokemon";
+import { TectonicData } from "../data/tectonic/TectonicData";
+import { Tribe } from "../data/tectonic/Tribe";
+import PokemonModal from "./components/PokemonModal";
+import PokemonTable from "./components/PokemonTable";
+import TabContent from "./components/TabContent";
+import TableCell from "./components/TableCell";
+import TableHeader from "./components/TableHeader";
 import TypeChartCell from "./components/TypeChartCell";
+
+export interface PokemonTableProps {
+    mons: Pokemon[];
+    onRowClick: (pokemon: Pokemon) => void;
+}
 
 const tabNames = ["Pokemon", "Moves", "Abilities", "Items", "Tribes", "Type Chart"];
 
@@ -58,7 +52,7 @@ const Home: NextPage = () => {
         setFilters((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const mons = Object.values(pokemon);
+    const mons = Object.values(TectonicData.pokemon);
     const filteredPokemon = useMemo(() => {
         const filtered = mons.filter((mon) => {
             return filters.every((filter) => {
@@ -101,11 +95,11 @@ const Home: NextPage = () => {
     };
 
     // filter for items that can be found on wild pokemon
-    const validItems = Object.values(items).filter((i) =>
-        Object.values(pokemon).some((p) => p.items.some((pi) => pi.name === i.name))
+    const validItems = Object.values(TectonicData.items).filter((i) =>
+        Object.values(TectonicData.pokemon).some((p) => p.items.some((pi) => pi.name === i.name))
     );
 
-    const realTypes = Object.values(types).filter((t) => t.isRealType);
+    const realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
             <Head>
@@ -156,11 +150,7 @@ const Home: NextPage = () => {
                         <PokemonTable mons={filteredPokemon} onRowClick={handlePokemonClick} />
                     </div>
                     {selectedPokemon && (
-                        <PokemonModal
-                            allMons={pokemon}
-                            pokemon={selectedPokemon}
-                            handlePokemonClick={handlePokemonClick}
-                        />
+                        <PokemonModal pokemon={selectedPokemon} handlePokemonClick={handlePokemonClick} />
                     )}
                 </TabContent>
                 <TabContent tab="Moves" activeTab={activeTab}>
@@ -178,7 +168,7 @@ const Home: NextPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {Object.values(moves).map((m) => (
+                                {Object.values(TectonicData.moves).map((m) => (
                                     <tr
                                         key={m.id}
                                         onClick={() => handleMoveClick(m)}
@@ -214,7 +204,7 @@ const Home: NextPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {Object.values(abilities).map((a) => (
+                                {Object.values(TectonicData.abilities).map((a) => (
                                     <tr
                                         key={a.id}
                                         onClick={() => handleAbilityClick(a)}
@@ -268,7 +258,7 @@ const Home: NextPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {Object.values(tribes).map((t) => (
+                                {Object.values(TectonicData.tribes).map((t) => (
                                     <tr
                                         key={t.id}
                                         onClick={() => handleTribeClick(t)}

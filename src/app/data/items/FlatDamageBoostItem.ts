@@ -1,6 +1,6 @@
 import { DamageMultipliers } from "@/app/damagecalc/damageCalc";
-import { LoadedItem } from "../loading/items";
-import { Item } from "../types/Item";
+import { LoadedItem } from "@/preload/loadTectonicRepoData";
+import { Item } from "../tectonic/Item";
 
 const itemBoosts: Record<string, number> = {
     LIFEORB: 1.3,
@@ -8,6 +8,7 @@ const itemBoosts: Record<string, number> = {
 
 export class FlatDamageBoostItem extends Item {
     boostMult: number;
+
     constructor(item: LoadedItem) {
         super(item);
         this.boostMult = itemBoosts[item.key];

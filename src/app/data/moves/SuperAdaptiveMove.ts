@@ -1,14 +1,9 @@
 import { MoveData } from "@/app/damagecalc/components/MoveCard";
-import { LoadedMove } from "../loading/moves";
-import { Move } from "../types/Move";
+import { Move } from "../tectonic/Move";
 import { PartyPokemon } from "../types/PartyPokemon";
 
 // targets whichever is lower of phys or spec
 export class SuperAdaptiveMove extends Move {
-    constructor(move: LoadedMove) {
-        super(move);
-    }
-
     public getDamageCategory(move: MoveData, user: PartyPokemon, target: PartyPokemon): "Physical" | "Special" {
         const userStats = user.getStats(move, "player");
         const targetStats = target.getStats(move, "opponent");

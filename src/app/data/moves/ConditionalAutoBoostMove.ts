@@ -1,7 +1,7 @@
+import { LoadedMove } from "@/preload/loadTectonicRepoData";
 import { BattleState } from "../battleState";
 import { StatusEffect } from "../conditions";
-import { LoadedMove } from "../loading/moves";
-import { Move } from "../types/Move";
+import { Move } from "../tectonic/Move";
 import { PartyPokemon } from "../types/PartyPokemon";
 import { isNull } from "../util";
 
@@ -46,6 +46,7 @@ const moveBoosts: Record<string, number> = {
 export class ConditionalAutoBoostMove extends Move {
     condition: ConditionFunction;
     boost: number;
+
     constructor(move: LoadedMove) {
         super(move);
         this.condition = moveConditions[move.functionCode];

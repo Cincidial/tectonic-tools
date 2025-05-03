@@ -1,4 +1,4 @@
-import { PokemonType } from "@/app/data/types/PokemonType";
+import { PokemonType } from "@/app/data/tectonic/PokemonType";
 import { isNull } from "@/app/data/util";
 import { getTypeColorClass } from "./colours";
 import BugTypeIcon from "./type_icons/components/BugTypeIcon";

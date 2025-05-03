@@ -1,7 +1,7 @@
 import { MoveData } from "@/app/damagecalc/components/MoveCard";
 import { DamageMultipliers } from "@/app/damagecalc/damageCalc";
-import { LoadedItem } from "../loading/items";
-import { Item } from "../types/Item";
+import { LoadedItem } from "@/preload/loadTectonicRepoData";
+import { Item } from "../tectonic/Item";
 import { PartyPokemon } from "../types/PartyPokemon";
 
 const itemCategories: Record<string, ["Physical" | "Special", number]> = {
@@ -14,6 +14,7 @@ const itemCategories: Record<string, ["Physical" | "Special", number]> = {
 export class CategoryBoostingItem extends Item {
     boostedCategory: "Physical" | "Special";
     boostMult: number;
+
     constructor(item: LoadedItem) {
         super(item);
         const boostInfo = itemCategories[item.key];

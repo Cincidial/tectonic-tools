@@ -1,17 +1,16 @@
 import { BattleState } from "@/app/data/battleState";
-import { LoadedMove } from "../loading/moves";
-import { moves } from "../moves";
-import { nullType, types } from "../types";
-import { Move } from "../types/Move";
+import { LoadedMove } from "@/preload/loadTectonicRepoData";
+import { Move } from "../tectonic/Move";
+import { PokemonType } from "../tectonic/PokemonType";
+import { TectonicData } from "../tectonic/TectonicData";
 import { PartyPokemon } from "../types/PartyPokemon";
-import { PokemonType } from "../types/PokemonType";
 import { isNull } from "../util";
 
 type MoveTypeFunction = (user: PartyPokemon, battleState: BattleState, name: string) => PokemonType | undefined;
 
 // return the item type iff user is holding the relevant item
 function typeFromItemType(user: PartyPokemon, typeItem: string): PokemonType | undefined {
-    const itemType = user.items.some((i) => i.id === typeItem) ? user.itemType : nullType;
+    const itemType = user.items.some((i) => i.id === typeItem) ? user.itemType : PokemonType.NULL;
     if (!isNull(itemType)) {
         return itemType;
     }
@@ -118,7 +117,7 @@ const gemTypes = {
 function typeFromItemMap(user: PartyPokemon, map: Record<string, string>): PokemonType | undefined {
     for (const item of user.items) {
         if (item.id in map) {
-            return types[map[item.id]];
+            return TectonicData.types[map[item.id]];
         }
     }
 }
@@ -166,12 +165,12 @@ const weatherTypes: Record<string, string> = {
 
 function typeFromWeather(battleState: BattleState) {
     if (battleState.weather in weatherTypes) {
-        return types[weatherTypes[battleState.weather]];
+        return TectonicData.types[weatherTypes[battleState.weather]];
     }
-    return types["NORMAL"];
+    return TectonicData.types["NORMAL"];
 }
 
-const variableTypeMoves: Record<keyof typeof moves, MoveTypeFunction> = {
+const variableTypeMoves: Record<string, MoveTypeFunction> = {
     TypeDependsOnUserSpecialItem: handleTypeDependsOnUserSpecialItem,
     NaturalGift: (user: PartyPokemon) => typeFromItemMap(user, berryTypes),
     TypeIsUserFirstType: typeFromUser,

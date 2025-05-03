@@ -1,5 +1,5 @@
-import { PokemonType } from "@/app/data/types/PokemonType";
-import { Pokemon } from "../app/data/types/Pokemon";
+import { Pokemon } from "@/app/data/tectonic/Pokemon";
+import { PokemonType } from "@/app/data/tectonic/PokemonType";
 
 export function getTypeColorClass(type: PokemonType, prefix: string, suffix: string | null = null): string {
     return `${prefix}-${type.id.toLowerCase()}${suffix ? "-" + suffix : ""}`;

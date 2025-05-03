@@ -1,5 +1,5 @@
 import { BattleState } from "@/app/data/battleState";
-import { Move } from "../types/Move";
+import { Move } from "../tectonic/Move";
 import { PartyPokemon } from "../types/PartyPokemon";
 
 export class UserBelowHalfDoubleMove extends Move {

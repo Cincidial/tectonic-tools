@@ -1,11 +1,11 @@
 import { ExtraEffectiveMove } from "./moves/ExtraEffectiveMove";
 import { ExtraTypeMove } from "./moves/ExtraTypeMove";
 import { HitsFliersMove } from "./moves/HitsFliersMove";
+import { Ability } from "./tectonic/Ability";
+import { Move } from "./tectonic/Move";
+import { PokemonType } from "./tectonic/PokemonType";
 import { TectonicData } from "./tectonic/TectonicData";
-import { Ability } from "./types/Ability";
-import { Move } from "./types/Move";
 import { PartyPokemon } from "./types/PartyPokemon";
-import { PokemonType } from "./types/PokemonType";
 import { isNull } from "./util";
 
 interface AttackerData {

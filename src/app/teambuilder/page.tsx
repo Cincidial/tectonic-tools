@@ -11,16 +11,15 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 import PokemonCard from "../../components/PokemonCard";
-import { abilities, nullAbility } from "../data/abilities";
-import { items, nullItem } from "../data/items";
-import { moves, nullMove } from "../data/moves";
-import { nullPokemon, pokemon } from "../data/pokemon";
 import { decodeTeam, encodeTeam, MAX_LEVEL, SavedPartyPokemon } from "../data/teamExport";
-import { tribes } from "../data/tribes";
+import { Ability } from "../data/tectonic/Ability";
+import { Item } from "../data/tectonic/Item";
+import { Move } from "../data/tectonic/Move";
+import { Pokemon } from "../data/tectonic/Pokemon";
+import { PokemonType } from "../data/tectonic/PokemonType";
+import { TectonicData } from "../data/tectonic/TectonicData";
 import { calcBestMoveMatchup, calcTypeMatchup } from "../data/typeChart";
-import { nullType, types } from "../data/types";
 import { PartyPokemon } from "../data/types/PartyPokemon";
-import { Pokemon } from "../data/types/Pokemon";
 import { isNull } from "../data/util";
 import TypeChartCell from "../pokedex/components/TypeChartCell";
 import AtkTotalCell from "./components/AtkTotalCell";
@@ -36,7 +35,7 @@ const TeamBuilder: NextPage = () => {
 
     const [filters, setFilters] = useState<PokemonFilterType[]>([]);
     const [currentFilter, setCurrentFilter] = useState<PokemonFilterType>(AVAILABLE_FILTERS[0]);
-    const [filterPokemon, setFilterPokemon] = useState<Pokemon>(nullPokemon);
+    const [filterPokemon, setFilterPokemon] = useState<Pokemon>(Pokemon.NULL);
 
     const handleAddFilter = (filter: PokemonFilterType, value: string) => {
         setFilters((prev) => [...prev, { ...filter, value }]);
@@ -78,13 +77,13 @@ const TeamBuilder: NextPage = () => {
     }
 
     // Mutant type is secret and irrelevant to defensive matchups
-    const realTypes = Object.values(types).filter((t) => t.isRealType);
+    const realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
     const validCards = cards.filter((c) => !isNull(c.species));
-    const tribeCounts = Object.fromEntries(Object.values(tribes).map((t) => [t.id, 0]));
+    const tribeCounts = Object.fromEntries(Object.values(TectonicData.tribes).map((t) => [t.id, 0]));
     for (const card of cards) {
         // count as all tribes if wild card equipped
         if (card.items.some((i) => i.id === "WILDCARD")) {
-            for (const tribe in tribes) {
+            for (const tribe in TectonicData.tribes) {
                 tribeCounts[tribe]++;
             }
         } else {
@@ -146,11 +145,11 @@ const TeamBuilder: NextPage = () => {
                 const level = c.level || MAX_LEVEL;
                 const sp = c.sp || [10, 10, 10, 10, 10];
                 return new PartyPokemon({
-                    species: pokemon[c.pokemon] || nullPokemon,
-                    moves: c.moves.map((m) => moves[m] || nullMove),
-                    ability: abilities[c.ability] || nullAbility,
-                    items: c.items.map((i) => items[i] || nullItem),
-                    itemType: c.itemType ? types[c.itemType] || nullType : nullType,
+                    species: TectonicData.pokemon[c.pokemon] || Pokemon.NULL,
+                    moves: c.moves.map((m) => TectonicData.moves[m] || Move.NULL),
+                    ability: TectonicData.abilities[c.ability] || Ability.NULL,
+                    items: c.items.map((i) => TectonicData.items[i] || Item.NULL),
+                    itemType: c.itemType ? TectonicData.types[c.itemType] || PokemonType.NULL : PokemonType.NULL,
                     form: c.form,
                     level: level,
                     stylePoints: {
@@ -193,7 +192,7 @@ const TeamBuilder: NextPage = () => {
         }
     }
 
-    const mons = Object.values(pokemon);
+    const mons = Object.values(TectonicData.pokemon);
     const filteredPokemon = useMemo(() => {
         const filtered = mons.filter((mon) => {
             return filters.every((filter) => {
@@ -249,7 +248,7 @@ const TeamBuilder: NextPage = () => {
                         <div className="flex flex-row">
                             <Dropdown
                                 value={filterPokemon.id}
-                                onChange={(e) => setFilterPokemon(pokemon[e.target.value] || nullPokemon)}
+                                onChange={(e) => setFilterPokemon(TectonicData.pokemon[e.target.value] || Pokemon.NULL)}
                             >
                                 <option value="">Select Pokémon</option>
                                 {filteredPokemon.map((p) => (

@@ -1,6 +1,6 @@
 import { BattleState } from "@/app/data/battleState";
-import { LoadedMove } from "../loading/moves";
-import { Move } from "../types/Move";
+import { LoadedMove } from "@/preload/loadTectonicRepoData";
+import { Move } from "../tectonic/Move";
 import { PartyPokemon } from "../types/PartyPokemon";
 
 const moveConditions: Record<string, string> = {
@@ -39,6 +39,7 @@ export class ConditionalInputBoostMove extends Move {
     customVarType: string = "boolean";
     needsInput: boolean = true;
     boost: number;
+
     constructor(move: LoadedMove) {
         super(move);
         this.customVarName = moveConditions[move.functionCode];

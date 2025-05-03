@@ -1,7 +1,7 @@
-import { LoadedMove } from "../loading/moves";
-import { types } from "../types";
-import { Move } from "../types/Move";
-import { PokemonType } from "../types/PokemonType";
+import { LoadedMove } from "@/preload/loadTectonicRepoData";
+import { Move } from "../tectonic/Move";
+import { PokemonType } from "../tectonic/PokemonType";
+import { TectonicData } from "../tectonic/TectonicData";
 
 const extraEffectMoveCodes: Record<string, string> = {
     SuperEffectiveAgainstFighting: "FIGHTING",
@@ -12,9 +12,10 @@ const extraEffectMoveCodes: Record<string, string> = {
 
 export class ExtraEffectiveMove extends Move {
     extraEffect: PokemonType;
+
     constructor(move: LoadedMove) {
         super(move);
-        this.extraEffect = types[extraEffectMoveCodes[move.functionCode]];
+        this.extraEffect = TectonicData.types[extraEffectMoveCodes[move.functionCode]];
     }
 
     // no special functionality, checked in type calc

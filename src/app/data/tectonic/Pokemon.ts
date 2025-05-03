@@ -1,11 +1,11 @@
 import { LoadedPokemon } from "@/preload/loadTectonicRepoData";
 import { calculateHP, calculateStat } from "../stats";
 import { TectonicData } from "../tectonic/TectonicData";
+import { NTreeArrayNode, NTreeNode } from "../types/NTreeNode";
 import { uniq } from "../util";
 import { Ability } from "./Ability";
 import { Item } from "./Item";
 import { Move } from "./Move";
-import { NTreeArrayNode, NTreeNode } from "./NTreeNode";
 import { PokemonType } from "./PokemonType";
 import { Tribe } from "./Tribe";
 
@@ -91,7 +91,7 @@ export class Pokemon {
     items: Item[] = [];
     evolutionTree: NTreeNode<PokemonEvolutionTerms> = null!;
 
-    static NULL: Pokemon = new Pokemon();
+    static NULL: Pokemon = null!;
 
     constructor(loaded?: LoadedPokemon) {
         if (!loaded) return;
@@ -172,10 +172,6 @@ export class Pokemon {
 
     public getEvoNode(): NTreeNode<PokemonEvolutionTerms> {
         return this.evolutionTree.findDepthFirst((node) => node.getData().pokemon == this.id)!;
-    }
-
-    public isFinalEvo(): boolean {
-        return this.getEvoNode().isLeaf();
     }
 
     public getFormName = getterFactory(this, "formName");

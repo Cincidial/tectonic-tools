@@ -1,6 +1,6 @@
-import { LoadedItem } from "../loading/items";
-import { Item } from "../types/Item";
-import { Stat, Stats } from "../types/Pokemon";
+import { LoadedItem } from "@/preload/loadTectonicRepoData";
+import { Item } from "../tectonic/Item";
+import { Stat, Stats } from "../tectonic/Pokemon";
 
 const statBoostItems: Record<string, [Stat, number]> = {
     ASSAULTVEST: ["spdef", 1.5],
@@ -15,6 +15,7 @@ const statBoostItems: Record<string, [Stat, number]> = {
 export class StatBoostItem extends Item {
     boostedStat: Stat;
     boostAmount: number;
+
     constructor(item: LoadedItem) {
         super(item);
         const boostInfo = statBoostItems[item.key];

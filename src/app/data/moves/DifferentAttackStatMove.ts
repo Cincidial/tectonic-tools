@@ -1,6 +1,6 @@
-import { LoadedMove } from "../loading/moves";
-import { Move } from "../types/Move";
-import { Stat } from "../types/Pokemon";
+import { LoadedMove } from "@/preload/loadTectonicRepoData";
+import { Move } from "../tectonic/Move";
+import { Stat } from "../tectonic/Pokemon";
 
 const differentAttackStatMoveCodes: Record<string, Stat> = {
     AttacksWithDefense: "defense",
@@ -9,6 +9,7 @@ const differentAttackStatMoveCodes: Record<string, Stat> = {
 
 export class DifferentAttackingStatMove extends Move {
     attackStat: Stat;
+
     constructor(move: LoadedMove) {
         super(move);
         this.attackStat = differentAttackStatMoveCodes[move.functionCode];

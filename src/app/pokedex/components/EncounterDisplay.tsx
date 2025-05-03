@@ -1,5 +1,5 @@
-import { EncounterMap, EncounterTable } from "@/app/data/types/Encounter";
-import { Pokemon } from "@/app/data/types/Pokemon";
+import { EncounterMap, EncounterTable } from "@/app/data/tectonic/Encounter";
+import { Pokemon } from "@/app/data/tectonic/Pokemon";
 
 function printEncChance(table: EncounterTable, currentPokemon: Pokemon) {
     const encs = table.encounters;

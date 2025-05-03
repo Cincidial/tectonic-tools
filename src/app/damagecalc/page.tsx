@@ -5,6 +5,7 @@ import { FilterInput } from "@/components/FilterInput";
 import { AVAILABLE_FILTERS, PokemonFilterType } from "@/components/filters";
 import InlineLink from "@/components/InlineLink";
 import InternalLink from "@/components/InternalLink";
+import { LoadedTrainer } from "@/preload/loadTectonicRepoData";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
@@ -18,19 +19,18 @@ import InputLabel from "../../components/InputLabel";
 import PokemonCard from "../../components/PokemonCard";
 import { BattleBoolean, battleBooleans, BattleBools } from "../data/battleState";
 import { WeatherCondition, weatherConditions } from "../data/conditions";
-import { nullMove } from "../data/moves";
-import { nullPokemon, pokemon } from "../data/pokemon";
 import { decodeTeam } from "../data/teamExport";
-import { nullTrainer, trainers } from "../data/trainers";
+import { Move } from "../data/tectonic/Move";
+import { Pokemon } from "../data/tectonic/Pokemon";
+import { TectonicData } from "../data/tectonic/TectonicData";
+import { Trainer } from "../data/tectonic/Trainer";
 import { PartyPokemon } from "../data/types/PartyPokemon";
-import { Pokemon } from "../data/types/Pokemon";
-import { Trainer } from "../data/types/Trainer";
 import { isNull } from "../data/util";
 import DamageResultComponent from "./components/DamageResult";
 import MoveCard, { MoveData } from "./components/MoveCard";
 import { calculateDamage, Side } from "./damageCalc";
 
-const nullMoveData = { move: nullMove, criticalHit: false, customVar: undefined };
+const nullMoveData = { move: Move.NULL, criticalHit: false, customVar: undefined };
 
 const PokemonDamageCalculator: NextPage = () => {
     const [playerPokemon, setPlayerPokemon] = useState<PartyPokemon>(new PartyPokemon());
@@ -39,8 +39,8 @@ const PokemonDamageCalculator: NextPage = () => {
 
     const [opponentPokemon, setOpponentPokemon] = useState<PartyPokemon>(new PartyPokemon());
 
-    const [playerTeam, setPlayerTeam] = useState<Trainer>(nullTrainer);
-    const [opposingTrainer, setOpposingTrainer] = useState<Trainer>(nullTrainer);
+    const [playerTeam, setPlayerTeam] = useState<Trainer>(Trainer.NULL);
+    const [opposingTrainer, setOpposingTrainer] = useState<Trainer>(Trainer.NULL);
 
     const [battleBools, setBattleBools] = useState<BattleBools>(
         Object.fromEntries(battleBooleans.map((b) => [b, false])) as BattleBools
@@ -52,7 +52,7 @@ const PokemonDamageCalculator: NextPage = () => {
     const [filters, setFilters] = useState<PokemonFilterType[]>([]);
 
     const [currentFilter, setCurrentFilter] = useState<PokemonFilterType>(AVAILABLE_FILTERS[0]);
-    const [filterPokemon, setFilterPokemon] = useState<Pokemon>(nullPokemon);
+    const [filterPokemon, setFilterPokemon] = useState<Pokemon>(Pokemon.NULL);
 
     const handleAddFilter = (filter: PokemonFilterType, value: string) => {
         setFilters((prev) => [...prev, { ...filter, value }]);
@@ -62,7 +62,7 @@ const PokemonDamageCalculator: NextPage = () => {
         setFilters((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const mons = Object.values(pokemon);
+    const mons = Object.values(TectonicData.pokemon);
     const filteredPokemon = useMemo(() => {
         const filtered = mons.filter((mon) => {
             return filters.every((filter) => {
@@ -118,35 +118,36 @@ const PokemonDamageCalculator: NextPage = () => {
 
     function importTeam() {
         const teamCards = decodeTeam(teamCode);
-        const playerTrainer = new Trainer({
-            key: "val",
-            class: "POKEMONTRAINER",
-            name: "Val",
-            policies: [],
-            flags: [],
-            pokemon: teamCards.map((c) => {
-                return {
-                    id: c.species.id,
-                    level: c.level,
-                    items: c.items.map((i) => i.id),
-                    itemType: c.itemType.id,
-                    moves: c.moves.map((m) => m.id),
-                    sp: [
-                        c.stylePoints.hp,
-                        c.stylePoints.attacks,
-                        c.stylePoints.defense,
-                        c.stylePoints.speed,
-                        c.stylePoints.attacks,
-                        c.stylePoints.spdef,
-                    ],
-                };
-            }),
+        const data = new LoadedTrainer();
+        data.key = "val";
+        data.class = "POKEMONTRAINER";
+        data.name = "Val";
+        data.policies = [];
+        data.flags = [];
+        data.pokemon = teamCards.map((c) => {
+            return {
+                id: c.species.id,
+                level: c.level,
+                items: c.items.map((i) => i.id),
+                itemType: c.itemType.id,
+                moves: c.moves.map((m) => m.id),
+                sp: [
+                    c.stylePoints.hp,
+                    c.stylePoints.attacks,
+                    c.stylePoints.defense,
+                    c.stylePoints.speed,
+                    c.stylePoints.attacks,
+                    c.stylePoints.spdef,
+                ],
+            };
         });
+
+        const playerTrainer = new Trainer(data);
         setPlayerTeam(playerTrainer);
     }
 
     function handleLoadingTrainer(trainer_key: string) {
-        const trainer = trainers[trainer_key] || nullTrainer;
+        const trainer = TectonicData.trainers[trainer_key] || Trainer.NULL;
         if (!isNull(trainer)) {
             setOpposingTrainer(trainer);
         }
@@ -225,7 +226,7 @@ const PokemonDamageCalculator: NextPage = () => {
                         <div className="flex flex-row">
                             <Dropdown
                                 value={filterPokemon.id}
-                                onChange={(e) => setFilterPokemon(pokemon[e.target.value] || nullPokemon)}
+                                onChange={(e) => setFilterPokemon(TectonicData.pokemon[e.target.value] || Pokemon.NULL)}
                             >
                                 <option value="">Select Pokémon</option>
                                 {filteredPokemon.map((p) => (
@@ -383,7 +384,7 @@ const PokemonDamageCalculator: NextPage = () => {
                                             <option value="" className="bg-gray-800">
                                                 Select Trainer
                                             </option>
-                                            {Object.values(trainers).map((t) => (
+                                            {Object.values(TectonicData.trainers).map((t) => (
                                                 <option key={t.id} value={t.id} className="bg-gray-800">
                                                     {t.displayName()}
                                                 </option>

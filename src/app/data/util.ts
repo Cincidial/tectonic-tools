@@ -1,9 +1,9 @@
-import { Ability } from "./types/Ability";
-import { Item } from "./types/Item";
-import { Move } from "./types/Move";
-import { Pokemon } from "./types/Pokemon";
-import { PokemonType } from "./types/PokemonType";
-import { Trainer } from "./types/Trainer";
+import { Ability } from "./tectonic/Ability";
+import { Item } from "./tectonic/Item";
+import { Move } from "./tectonic/Move";
+import { Pokemon } from "./tectonic/Pokemon";
+import { PokemonType } from "./tectonic/PokemonType";
+import { Trainer } from "./tectonic/Trainer";
 
 export function isNull(o: Pokemon | Move | Trainer | Ability | Item | PokemonType | undefined): boolean {
     return !o || o.name === "";

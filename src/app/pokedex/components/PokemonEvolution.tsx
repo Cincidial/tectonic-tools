@@ -1,15 +1,10 @@
-import { LoadedEvolution } from "@/app/data/loading/pokemon";
-import { Item } from "@/app/data/types/Item";
-import { Move } from "@/app/data/types/Move";
+import { Pokemon, PokemonEvolutionTerms } from "@/app/data/tectonic/Pokemon";
+import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { NTreeNode } from "@/app/data/types/NTreeNode";
-import { Pokemon } from "@/app/data/types/Pokemon";
 import Image from "next/image";
 
 interface PokemonEvolutionProps {
-    pokemon: Record<string, Pokemon>;
-    moves: Record<string, Move>;
-    items: Record<string, Item>;
-    node: NTreeNode<LoadedEvolution>;
+    node: NTreeNode<PokemonEvolutionTerms>;
     index: number;
     onClick: (evo: Pokemon) => void;
 }
@@ -24,8 +19,8 @@ class EvolutionDisplay {
     }
 }
 
-const PokemonEvolution: React.FC<PokemonEvolutionProps> = ({ pokemon, moves, items, node, onClick }) => {
-    function getEvoDisplay(evo: LoadedEvolution): EvolutionDisplay {
+const PokemonEvolution: React.FC<PokemonEvolutionProps> = ({ node, onClick }) => {
+    function getEvoDisplay(evo: PokemonEvolutionTerms): EvolutionDisplay {
         switch (evo.method) {
             case "Level":
             case "Ninjask":
@@ -63,23 +58,36 @@ const PokemonEvolution: React.FC<PokemonEvolutionProps> = ({ pokemon, moves, ite
             case "Beauty":
                 return new EvolutionDisplay("Case leveled up while it has maximum beauty");
             case "HasMove":
-                return new EvolutionDisplay(`Case leveled up while it knows the move ${moves[evo.condition].name}`);
+                return new EvolutionDisplay(
+                    `Case leveled up while it knows the move ${TectonicData.moves[evo.condition].name}`
+                );
             case "HasMoveType":
                 return new EvolutionDisplay(`Case leveled up while it knows a move of the ${evo.condition} type`);
             case "Location":
                 return new EvolutionDisplay("Case leveled up near a special location");
             case "Item":
-                return new EvolutionDisplay(`${items[evo.condition].name}`, evo.condition);
+                return new EvolutionDisplay(`${TectonicData.items[evo.condition].name}`, evo.condition);
             case "ItemMale":
-                return new EvolutionDisplay(`By using a ${items[evo.condition].name} if it's male`, evo.condition);
+                return new EvolutionDisplay(
+                    `By using a ${TectonicData.items[evo.condition].name} if it's male`,
+                    evo.condition
+                );
             case "ItemFemale":
-                return new EvolutionDisplay(`By using a ${items[evo.condition].name} if it's female`, evo.condition);
+                return new EvolutionDisplay(
+                    `By using a ${TectonicData.items[evo.condition].name} if it's female`,
+                    evo.condition
+                );
             case "Trade":
                 return new EvolutionDisplay("Case traded");
             case "TradeItem":
-                return new EvolutionDisplay(`Case traded holding an ${items[evo.condition].name}`, evo.condition);
+                return new EvolutionDisplay(
+                    `Case traded holding an ${TectonicData.items[evo.condition].name}`,
+                    evo.condition
+                );
             case "HasInParty":
-                return new EvolutionDisplay(`Case leveled up while a ${pokemon[evo.condition]} is also in the party`);
+                return new EvolutionDisplay(
+                    `Case leveled up while a ${TectonicData.pokemon[evo.condition]} is also in the party`
+                );
             case "Shedinja":
                 return new EvolutionDisplay("Also if you have an empty Poké Ball and party slot");
             case "Originize":
@@ -101,7 +109,7 @@ const PokemonEvolution: React.FC<PokemonEvolutionProps> = ({ pokemon, moves, ite
                         <></>
                     ) : (
                         <Image
-                            src={items[evoDisplay.itemImg].getImage()}
+                            src={TectonicData.items[evoDisplay.itemImg].getImage()}
                             alt={evoDisplay.itemImg}
                             height="48"
                             width="48"
@@ -113,16 +121,16 @@ const PokemonEvolution: React.FC<PokemonEvolutionProps> = ({ pokemon, moves, ite
             )}
             <div
                 className="text-center hover:bg-blue-50 dark:hover:bg-blue-900 cursor-pointer"
-                onClick={() => onClick(pokemon[node.getData().pokemon])}
+                onClick={() => onClick(TectonicData.pokemon[node.getData().pokemon])}
             >
                 <Image
-                    src={pokemon[node.getData().pokemon].getImage()}
+                    src={TectonicData.pokemon[node.getData().pokemon].getImage()}
                     alt={node.getData().pokemon}
                     height="160"
                     width="160"
                     className="w-24 h-24"
                 />
-                <span>{pokemon[node.getData().pokemon].name}</span>
+                <span>{TectonicData.pokemon[node.getData().pokemon].name}</span>
             </div>
         </>
     );

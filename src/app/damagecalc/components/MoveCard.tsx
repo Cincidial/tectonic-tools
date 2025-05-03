@@ -1,7 +1,6 @@
 import { BattleState } from "@/app/data/battleState";
-import { moves, nullMove } from "@/app/data/moves";
-import { getSignatureMoves } from "@/app/data/signatures";
-import { Move } from "@/app/data/types/Move";
+import { Move } from "@/app/data/tectonic/Move";
+import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { isNull } from "@/app/data/util";
 import Checkbox from "@/components/Checkbox";
@@ -94,7 +93,10 @@ export default function MoveCard({
             {!isNull(userData.species) && (
                 <div className="text-center">
                     <InputLabel>Move</InputLabel>
-                    <Dropdown value={data.move.id} onChange={(e) => updateMove(moves[e.target.value] || nullMove)}>
+                    <Dropdown
+                        value={data.move.id}
+                        onChange={(e) => updateMove(TectonicData.moves[e.target.value] || Move.NULL)}
+                    >
                         <option value="" className="bg-gray-800">
                             Select Move
                         </option>
@@ -103,7 +105,7 @@ export default function MoveCard({
                                 key={m.id}
                                 value={m.id}
                                 className={`bg-gray-800 ${
-                                    m.id in getSignatureMoves()
+                                    m.isSignature
                                         ? "font-semibold text-yellow-500"
                                         : m.isSTAB(userData.species)
                                         ? "font-semibold text-blue-400"

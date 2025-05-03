@@ -1,6 +1,6 @@
-import { LoadedItem } from "../loading/items";
-import { Item } from "../types/Item";
-import { Stat, Stats } from "../types/Pokemon";
+import { LoadedItem } from "@/preload/loadTectonicRepoData";
+import { Item } from "../tectonic/Item";
+import { Stat, Stats } from "../tectonic/Pokemon";
 
 const statLockItems: Record<string, Stat> = {
     POWERLOCK: "attack",

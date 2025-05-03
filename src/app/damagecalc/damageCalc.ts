@@ -1,9 +1,9 @@
 import { BattleState } from "@/app/data/battleState";
 import { WeatherImmuneItem } from "../data/items/WeatherImmuneItem";
 import { MultiHitMove } from "../data/moves/MultiHitMove";
+import { Stat } from "../data/tectonic/Pokemon";
 import { calcTypeMatchup } from "../data/typeChart";
 import { PartyPokemon } from "../data/types/PartyPokemon";
-import { Stat } from "../data/types/Pokemon";
 import { MoveData } from "./components/MoveCard";
 
 export type Side = "player" | "opponent";

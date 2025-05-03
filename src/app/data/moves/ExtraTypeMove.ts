@@ -1,7 +1,7 @@
-import { LoadedMove } from "../loading/moves";
-import { types } from "../types";
-import { Move } from "../types/Move";
-import { PokemonType } from "../types/PokemonType";
+import { LoadedMove } from "@/preload/loadTectonicRepoData";
+import { Move } from "../tectonic/Move";
+import { PokemonType } from "../tectonic/PokemonType";
+import { TectonicData } from "../tectonic/TectonicData";
 
 const extraTypeMoveCodes: Record<string, string> = {
     EffectivenessIncludesFlyingType: "FLYING",
@@ -10,9 +10,10 @@ const extraTypeMoveCodes: Record<string, string> = {
 
 export class ExtraTypeMove extends Move {
     extraType: PokemonType;
+
     constructor(move: LoadedMove) {
         super(move);
-        this.extraType = types[extraTypeMoveCodes[move.functionCode]];
+        this.extraType = TectonicData.types[extraTypeMoveCodes[move.functionCode]];
     }
 
     static moveCodes = Object.keys(extraTypeMoveCodes);

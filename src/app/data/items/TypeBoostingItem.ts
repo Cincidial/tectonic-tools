@@ -1,11 +1,11 @@
 import { MoveData } from "@/app/damagecalc/components/MoveCard";
 import { DamageMultipliers } from "@/app/damagecalc/damageCalc";
+import { LoadedItem } from "@/preload/loadTectonicRepoData";
 import { BattleState } from "../battleState";
-import { LoadedItem } from "../loading/items";
-import { types } from "../types";
-import { Item } from "../types/Item";
+import { Item } from "../tectonic/Item";
+import { PokemonType } from "../tectonic/PokemonType";
+import { TectonicData } from "../tectonic/TectonicData";
 import { PartyPokemon } from "../types/PartyPokemon";
-import { PokemonType } from "../types/PokemonType";
 
 const itemTypes: Record<string, string> = {
     CHARCOAL: "FIRE",
@@ -53,7 +53,7 @@ export class TypeBoostingItem extends Item {
     boostMult: number;
     constructor(item: LoadedItem) {
         super(item);
-        this.boostedType = types[itemTypes[item.key]];
+        this.boostedType = TectonicData.types[itemTypes[item.key]];
         // lazy hardcode to avoid writing out each gem individually
         if (item.key.includes("GEM")) {
             this.boostMult = 1.5;

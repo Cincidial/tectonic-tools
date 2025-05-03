@@ -1,9 +1,7 @@
 "use client";
 
-import { nullMove } from "@/app/data/moves";
-import { getSignatureMoves } from "@/app/data/signatures";
-import { Move, moveCategories, MoveCategory } from "@/app/data/types/Move";
-import { Pokemon } from "@/app/data/types/Pokemon";
+import { Move, moveCategories, MoveCategory } from "@/app/data/tectonic/Move";
+import { Pokemon } from "@/app/data/tectonic/Pokemon";
 import { isNull } from "@/app/data/util";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import { useState } from "react";
@@ -17,7 +15,7 @@ export default function MoveDisplay({
     form: number;
     moveKey: "level" | "tutor";
 }) {
-    const [selectedMove, setSelectedMove] = useState<Move>(nullMove);
+    const [selectedMove, setSelectedMove] = useState<Move>(Move.NULL);
     const [selectedCategory, setSelectedCategory] = useState<MoveCategory>("Physical");
     const moves =
         moveKey === "level"
@@ -61,7 +59,7 @@ export default function MoveDisplay({
                                         className={
                                             (move.isSTAB(pokemon) ? "font-semibold" : "") +
                                             " " +
-                                            (getSignatureMoves()[move.id] !== undefined ? "text-yellow-500" : "")
+                                            (move.isSignature ? "text-yellow-500" : "")
                                         }
                                     >
                                         {move.name}

@@ -1,15 +1,10 @@
 import { MoveData } from "@/app/damagecalc/components/MoveCard";
 import { DamageMultipliers } from "@/app/damagecalc/damageCalc";
 import { BattleState } from "../battleState";
-import { LoadedItem } from "../loading/items";
-import { Item } from "../types/Item";
+import { Item } from "../tectonic/Item";
 import { PartyPokemon } from "../types/PartyPokemon";
 
 export class SuperEffectiveBoostItem extends Item {
-    constructor(item: LoadedItem) {
-        super(item);
-    }
-
     public offensiveMultiplier(
         multipliers: DamageMultipliers,
         move: MoveData,

@@ -2,7 +2,7 @@ import { MoveData } from "@/app/damagecalc/components/MoveCard";
 import { DamageMultipliers } from "@/app/damagecalc/damageCalc";
 import { LoadedItem } from "@/preload/loadTectonicRepoData";
 import { BattleState } from "../battleState";
-import { PartyPokemon } from "./PartyPokemon";
+import { PartyPokemon } from "../types/PartyPokemon";
 import { Stats } from "./Pokemon";
 
 export class Item {
@@ -12,7 +12,7 @@ export class Item {
     pocket: number = 0;
     flags: string[] = [];
 
-    static NULL: Item = new Item();
+    static NULL: Item = null!;
 
     constructor(loaded?: LoadedItem) {
         if (!loaded) return;

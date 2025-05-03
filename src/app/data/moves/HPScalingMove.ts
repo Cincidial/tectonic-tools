@@ -1,11 +1,12 @@
 import { BattleState } from "@/app/data/battleState";
-import { Move } from "../types/Move";
+import { Move } from "../tectonic/Move";
 import { PartyPokemon } from "../types/PartyPokemon";
 
 export class HPScalingMove extends Move {
     customVarName: string = "HP";
     customVarType: string = "number";
     needsInput: boolean = true;
+
     public getPower(user: PartyPokemon, target: PartyPokemon, battleState: BattleState, hp: number): number {
         // From 65 to 130 in increments of 5, Overhealed caps at 195
         let hpFraction = hp / user.getStats().hp;

@@ -114,28 +114,60 @@ function fromLoadedArray<L extends LoadedData<L>, T>(load: Record<string, L[]>, 
     return Object.fromEntries(Object.entries(load).map(([k, v]) => [k, v.map(map)]));
 }
 
-export const TectonicData = {
+type TectonicDataType = {
+    version: string;
+    types: Record<string, PokemonType>;
+    tribes: Record<string, Tribe>;
+    abilities: Record<string, Ability>;
+    moves: Record<string, Move>;
+    items: Record<string, Item>;
+    heldItems: Array<Item>;
+    pokemon: Record<string, Pokemon>;
+    forms: Record<string, Pokemon[]>;
+    trainerTypes: Record<string, TrainerType>;
+    trainers: Record<string, Trainer>;
+    encounters: Record<string, EncounterMap>;
+    typeChart: number[][];
+};
+
+export const TectonicData: TectonicDataType = {
     version: data.version,
     types: fromLoaded(data.types, PokemonType),
     tribes: fromLoaded(data.tribes, Tribe),
     abilities: fromLoadedMapped(data.abilities, (x) =>
         x.key in twoItemAbilities ? new TwoItemAbility(x) : new Ability(x)
     ),
-    moves: fromLoadedMapped(data.moves, (x) => {
-        const subclass = moveSubclasses.find((sc) => sc.moveCodes.includes(x.functionCode));
-        return subclass ? new subclass(x) : new Move(x);
-    }),
-    items: fromLoadedMapped(data.items, (x) => {
-        const subclass = itemSubclasses.find((sc) => sc.itemIds.includes(x.key));
-        return subclass ? new subclass(x) : new Item(x);
-    }),
-    pokemon: fromLoaded(data.pokemon, Pokemon),
-    forms: fromLoadedArray(data.forms, Pokemon.loadForm),
     trainerTypes: fromLoaded(data.trainerTypes, TrainerType),
-    trainers: fromLoaded(data.trainers, Trainer),
     encounters: Object.fromEntries(
         Object.entries(data.encounters).map(([k, v]) => [k, { ...v, id: v.key.toString() } as EncounterMap])
     ) as Record<string, EncounterMap>,
     typeChart: data.typeChart,
+    moves: undefined!,
+    items: undefined!,
+    heldItems: [],
+    pokemon: undefined!,
+    forms: undefined!,
+    trainers: undefined!,
 };
+
+TectonicData.moves = fromLoadedMapped(data.moves, (x) => {
+    const subclass = moveSubclasses.find((sc) => sc.moveCodes.includes(x.functionCode));
+    return subclass ? new subclass(x) : new Move(x);
+});
+Move.NULL = new Move();
+
+TectonicData.items = fromLoadedMapped(data.items, (x) => {
+    const subclass = itemSubclasses.find((sc) => sc.itemIds.includes(x.key));
+    return subclass ? new subclass(x) : new Item(x);
+});
+Item.NULL = new Item();
+
+TectonicData.pokemon = fromLoaded(data.pokemon, Pokemon);
+Pokemon.NULL = new Pokemon();
+TectonicData.forms = fromLoadedArray(data.forms, Pokemon.loadForm);
+
+TectonicData.trainers = fromLoaded(data.trainers, Trainer);
+Trainer.NULL = new Trainer();
+
 Object.entries(TectonicData.forms).forEach(([k, v]) => TectonicData.pokemon[k].addForms([Pokemon.NULL, ...v]));
+TectonicData.heldItems = Object.values(TectonicData.items).filter((x) => x.pocket == 5);

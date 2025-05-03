@@ -1,5 +1,5 @@
+import { PokemonType } from "@/app/data/tectonic/PokemonType";
 import { calcTypeMatchup } from "@/app/data/typeChart";
-import { PokemonType } from "@/app/data/types/PokemonType";
 
 interface TypeChartCellProps {
     atk?: PokemonType;
