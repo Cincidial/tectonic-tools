@@ -4,6 +4,7 @@ import { Stat } from "../types/Pokemon";
 
 const differentAttackStatMoveCodes: Record<string, Stat> = {
     AttacksWithDefense: "defense",
+    AttacksWithSpDef: "spdef",
 };
 
 export class DifferentAttackingStatMove extends Move {

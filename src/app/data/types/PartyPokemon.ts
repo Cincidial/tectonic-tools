@@ -46,6 +46,15 @@ export class PartyPokemon {
             (Object.fromEntries(volatileStatusEffects.map((e) => [e, false])) as Record<VolatileStatusEffect, boolean>);
     }
 
+    // modify base stats separately so they can be shown on the UI
+    public getBaseStats(): Stats {
+        let stats = this.species.getStats(this.form);
+        for (const item of this.items) {
+            stats = item.baseStats(stats);
+        }
+        return stats;
+    }
+
     public getStats(move?: MoveData, side?: Side): Stats {
         const stylish = this.ability.id === "STYLISH";
         const steps = { ...this.statSteps };
@@ -66,31 +75,28 @@ export class PartyPokemon {
                 steps[stat] = Math.min(0, steps[stat]);
             }
         }
-        let speed = calculateStat(this.species.stats.speed, this.level, this.stylePoints.speed, steps.speed, stylish);
+
+        const stats = this.getBaseStats();
+
+        let speed = calculateStat(stats.speed, this.level, this.stylePoints.speed, steps.speed, stylish);
         // TODO: abilities probably can sometimes affect this
         if (this.statusEffect === "Numb") {
             speed = speed / 2;
         }
-        const calculatedStats: Stats = {
-            hp: calculateHP(this.species.stats.hp, this.level, this.stylePoints.hp, stylish),
-            attack: calculateStat(
-                this.species.stats.attack,
-                this.level,
-                this.stylePoints.attacks,
-                steps.attack,
-                stylish
-            ),
-            defense: calculateStat(
-                this.species.stats.defense,
-                this.level,
-                this.stylePoints.defense,
-                steps.defense,
-                stylish
-            ),
-            spatk: calculateStat(this.species.stats.spatk, this.level, this.stylePoints.attacks, steps.spatk, stylish),
-            spdef: calculateStat(this.species.stats.spdef, this.level, this.stylePoints.spdef, steps.spdef, stylish),
+
+        let calculatedStats: Stats = {
+            hp: calculateHP(stats.hp, this.level, this.stylePoints.hp, stylish),
+            attack: calculateStat(stats.attack, this.level, this.stylePoints.attacks, steps.attack, stylish),
+            defense: calculateStat(stats.defense, this.level, this.stylePoints.defense, steps.defense, stylish),
+            spatk: calculateStat(stats.spatk, this.level, this.stylePoints.attacks, steps.spatk, stylish),
+            spdef: calculateStat(stats.spdef, this.level, this.stylePoints.spdef, steps.spdef, stylish),
             speed,
         };
+
+        for (const item of this.items) {
+            calculatedStats = item.modifyStats(calculatedStats);
+        }
+
         return calculatedStats;
     }
 

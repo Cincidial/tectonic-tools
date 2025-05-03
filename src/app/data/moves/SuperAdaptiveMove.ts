@@ -22,5 +22,8 @@ export class SuperAdaptiveMove extends Move {
         return "Special";
     }
 
-    static moveCodes = ["CategoryDependsOnHigherDamagePoisonTarget"];
+    static moveCodes = [
+        "CategoryDependsOnHigherDamagePoisonTarget",
+        "CategoryDependsOnHigherDamageRaisesUserOtherAttackingStat",
+    ];
 }

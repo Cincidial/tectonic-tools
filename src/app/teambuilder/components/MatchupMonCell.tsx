@@ -1,3 +1,4 @@
+import { nullState } from "@/app/data/battleState";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { uniq } from "@/app/data/util";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
@@ -18,7 +19,7 @@ export default function MatchupMonCell({ c, useMoves }: { c: PartyPokemon; useMo
                 {useMoves ? (
                     <>
                         <TypeBadge
-                            types={uniq(c.moves.filter((m) => m.isAttackingMove()).map((m) => m.getType(c)))}
+                            types={uniq(c.moves.filter((m) => m.isAttackingMove()).map((m) => m.getType(c, nullState)))}
                             useShort={false}
                             element={TypeBadgeElementEnum.ICONS}
                         />

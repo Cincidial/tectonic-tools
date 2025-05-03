@@ -1,3 +1,4 @@
+import { BattleState } from "@/app/data/battleState";
 import { moves, nullMove } from "@/app/data/moves";
 import { getSignatureMoves } from "@/app/data/signatures";
 import { Move } from "@/app/data/types/Move";
@@ -29,11 +30,13 @@ export default function MoveCard({
     updateMoveData,
     userData,
     targetData,
+    battleState,
 }: {
     data: MoveData;
     updateMoveData: (move: MoveData) => void;
     userData: PartyPokemon;
     targetData: PartyPokemon;
+    battleState: BattleState;
 }): ReactNode {
     function updateMove(move: Move) {
         const newData = { ...data, move };
@@ -127,13 +130,13 @@ export default function MoveCard({
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                         <div className="text-right text-gray-400">Type:</div>
                         <TypeBadge
-                            types={[data.move.getType(userData)]}
+                            types={[data.move.getType(userData, battleState)]}
                             useShort={false}
                             element={TypeBadgeElementEnum.CAPSULE_SINGLE}
                         />
                         <div className="text-right text-gray-400">Power:</div>
                         <div className="text-left text-gray-200">
-                            {data.move.getPower(userData, targetData, data.customVar)}
+                            {data.move.getPower(userData, targetData, battleState, data.customVar)}
                         </div>
                         <div className="text-right text-gray-400">Category:</div>
                         <div className="text-left text-gray-200">{getMoveCategory(data, userData)}</div>

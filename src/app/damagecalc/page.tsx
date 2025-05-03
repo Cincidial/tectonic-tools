@@ -16,6 +16,7 @@ import ColumnHeader from "../../components/ColumnHeader";
 import Dropdown from "../../components/DropDown";
 import InputLabel from "../../components/InputLabel";
 import PokemonCard from "../../components/PokemonCard";
+import { BattleBoolean, battleBooleans, BattleBools } from "../data/battleState";
 import { WeatherCondition, weatherConditions } from "../data/conditions";
 import { nullMove } from "../data/moves";
 import { nullPokemon, pokemon } from "../data/pokemon";
@@ -30,14 +31,6 @@ import MoveCard, { MoveData } from "./components/MoveCard";
 import { calculateDamage, Side } from "./damageCalc";
 
 const nullMoveData = { move: nullMove, criticalHit: false, customVar: undefined };
-
-const battleBooleans = ["Multi Battle", "Aurora Veil", "Reflect", "Light Screen"] as const;
-type BattleBoolean = (typeof battleBooleans)[number];
-type BattleBools = Record<BattleBoolean, boolean>;
-export interface BattleState {
-    bools: BattleBools;
-    weather: WeatherCondition;
-}
 
 const PokemonDamageCalculator: NextPage = () => {
     const [playerPokemon, setPlayerPokemon] = useState<PartyPokemon>(new PartyPokemon());
@@ -300,12 +293,18 @@ const PokemonDamageCalculator: NextPage = () => {
                                 <Column>
                                     <ColumnHeader colour="text-blue-400">Attacking Pokémon</ColumnHeader>
                                     <ColumnBody>
-                                        <PokemonCard data={playerPokemon} update={updatePlayerPokemon} battle={true} />
+                                        <PokemonCard
+                                            data={playerPokemon}
+                                            update={updatePlayerPokemon}
+                                            battle={true}
+                                            battleState={fieldState}
+                                        />
                                         {/* Move selection */}
                                         <MoveCard
                                             data={playerMove}
                                             userData={playerPokemon}
                                             targetData={opponentPokemon}
+                                            battleState={fieldState}
                                             updateMoveData={updateMoveData}
                                         />
                                     </ColumnBody>

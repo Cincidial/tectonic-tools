@@ -1,3 +1,4 @@
+import { BattleState } from "@/app/data/battleState";
 import { LoadedMove } from "../loading/moves";
 import { moves } from "../moves";
 import { nullType, types } from "../types";
@@ -6,7 +7,7 @@ import { PartyPokemon } from "../types/PartyPokemon";
 import { PokemonType } from "../types/PokemonType";
 import { isNull } from "../util";
 
-type MoveTypeFunction = (user: PartyPokemon, name: string) => PokemonType | undefined;
+type MoveTypeFunction = (user: PartyPokemon, battleState: BattleState, name: string) => PokemonType | undefined;
 
 // return the item type iff user is holding the relevant item
 function typeFromItemType(user: PartyPokemon, typeItem: string): PokemonType | undefined {
@@ -127,7 +128,7 @@ function typeFromUser(user: PartyPokemon): PokemonType {
 }
 
 // workaround for special casing
-function handleTypeDependsOnUserSpecialItem(user: PartyPokemon, name: string) {
+function handleTypeDependsOnUserSpecialItem(user: PartyPokemon, _: BattleState, name: string) {
     switch (name) {
         case "JUDGMENT":
             return typeFromItemType(user, "PRISMATICPLATE");
@@ -148,11 +149,34 @@ function prismaticPower(user: PartyPokemon) {
     );
 }
 
+// WeatherCondition key type enforces having an answer for all of them
+// which isn't what we want
+const weatherTypes: Record<string, string> = {
+    Sunshine: "FIRE",
+    "Harsh Sunlight": "FIRE",
+    Rainstorm: "WATER",
+    "Heavy Rain": "WATER",
+    Sandstorm: "ROCK",
+    Hail: "ICE",
+    Eclipse: "PSYCHIC",
+    "Ring Eclipse": "PSYCHIC",
+    Moonglow: "FAIRY",
+    "Blood Moon": "FAIRY",
+};
+
+function typeFromWeather(battleState: BattleState) {
+    if (battleState.weather in weatherTypes) {
+        return types[weatherTypes[battleState.weather]];
+    }
+    return types["NORMAL"];
+}
+
 const variableTypeMoves: Record<keyof typeof moves, MoveTypeFunction> = {
     TypeDependsOnUserSpecialItem: handleTypeDependsOnUserSpecialItem,
     NaturalGift: (user: PartyPokemon) => typeFromItemMap(user, berryTypes),
     TypeIsUserFirstType: typeFromUser,
     TypeDependsOnUserGemPlateVeil: prismaticPower,
+    TypeDependsOnWeather: (_: PartyPokemon, battleState: BattleState) => typeFromWeather(battleState),
 };
 
 export class VariableTypeMove extends Move {
@@ -161,8 +185,8 @@ export class VariableTypeMove extends Move {
         super(move);
         this.typeFunction = variableTypeMoves[move.functionCode];
     }
-    public getType(user: PartyPokemon): PokemonType {
-        return this.typeFunction(user, this.id) || this.type;
+    public getType(user: PartyPokemon, battleState: BattleState): PokemonType {
+        return this.typeFunction(user, battleState, this.id) || this.type;
     }
 
     static moveCodes = Object.keys(variableTypeMoves);

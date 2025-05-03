@@ -1,3 +1,4 @@
+import { BattleState } from "@/app/data/battleState";
 import { LoadedMove } from "../loading/moves";
 import { Move } from "../types/Move";
 import { PartyPokemon } from "../types/PartyPokemon";
@@ -6,6 +7,8 @@ const moveConditions: Record<string, string> = {
     DoubleDamageAvengingFaint: "Ally Fainted Last Turn",
     Round: "Other Round This Turn",
     DoubleDamageTargetHitUser: "Target Damaged User This Turn",
+    StareDown: "Target Damaged User This Turn",
+    DamageBoost50PercentTargetHitUser: "Target Damaged User This Turn",
     DoubleDamageBerryConsumed: "Berry Consumed This Battle",
     DoubleDamageGemConsumed: "Gem Consumed This Battle",
     HitsDiggers: "Opponent Underground",
@@ -14,14 +17,21 @@ const moveConditions: Record<string, string> = {
     FusionFlare: "Fusion Bolt Used This Turn",
     DamageBoost50PercentTargetNotAttacked: "Target Hasn't Moved This Turn",
     DoubleDamageTargetMoved: "Target Moved This Turn",
+    PowerBoostTargetMoved25Percent: "Target Moved This Turn",
     DoubleDamageTargetLostHP: "Target Already Damaged This Turn",
     DoubleDamageUserStatsLowered: "Stats Lowered This Turn",
     PursueSwitchingFoe: "Foe Switching",
     RoughAndTumble: "Curl Up Used Previously",
+    DamageBoost50PercentNotTargetFirstTurn: "Not Target's First Turn",
+    PowerDoublesTargetLastAlive: "Last Non-Fainted Team Member",
+    DoubleDamageFirstTurn: "User's First Turn",
 };
 
 const moveBoosts: Record<string, number> = {
     DamageBoost50PercentTargetNotAttacked: 1.5,
+    DamageBoost50PercentTargetHitUser: 1.5,
+    PowerBoostTargetMoved25Percent: 1.25,
+    DamageBoost50PercentNotTargetFirstTurn: 1.5,
 };
 
 export class ConditionalInputBoostMove extends Move {
@@ -35,7 +45,7 @@ export class ConditionalInputBoostMove extends Move {
         this.boost = moveBoosts[move.functionCode] || 2;
     }
 
-    public getPower(_: PartyPokemon, __: PartyPokemon, condition: boolean): number {
+    public getPower(_: PartyPokemon, __: PartyPokemon, ___: BattleState, condition: boolean): number {
         return this.bp * (condition ? this.boost : 1);
     }
 

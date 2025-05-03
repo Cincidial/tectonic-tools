@@ -2,6 +2,7 @@
 
 import { abilities, nullAbility } from "@/app/data/abilities";
 import { TwoItemAbility } from "@/app/data/abilities/TwoItemAbility";
+import { BattleState, nullState } from "@/app/data/battleState";
 import { StatusEffect, statusEffects, VolatileStatusEffect, volatileStatusEffects } from "@/app/data/conditions";
 import { items, nullItem } from "@/app/data/items";
 import { TypeChangingItem } from "@/app/data/items/TypeChangingItem";
@@ -47,10 +48,12 @@ export default function PokemonCard({
     data,
     update,
     battle,
+    battleState,
 }: {
     data: PartyPokemon;
     update: (c: Partial<PartyPokemon>) => void;
     battle: boolean;
+    battleState?: BattleState;
 }) {
     // wipe pokemon-dependent data when switching pokemon
     function updatePokemon(pokemonId: string) {
@@ -243,7 +246,7 @@ export default function PokemonCard({
                                 <div className="w-12 flex justify-center">
                                     {data.moves[moveIndex].isAttackingMove() && (
                                         <TypeBadge
-                                            types={[data.moves[moveIndex].getType(data)]}
+                                            types={[data.moves[moveIndex].getType(data, battleState || nullState)]}
                                             useShort={false}
                                             element={TypeBadgeElementEnum.ICONS}
                                         />
@@ -375,7 +378,7 @@ export default function PokemonCard({
                                 </tr>
                             </thead>
                             <tbody>
-                                {safeKeys(data.species.getStats(data.form)).map((statName) => {
+                                {safeKeys(data.getBaseStats()).map((statName) => {
                                     const styleName = styleFromStat(statName);
                                     return (
                                         <tr key={statName}>
@@ -393,7 +396,7 @@ export default function PokemonCard({
                                                     onChange={(e) => updateSP(styleName, parseInt(e.target.value))}
                                                 />
                                             </td>
-                                            {battle && (
+                                            {battle && statName !== "hp" && (
                                                 <td>
                                                     <input
                                                         type="number"
