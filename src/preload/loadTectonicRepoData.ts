@@ -264,7 +264,7 @@ async function loadData(dev: boolean = false): Promise<void> {
     setupPokemonDataForWrite(loadedData.pokemon);
 
     const keys = {
-        pokemon: Object.keys(loadedData.pokemon),
+        pokemon: ["", ...Object.keys(loadedData.pokemon)],
         item: Object.keys(loadedData.items).filter((k) => loadedData.items[k].pocket === 5),
         type: Object.keys(loadedData.types),
         move: Object.fromEntries(Object.values(loadedData.pokemon).map((p) => [p.key, p.getAllMoves()])),
