@@ -61,7 +61,7 @@ function propgatePokemonData(version: string, loadData: Record<string, LoadedPok
             }
         }
 
-        loadMon.dexNum = index;
+        loadMon.dexNum = index + 1;
         if (loadMon.evolutionTree) return;
 
         loadMon.evolutionTree = new NTreeNode(new PokemonEvolutionTerms(loadMon.key, "", ""));
