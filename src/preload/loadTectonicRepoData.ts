@@ -1,3 +1,8 @@
+import { NTreeArrayNode, NTreeNode } from "@/app/data/types/NTreeNode";
+import { PokemonEvolutionTerms } from "@/app/data/types/Pokemon";
+import { uniq } from "@/app/data/util";
+import { readFile, writeFile } from "fs/promises";
+import path from "path";
 import {
     KVPair,
     LoadedData,
@@ -9,7 +14,7 @@ import {
     RawEncounterTable,
 } from "./tectonicFileParsers";
 
-class LoadedType extends LoadedData<LoadedType> {
+export class LoadedType extends LoadedData<LoadedType> {
     index: number = -1;
     name: string = "";
     weaknesses: string = "";
@@ -29,7 +34,7 @@ class LoadedType extends LoadedData<LoadedType> {
     }
 }
 
-class LoadedTribe extends LoadedData<LoadedTribe> {
+export class LoadedTribe extends LoadedData<LoadedTribe> {
     activationCount: number = 5;
     name: string = "";
     description: string = "";
@@ -49,7 +54,7 @@ class LoadedTribe extends LoadedData<LoadedTribe> {
     }
 }
 
-class LoadedAbility extends LoadedData<LoadedAbility> {
+export class LoadedAbility extends LoadedData<LoadedAbility> {
     name: string = "";
     description: string = "";
     flags: string[] = [];
@@ -63,7 +68,7 @@ class LoadedAbility extends LoadedData<LoadedAbility> {
     }
 }
 
-class LoadedMove extends LoadedData<LoadedMove> {
+export class LoadedMove extends LoadedData<LoadedMove> {
     name: string = "";
     description: string = "";
     type: string = "";
@@ -95,7 +100,7 @@ class LoadedMove extends LoadedData<LoadedMove> {
     }
 }
 
-class LoadedItem extends LoadedData<LoadedItem> {
+export class LoadedItem extends LoadedData<LoadedItem> {
     name: string = "";
     description: string = "";
     pocket: number = 0;
@@ -111,7 +116,7 @@ class LoadedItem extends LoadedData<LoadedItem> {
     }
 }
 
-class LoadedPokemon extends LoadedData<LoadedPokemon> {
+export class LoadedPokemon extends LoadedData<LoadedPokemon> {
     static formMoves: Record<string, (string | undefined)[]> = {
         ROTOM: [undefined, "OVERHEAT", "HYDROPUMP", "BLIZZARD", "AIRSLASH", "LEAFSTORM"],
         URSHIFU: ["WICKEDBLOW", "SURGINGSTRIKES"],
@@ -142,7 +147,9 @@ class LoadedPokemon extends LoadedData<LoadedPokemon> {
     wildItems: string[] = [];
     kind: string = "";
     pokedex: string = "";
-    evolutions: [string, string, string][] = []; // Pokemon, method, condition
+    evolutions: PokemonEvolutionTerms[] = [];
+    evolutionTree?: NTreeNode<PokemonEvolutionTerms>; // Requires post-load propagation
+    evolutionTreeArray?: NTreeArrayNode<PokemonEvolutionTerms>[]; // Pre-write
 
     constructor() {
         super();
@@ -187,7 +194,7 @@ class LoadedPokemon extends LoadedData<LoadedPokemon> {
         this.populateMap["Evolutions"] = (_, value) => {
             const evoSplit = value.split(",");
             for (let i = 0; i < evoSplit.length; i += 3) {
-                this.evolutions.push([evoSplit[i], evoSplit[i + 1], evoSplit[i + 2]]);
+                this.evolutions.push(new PokemonEvolutionTerms(evoSplit[i], evoSplit[i + 1], evoSplit[i + 2]));
             }
         };
     }
@@ -204,9 +211,24 @@ class LoadedPokemon extends LoadedData<LoadedPokemon> {
         this.key = terms[0];
         this.formId = parseInt(terms[1]);
     }
+
+    getAllMoves() {
+        let moves: Array<string | undefined> = [];
+        // in Tectonic, we first push egg moves here, but that is a leftover from Pokemon Essentials defaults I think
+
+        // TODO: Double check how this worked before the removal of tutormoves. Currently assuming.
+        // On dev, when it's empty, this will do nothing and be fine
+        moves = moves.concat(this.tutorMoves);
+        moves = moves.concat(this.lineMoves);
+        moves = moves.concat(this.formSpecificMoves);
+        moves = moves.concat(this.levelMoves.map((m) => m[1]));
+        moves = uniq(moves);
+        const finalMoves: string[] = moves.filter((m) => m !== undefined);
+        return finalMoves;
+    }
 }
 
-class LoadedTrainerType extends LoadedData<LoadedTrainerType> {
+export class LoadedTrainerType extends LoadedData<LoadedTrainerType> {
     name: string = "";
     gender: string = "";
     baseMoney: number = 0;
@@ -223,7 +245,7 @@ class LoadedTrainerType extends LoadedData<LoadedTrainerType> {
     }
 }
 
-class LoadedTrainerPokemon {
+export class LoadedTrainerPokemon {
     id: string = "";
     level: number = 0;
     name?: string;
@@ -235,7 +257,7 @@ class LoadedTrainerPokemon {
     sp: number[] = [];
 }
 
-class LoadedTrainer extends LoadedData<LoadedTrainer> {
+export class LoadedTrainer extends LoadedData<LoadedTrainer> {
     class: string = "";
     name: string = "";
     version?: number;
@@ -294,7 +316,7 @@ class LoadedTrainer extends LoadedData<LoadedTrainer> {
     }
 }
 
-class LoadedEncounter {
+export class LoadedEncounter {
     weight: number;
     pokemon: string;
     minLevel: number; // Exact level for static encounters
@@ -308,7 +330,7 @@ class LoadedEncounter {
     }
 }
 
-class LoadedEncounterTable {
+export class LoadedEncounterTable {
     type: string;
     encounterRate?: number;
     encounters: LoadedEncounter[];
@@ -324,7 +346,7 @@ class LoadedEncounterTable {
     }
 }
 
-class LoadedEncounterMap {
+export class LoadedEncounterMap {
     key: number;
     name: string;
     tables: LoadedEncounterTable[];
@@ -334,6 +356,37 @@ class LoadedEncounterMap {
         this.name = raw.mapLine.split("#")[1].trim();
         this.tables = raw.tables.map((x) => new LoadedEncounterTable(x));
     }
+}
+
+export type LoadedDataJson = {
+    version: string;
+    types: Record<string, LoadedType>;
+    tribes: Record<string, LoadedTribe>;
+    abilities: Record<string, LoadedAbility>;
+    moves: Record<string, LoadedMove>;
+    items: Record<string, LoadedItem>;
+    pokemon: Record<string, LoadedPokemon>;
+    forms: Record<string, LoadedPokemon[]>;
+    trainerTypes: Record<string, LoadedTrainerType>;
+    trainers: Record<string, LoadedTrainer>;
+    encounters: Record<string, LoadedEncounterMap>;
+    typeChart: number[][];
+};
+
+async function dataRead(filePath: string) {
+    const basePath = path.join(__dirname, "../../public/data/");
+    const fullPath = basePath + filePath;
+
+    const fileData = await readFile(fullPath, "utf-8");
+    return JSON.parse(fileData);
+}
+
+async function dataWrite<T>(filePath: string, contents: Record<string, T> | number[][] | string) {
+    const basePath = path.join(__dirname, "../../public/data/");
+    const fullPath = basePath + filePath;
+
+    const output = typeof contents === "string" ? contents : JSON.stringify(contents);
+    await writeFile(fullPath, output);
 }
 
 async function handleFiles<T>(paths: string[], processor: (files: string[]) => T, dev: boolean) {
@@ -354,7 +407,50 @@ async function handleFiles<T>(paths: string[], processor: (files: string[]) => T
     return processor(files);
 }
 
-function propagateTrainerData(trainers: Record<string, LoadedTrainer>) {
+function propgatePokemonData(version: string, loadData: Record<string, LoadedPokemon>): void {
+    // Propagate data not requiring the evo tree to be built
+    Object.values(loadData).forEach((loadMon, index) => {
+        function buildEvoTree(curNode: NTreeNode<PokemonEvolutionTerms>, cur: LoadedPokemon) {
+            cur.evolutionTree = loadMon.evolutionTree;
+            for (const evo of cur.evolutions) {
+                buildEvoTree(curNode.addChild(evo), loadData[evo.pokemon]);
+            }
+        }
+
+        loadMon.dexNum = index + 1;
+        if (loadMon.evolutionTree) return;
+
+        loadMon.evolutionTree = new NTreeNode(new PokemonEvolutionTerms(loadMon.key, "", ""));
+        buildEvoTree(loadMon.evolutionTree, loadMon);
+    });
+
+    // Propagate data requiring the evolution tree
+    Object.values(loadData).forEach((loadMon) => {
+        const evoNode = loadMon.evolutionTree?.findDepthFirst((x) => x.getData().pokemon == loadMon.key);
+        if (!evoNode) return;
+
+        const nodeWithTribes = evoNode.findBySelfAndParents((x) => loadData[x.getData().pokemon].tribes.length > 0);
+        if (nodeWithTribes) {
+            loadMon.tribes = loadData[nodeWithTribes.getData().pokemon].tribes;
+        }
+
+        if (version.startsWith("3.2")) {
+            const nodeWithMoves = evoNode.findBySelfAndParents(
+                (x) => loadData[x.getData().pokemon].lineMoves.length > 0
+            );
+            if (nodeWithMoves) {
+                loadMon.lineMoves = loadData[nodeWithMoves.getData().pokemon].lineMoves;
+            }
+        } else if (!evoNode.isRoot()) {
+            // Propogate moves when not the first evolution
+            const prevo = loadData[evoNode.getParent()!.getData().pokemon];
+            loadMon.lineMoves = prevo.lineMoves.concat(loadMon.lineMoves);
+            loadMon.levelMoves = uniq(loadMon.levelMoves.concat(prevo.levelMoves)).sort(([la], [lb]) => la - lb);
+        }
+    });
+}
+
+function propagateTrainerData(trainers: Record<string, LoadedTrainer>): void {
     for (const trainerId in trainers) {
         if (trainers[trainerId].extendsVersion !== undefined) {
             const key =
@@ -393,7 +489,6 @@ function propagateTrainerData(trainers: Record<string, LoadedTrainer>) {
             trainers[trainerId].pokemon = updatedPokemon;
         }
     }
-    return trainers;
 }
 
 function buildTypeChart(types: Record<string, LoadedType>): number[][] {
@@ -420,6 +515,13 @@ function buildTypeChart(types: Record<string, LoadedType>): number[][] {
     return typeChart;
 }
 
+function setupPokemonDataForWrite(loadData: Record<string, LoadedPokemon>) {
+    Object.values(loadData).forEach((loadMon) => {
+        loadMon.evolutionTreeArray = loadMon.evolutionTree?.toArray();
+        loadMon.evolutionTree = undefined;
+    });
+}
+
 async function loadData(dev: boolean = false): Promise<void> {
     // Fetch the data and load it into a usable format
     const version: string = await handleFiles(
@@ -427,7 +529,8 @@ async function loadData(dev: boolean = false): Promise<void> {
         (f: string[]) => parseVersionFile(f[0]),
         dev
     );
-    const loadedData = {
+    const loadedData: LoadedDataJson = {
+        version: version,
         types: await handleFiles(["PBS/types.txt"], (f: string[]) => parseStandardFile(version, LoadedType, f), dev),
         tribes: await handleFiles(
             ["PBS/tribes.txt"],
@@ -488,16 +591,35 @@ async function loadData(dev: boolean = false): Promise<void> {
             },
             dev
         ),
+        typeChart: [],
     };
 
     // Data propogation
+    loadedData.typeChart = buildTypeChart(loadedData.types);
+    propgatePokemonData(version, loadedData.pokemon);
     propagateTrainerData(loadedData.trainers);
 
-    // Write data
-    const writeData = {
-        version: version,
-        typeChart: buildTypeChart(loadedData.types),
+    // Pre-write setup
+    setupPokemonDataForWrite(loadedData.pokemon);
+
+    const keys = {
+        pokemon: Object.keys(loadedData.pokemon),
+        item: Object.keys(loadedData.items).filter((k) => loadedData.items[k].pocket === 5),
+        type: Object.keys(loadedData.types),
+        move: Object.fromEntries(Object.values(loadedData.pokemon).map((p) => [p.key, p.getAllMoves()])),
     };
+    const indices = {
+        item: Object.fromEntries(keys.item.map((id, i) => [id, i])),
+        type: Object.fromEntries(Object.keys(loadedData.types).map((id, i) => [id, i])),
+        move: Object.fromEntries(
+            Object.keys(keys.move).map((k) => [k, Object.fromEntries(keys.move[k].map((m, index) => [m, index]))])
+        ),
+    };
+
+    // Write versions seperately as the file is maintained in the repo
+    const versions = await dataRead("versions.json");
+    versions[version] = { indices, keys };
+    await Promise.all([dataWrite("loadedData.json", loadedData), dataWrite("versions.json", versions)]);
 }
 
 loadData(process.argv[2] === "dev").catch((e) => console.error(e));

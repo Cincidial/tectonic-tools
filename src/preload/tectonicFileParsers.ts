@@ -33,7 +33,11 @@ export abstract class LoadedData<SubClass extends LoadedData<SubClass>> {
     protected populateMap: Record<string, (version: string, value: string) => void> = {};
 
     populate(tectonicVersion: string, pairs: KVPair[]): SubClass {
-        pairs.forEach((pair) => this.populateMap[pair.key](tectonicVersion, pair.value));
+        pairs.forEach((pair) => {
+            if (pair.key in this.populateMap) {
+                this.populateMap[pair.key](tectonicVersion, pair.value);
+            }
+        });
         return this as unknown as SubClass;
     }
 }

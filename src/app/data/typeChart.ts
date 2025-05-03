@@ -1,15 +1,12 @@
-import loadedChart from "public/data/typechart.json";
+import { TectonicData } from "./loaded/TectonicData";
 import { ExtraEffectiveMove } from "./moves/ExtraEffectiveMove";
 import { ExtraTypeMove } from "./moves/ExtraTypeMove";
 import { HitsFliersMove } from "./moves/HitsFliersMove";
-import { types } from "./types";
 import { Ability } from "./types/Ability";
 import { Move } from "./types/Move";
 import { PartyPokemon } from "./types/PartyPokemon";
 import { PokemonType } from "./types/PokemonType";
 import { isNull } from "./util";
-
-export const typeChart = loadedChart;
 
 interface AttackerData {
     type: PokemonType;
@@ -76,7 +73,7 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
     const defType1 = def.type1;
     let thirdType = null;
 
-    let defType1Calc = typeChart[atkType.index][defType1.index];
+    let defType1Calc = TectonicData.typeChart[atkType.index][defType1.index];
 
     // certain moves pierce ground immunity
     // TODO: Revisit this to make it more generic when e.g. gravity is implemented
@@ -88,7 +85,7 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
     let defAbilityCalc = 1.0;
     if (def.type2 !== undefined) {
         const defType2 = def.type2;
-        defType2Calc = typeChart[atkType.index][defType2.index];
+        defType2Calc = TectonicData.typeChart[atkType.index][defType2.index];
         // certain moves pierce ground immunity
         if (atk.move instanceof HitsFliersMove && atk.type.id === "GROUND") {
             defType2Calc = Math.max(defType2Calc, 1);
@@ -124,8 +121,8 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
         } else if (doubleMatch !== undefined && doubleMatch.type1 == atk.type.id) {
             defAbilityCalc = 2.0;
         } else if (isAlsoTypeMatch !== undefined) {
-            const defType3 = types[isAlsoTypeMatch.type1];
-            defAbilityCalc = typeChart[atkType.index][defType3.index];
+            const defType3 = TectonicData.types[isAlsoTypeMatch.type1];
+            defAbilityCalc = TectonicData.typeChart[atkType.index][defType3.index];
             thirdType = isAlsoTypeMatch.type1;
         }
     }

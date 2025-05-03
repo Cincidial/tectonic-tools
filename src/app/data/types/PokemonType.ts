@@ -1,22 +1,26 @@
-import { LoadedType } from "../loading/types";
+import { LoadedType } from "@/preload/loadTectonicRepoData";
 
 export class PokemonType {
-    id: string;
-    index: number;
-    name: string;
-    weaknesses: string;
-    resistances: string;
-    immunities: string;
-    isRealType: boolean;
+    id: string = "";
+    index: number = 0;
+    name: string = "";
+    weaknesses: string = "";
+    resistances: string = "";
+    immunities: string = "";
+    isRealType: boolean = false;
 
-    constructor(type: LoadedType) {
-        this.id = type.key;
-        this.index = type.index;
-        this.name = type.name;
-        this.weaknesses = type.weaknesses;
-        this.resistances = type.resistances;
-        this.immunities = type.immunities;
-        this.isRealType = type.isRealType;
+    static NULL: PokemonType = new PokemonType();
+
+    constructor(loaded?: LoadedType) {
+        if (!loaded) return;
+
+        this.id = loaded.key;
+        this.index = loaded.index;
+        this.name = loaded.name;
+        this.weaknesses = loaded.weaknesses;
+        this.resistances = loaded.resistances;
+        this.immunities = loaded.immunities;
+        this.isRealType = loaded.isRealType;
     }
 
     getShortName(): string {

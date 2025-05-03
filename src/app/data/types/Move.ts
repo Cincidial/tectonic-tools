@@ -1,8 +1,8 @@
 import { MoveData } from "@/app/damagecalc/components/MoveCard";
 import { Side } from "@/app/damagecalc/damageCalc";
+import { LoadedMove } from "@/preload/loadTectonicRepoData";
 import { StatusEffect } from "../conditions";
-import { LoadedMove } from "../loading/moves";
-import { types } from "../types";
+import { TectonicData } from "../loaded/TectonicData";
 import { isNull } from "../util";
 import { PartyPokemon } from "./PartyPokemon";
 import { Pokemon, Stat } from "./Pokemon";
@@ -32,28 +32,33 @@ export type MoveTarget =
 const spreadTargets: MoveTarget[] = ["AllBattlers", "AllNearFoes", "AllNearOthers", "BothSides", "FoeSide"];
 
 export class Move {
-    id: string;
-    name: string;
-    description: string;
-    type: PokemonType;
-    bp: number;
-    accuracy: number;
-    pp: number;
-    category: MoveCategory;
-    target: MoveTarget;
+    id: string = "";
+    name: string = "";
+    description: string = "";
+    type: PokemonType = TectonicData.types["NORMAL"];
+    bp: number = 0;
+    accuracy: number = 0;
+    pp: number = 0;
+    category: MoveCategory = "Status";
+    target: MoveTarget = "User";
     customVarName?: string;
     customVarType?: string;
     needsInput: boolean = false;
-    constructor(loadedMove: LoadedMove) {
-        this.id = loadedMove.key;
-        this.name = loadedMove.name;
-        this.description = loadedMove.description;
-        this.type = types[loadedMove.type];
-        this.bp = loadedMove.power;
-        this.accuracy = loadedMove.accuracy;
-        this.pp = loadedMove.pp;
-        this.category = loadedMove.category as MoveCategory;
-        this.target = loadedMove.target as MoveTarget;
+
+    static NULL: Move = new Move();
+
+    constructor(loaded?: LoadedMove) {
+        if (!loaded) return;
+
+        this.id = loaded.key;
+        this.name = loaded.name;
+        this.description = loaded.description;
+        this.type = TectonicData.types[loaded.type];
+        this.bp = loaded.power;
+        this.accuracy = loaded.accuracy;
+        this.pp = loaded.pp;
+        this.category = loaded.category as MoveCategory;
+        this.target = loaded.target as MoveTarget;
     }
 
     public isAttackingMove() {

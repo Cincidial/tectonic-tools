@@ -1,7 +1,29 @@
+export class NTreeArrayNode<T> {
+    data: T;
+    parentIndex?: number;
+
+    constructor(data: T, parentIndex?: number) {
+        this.data = data;
+        this.parentIndex = parentIndex;
+    }
+
+    static buildTree<T>(array: NTreeArrayNode<T>[]): NTreeNode<T> {
+        const treeNodes = array.map((x) => new NTreeNode(x.data));
+        array.forEach((x, index) => {
+            if (x.parentIndex) {
+                treeNodes[x.parentIndex].addChildByNode(treeNodes[index]);
+            }
+        });
+
+        return treeNodes[0];
+    }
+}
+
 export class NTreeNode<T> {
     private parent: NTreeNode<T> | null;
     private children: NTreeNode<T>[];
     private data: T;
+    private arrayIndex: number = 0;
 
     constructor(data: T) {
         this.parent = null;
@@ -25,6 +47,12 @@ export class NTreeNode<T> {
         return this.parent;
     }
 
+    removefromParent(): void {
+        if (this.parent) {
+            this.parent.children = this.parent.children.filter((x) => x != this);
+        }
+    }
+
     hasChildren(): boolean {
         return this.children.length > 0;
     }
@@ -35,6 +63,13 @@ export class NTreeNode<T> {
 
         this.children.push(node);
         return node;
+    }
+
+    addChildByNode(node: NTreeNode<T>): void {
+        node.removefromParent();
+        node.parent = this;
+
+        this.children.push(node);
     }
 
     depthFirst(fn: (depth: number, node: NTreeNode<T>) => void, depth: number = 0) {
@@ -63,6 +98,18 @@ export class NTreeNode<T> {
             if (result != null) {
                 return result;
             }
+        }
+
+        return null;
+    }
+
+    findBySelfAndParents(fn: (node: NTreeNode<T>) => boolean): NTreeNode<T> | null {
+        if (fn(this)) {
+            return this;
+        }
+
+        if (this.parent) {
+            return this.parent.findBySelfAndParents(fn);
         }
 
         return null;
@@ -102,5 +149,13 @@ export class NTreeNode<T> {
         }
 
         return branches;
+    }
+
+    toArray(): NTreeArrayNode<T>[] {
+        const array: NTreeNode<T>[] = [];
+        let index = 0;
+
+        this.depthFirst((_, node) => (node.arrayIndex = index++));
+        return array.map((x) => new NTreeArrayNode<T>(x.data, x.parent?.arrayIndex));
     }
 }

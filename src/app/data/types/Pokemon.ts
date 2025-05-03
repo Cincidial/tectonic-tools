@@ -13,6 +13,18 @@ import { NTreeNode } from "./NTreeNode";
 import { PokemonType } from "./PokemonType";
 import { Tribe } from "./Tribe";
 
+export class PokemonEvolutionTerms {
+    pokemon: string;
+    method: string;
+    condition: string;
+
+    constructor(pokemon: string, method: string, condition: string) {
+        this.pokemon = pokemon;
+        this.method = method;
+        this.condition = condition;
+    }
+}
+
 export interface Stats {
     hp: number;
     attack: number;
