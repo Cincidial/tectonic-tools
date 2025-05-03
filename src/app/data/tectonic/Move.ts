@@ -3,7 +3,7 @@ import { Side } from "@/app/damagecalc/damageCalc";
 import { BattleState } from "@/app/data/battleState";
 import { LoadedMove } from "@/preload/loadTectonicRepoData";
 import { StatusEffect } from "../conditions";
-import { TectonicData } from "../loaded/TectonicData";
+import { TectonicData } from "../tectonic/TectonicData";
 import { isNull } from "../util";
 import { PartyPokemon } from "./PartyPokemon";
 import { Pokemon, Stat } from "./Pokemon";
@@ -45,6 +45,7 @@ export class Move {
     customVarName?: string;
     customVarType?: string;
     needsInput: boolean = false;
+    isSignature: boolean = false;
 
     static NULL: Move = new Move();
 
@@ -60,6 +61,7 @@ export class Move {
         this.pp = loaded.pp;
         this.category = loaded.category as MoveCategory;
         this.target = loaded.target as MoveTarget;
+        this.isSignature = loaded.isSignature;
     }
 
     public isAttackingMove() {

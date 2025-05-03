@@ -1,5 +1,5 @@
-import { Ability } from "../types/Ability";
-import { Item } from "../types/Item";
+import { Ability } from "../tectonic/Ability";
+import { Item } from "../tectonic/Item";
 import { isNull } from "../util";
 
 // assumes max two items

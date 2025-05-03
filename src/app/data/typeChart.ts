@@ -1,7 +1,7 @@
-import { TectonicData } from "./loaded/TectonicData";
 import { ExtraEffectiveMove } from "./moves/ExtraEffectiveMove";
 import { ExtraTypeMove } from "./moves/ExtraTypeMove";
 import { HitsFliersMove } from "./moves/HitsFliersMove";
+import { TectonicData } from "./tectonic/TectonicData";
 import { Ability } from "./types/Ability";
 import { Move } from "./types/Move";
 import { PartyPokemon } from "./types/PartyPokemon";

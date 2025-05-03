@@ -1,0 +1,141 @@
+import { LoadedDataJson } from "@/preload/loadTectonicRepoData";
+import { LoadedData } from "@/preload/tectonicFileParsers";
+import loadedData from "public/data/loadedData.json";
+import { twoItemAbilities, TwoItemAbility } from "../abilities/TwoItemAbility";
+import { CategoryBoostingItem } from "../items/CategoryBoostingItem";
+import { EvioliteItem } from "../items/EvioliteItem";
+import { FlatDamageBoostItem } from "../items/FlatDamageBoostItem";
+import { LumberAxeItem } from "../items/LumberAxeItem";
+import { StatBoostItem } from "../items/StatBoostItem";
+import { StatLockItem } from "../items/StatLockItem";
+import { SuperEffectiveBoostItem } from "../items/SuperEffectiveBoostItem";
+import { SuperEffectiveResistItem } from "../items/SuperEffectiveResistItem";
+import { TypeBoostingItem } from "../items/TypeBoostingItem";
+import { TypeChangingItem } from "../items/TypeChangingItem";
+import { WeatherImmuneItem } from "../items/WeatherImmuneItem";
+import { AllyDefScalingMove } from "../moves/AllyDefScalingMove";
+import { BreakScreensMove } from "../moves/BreakScreensMove";
+import { ConditionalAutoBoostMove } from "../moves/ConditionalAutoBoostMove";
+import { ConditionalInputBoostMove } from "../moves/ConditionalInputBoostMove";
+import { DesperationMove } from "../moves/DesperationMove";
+import { DifferentAttackingStatMove } from "../moves/DifferentAttackStatMove";
+import { DifferentDefenseStatMove } from "../moves/DifferentDefenseStatMove";
+import { DoubleCritMove } from "../moves/DoubleCritMove";
+import { ExtraEffectiveMove } from "../moves/ExtraEffectiveMove";
+import { ExtraTypeMove } from "../moves/ExtraTypeMove";
+import { FacadeMove } from "../moves/FacadeMove";
+import { FaintedAllyScalingMove } from "../moves/FaintedAllyScalingMove";
+import { GutCheckMove } from "../moves/GutCheckMove";
+import { HeightUserScalingMove } from "../moves/HeightUserScalingMove";
+import { HitsFliersMove } from "../moves/HitsFliersMove";
+import { HPScalingMove } from "../moves/HPScalingMove";
+import { IgnoreStatMove } from "../moves/IgnoreStatMove";
+import { MultiHitMove } from "../moves/MultiHitMove";
+import { RepeatScalingMove } from "../moves/RepeatScalingMove";
+import { SlownessScalingMove } from "../moves/SlownessScalingMove";
+import { SpeedScalingMove } from "../moves/SpeedScalingMove";
+import { SpikeScalingMove } from "../moves/SpikeScalingMove";
+import { SpitUpMove } from "../moves/SpitUpMove";
+import { StackingMove } from "../moves/StackingMove";
+import { StepScalingMove } from "../moves/StepScalingMove";
+import { SuperAdaptiveMove } from "../moves/SuperAdaptiveMove";
+import { TargetAttackMove } from "../moves/TargetAttackMove";
+import { UserBelowHalfDoubleMove } from "../moves/UserBelowHalfDoubleMove";
+import { VariableTypeMove } from "../moves/VariableTypeMove";
+import { WeightTargetScalingMove } from "../moves/WeightTargetScalingMove";
+import { WeightUserScalingMove } from "../moves/WeightUserScalingMove";
+import { Ability } from "./Ability";
+import { EncounterMap } from "./Encounter";
+import { Item } from "./Item";
+import { Move } from "./Move";
+import { Pokemon } from "./Pokemon";
+import { PokemonType } from "./PokemonType";
+import { Trainer } from "./Trainer";
+import { TrainerType } from "./TrainerType";
+import { Tribe } from "./Tribe";
+
+const data = loadedData as unknown as LoadedDataJson;
+const moveSubclasses = [
+    AllyDefScalingMove,
+    BreakScreensMove,
+    ConditionalAutoBoostMove,
+    ConditionalInputBoostMove,
+    DesperationMove,
+    DifferentAttackingStatMove,
+    DifferentDefenseStatMove,
+    DoubleCritMove,
+    ExtraEffectiveMove,
+    ExtraTypeMove,
+    FacadeMove,
+    FaintedAllyScalingMove,
+    GutCheckMove,
+    HeightUserScalingMove,
+    HitsFliersMove,
+    HPScalingMove,
+    IgnoreStatMove,
+    MultiHitMove,
+    RepeatScalingMove,
+    SpeedScalingMove,
+    SlownessScalingMove,
+    SpikeScalingMove,
+    SpitUpMove,
+    StackingMove,
+    StepScalingMove,
+    SuperAdaptiveMove,
+    TargetAttackMove,
+    UserBelowHalfDoubleMove,
+    VariableTypeMove,
+    WeightTargetScalingMove,
+    WeightUserScalingMove,
+];
+const itemSubclasses = [
+    CategoryBoostingItem,
+    EvioliteItem,
+    FlatDamageBoostItem,
+    LumberAxeItem,
+    StatBoostItem,
+    StatLockItem,
+    SuperEffectiveBoostItem,
+    SuperEffectiveResistItem,
+    TypeBoostingItem,
+    TypeChangingItem,
+    WeatherImmuneItem,
+];
+
+function fromLoaded<L extends LoadedData<L>, T>(load: Record<string, L>, ctor: new (l: L) => T): Record<string, T> {
+    return Object.fromEntries(Object.entries(load).map(([k, v]) => [k, new ctor(v)]));
+}
+
+function fromLoadedMapped<L extends LoadedData<L>, T>(load: Record<string, L>, map: (l: L) => T): Record<string, T> {
+    return Object.fromEntries(Object.entries(load).map(([k, v]) => [k, map(v)]));
+}
+
+function fromLoadedArray<L extends LoadedData<L>, T>(load: Record<string, L[]>, map: (l: L) => T): Record<string, T[]> {
+    return Object.fromEntries(Object.entries(load).map(([k, v]) => [k, v.map(map)]));
+}
+
+export const TectonicData = {
+    version: data.version,
+    types: fromLoaded(data.types, PokemonType),
+    tribes: fromLoaded(data.tribes, Tribe),
+    abilities: fromLoadedMapped(data.abilities, (x) =>
+        x.key in twoItemAbilities ? new TwoItemAbility(x) : new Ability(x)
+    ),
+    moves: fromLoadedMapped(data.moves, (x) => {
+        const subclass = moveSubclasses.find((sc) => sc.moveCodes.includes(x.functionCode));
+        return subclass ? new subclass(x) : new Move(x);
+    }),
+    items: fromLoadedMapped(data.items, (x) => {
+        const subclass = itemSubclasses.find((sc) => sc.itemIds.includes(x.key));
+        return subclass ? new subclass(x) : new Item(x);
+    }),
+    pokemon: fromLoaded(data.pokemon, Pokemon),
+    forms: fromLoadedArray(data.forms, Pokemon.loadForm),
+    trainerTypes: fromLoaded(data.trainerTypes, TrainerType),
+    trainers: fromLoaded(data.trainers, Trainer),
+    encounters: Object.fromEntries(
+        Object.entries(data.encounters).map(([k, v]) => [k, { ...v, id: v.key.toString() } as EncounterMap])
+    ) as Record<string, EncounterMap>,
+    typeChart: data.typeChart,
+};
+Object.entries(TectonicData.forms).forEach(([k, v]) => TectonicData.pokemon[k].addForms([Pokemon.NULL, ...v]));

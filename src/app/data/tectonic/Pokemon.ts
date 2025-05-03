@@ -1,15 +1,11 @@
-import { abilities } from "../abilities";
-import { items } from "../items";
-import { LoadedEvolution, LoadedPokemon } from "../loading/pokemon";
-import { moves } from "../moves";
+import { LoadedPokemon } from "@/preload/loadTectonicRepoData";
 import { calculateHP, calculateStat } from "../stats";
-import { tribes } from "../tribes";
-import { types } from "../types";
+import { TectonicData } from "../tectonic/TectonicData";
 import { uniq } from "../util";
 import { Ability } from "./Ability";
 import { Item } from "./Item";
 import { Move } from "./Move";
-import { NTreeNode } from "./NTreeNode";
+import { NTreeArrayNode, NTreeNode } from "./NTreeNode";
 import { PokemonType } from "./PokemonType";
 import { Tribe } from "./Tribe";
 
@@ -70,67 +66,93 @@ function getterFactory<T extends keyof Pokemon>(mon: Pokemon, key: T) {
     };
 }
 
-export type PokemonForm = Partial<Pokemon> & { formId: number };
-
 const EHP_LEVEL = 50;
 const DEFAULT_STYLE_VALUE = 10;
 
 export class Pokemon {
-    id: string;
-    dex: number;
-    name: string;
+    id: string = "";
+    dex: number = 0;
+    name: string = "";
+    formId: number = 0;
     formName?: string;
-    type1: PokemonType;
+    type1: PokemonType = TectonicData.types["NORMAL"];
     type2?: PokemonType;
-    stats: Stats;
-    abilities: Ability[];
-    levelMoves: [number, Move][];
-    lineMoves: Move[];
-    tutorMoves: Move[];
-    tribes: Tribe[];
-    height: number;
-    weight: number;
-    kind: string;
-    pokedex: string;
-    forms: PokemonForm[] = [];
-    items: Item[];
-    evolutionTree: NTreeNode<LoadedEvolution>;
+    stats: Stats = blankStats;
+    abilities: Ability[] = [];
+    levelMoves: [number, Move][] = [];
+    lineMoves: Move[] = [];
+    tutorMoves: Move[] = [];
+    tribes: Tribe[] = [];
+    height: number = 0;
+    weight: number = 0;
+    kind: string = "";
+    pokedex: string = "";
+    forms: Pokemon[] = [];
+    items: Item[] = [];
+    evolutionTree: NTreeNode<PokemonEvolutionTerms> = null!;
 
-    constructor(mon: LoadedPokemon, dexNo: number) {
-        this.id = mon.key;
-        this.dex = dexNo;
-        this.name = mon.name;
-        if (mon.formName) {
-            this.formName = mon.formName;
-        }
-        this.type1 = types[mon.type1];
-        if (mon.type2) {
-            this.type2 = types[mon.type2];
-        }
+    static NULL: Pokemon = new Pokemon();
+
+    constructor(loaded?: LoadedPokemon) {
+        if (!loaded) return;
+
+        this.id = loaded.key;
+        this.dex = loaded.dexNum;
+        this.name = loaded.name;
+        this.formName = loaded.formName;
+        this.type1 = TectonicData.types[loaded.type1];
+        this.type2 = loaded.type2 ? TectonicData.types[loaded.type2] : undefined;
         this.stats = {
-            hp: mon.hp,
-            attack: mon.attack,
-            spatk: mon.spAttack,
-            speed: mon.speed,
-            defense: mon.defense,
-            spdef: mon.spDefense,
+            hp: loaded.hp,
+            attack: loaded.attack,
+            spatk: loaded.spAttack,
+            speed: loaded.speed,
+            defense: loaded.defense,
+            spdef: loaded.spDefense,
         };
-        this.abilities = mon.abilities.map((a) => abilities[a]);
-
-        this.levelMoves = mon.levelMoves.map(([level, id]) => [level, moves[id]]);
-        this.lineMoves = mon.lineMoves.map((m) => moves[m]);
-        this.tutorMoves = mon.tutorMoves.map((m) => moves[m]);
-
-        this.tribes = mon.tribes.map((t) => tribes[t]);
-        this.height = mon.height;
-        this.weight = mon.weight;
-        this.kind = mon.kind;
-        this.pokedex = mon.pokedex;
-        this.items = mon.wildItems.map((i) => items[i]);
-        this.evolutionTree = mon.evolutionTree!;
+        this.abilities = loaded.abilities.map((a) => TectonicData.abilities[a]);
+        this.levelMoves = loaded.levelMoves.map(([level, id]) => [level, TectonicData.moves[id]]);
+        this.lineMoves = loaded.lineMoves.map((m) => TectonicData.moves[m]);
+        this.tutorMoves = loaded.tutorMoves.map((m) => TectonicData.moves[m]);
+        this.tribes = loaded.tribes.map((t) => TectonicData.tribes[t]);
+        this.height = loaded.height;
+        this.weight = loaded.weight;
+        this.kind = loaded.kind;
+        this.pokedex = loaded.pokedex;
+        this.items = loaded.wildItems.map((i) => TectonicData.items[i]);
+        this.evolutionTree = NTreeArrayNode.buildTree(loaded.evolutionTreeArray!);
     }
 
-    public addForms(forms: PokemonForm[]) {
+    static loadForm(loaded: LoadedPokemon): Pokemon {
+        const form = new Pokemon();
+
+        form.id = loaded.key;
+        form.dex = loaded.dexNum;
+        form.name = loaded.name;
+        form.formId = loaded.formId;
+        form.formName = loaded.formName;
+        form.type1 = loaded.type1 !== "" ? TectonicData.types[loaded.type1] : PokemonType.NULL;
+        form.type2 = loaded.type2 ? TectonicData.types[loaded.type2] : undefined;
+        form.abilities = loaded.abilities.map((a) => TectonicData.abilities[a]);
+        form.levelMoves = loaded.levelMoves.map(([level, id]) => [level, TectonicData.moves[id]]);
+        form.stats = {
+            hp: loaded.hp,
+            attack: loaded.attack,
+            spatk: loaded.spAttack,
+            speed: loaded.speed,
+            defense: loaded.defense,
+            spdef: loaded.spDefense,
+        };
+        form.tribes = loaded.tribes.map((t) => TectonicData.tribes[t]);
+        form.height = loaded.height;
+        form.weight = loaded.weight;
+        form.kind = loaded.kind;
+        form.pokedex = loaded.pokedex;
+
+        return form;
+    }
+
+    public addForms(forms: Pokemon[]) {
         this.forms = this.forms.concat(forms);
     }
 
@@ -148,7 +170,7 @@ export class Pokemon {
         return stats.hp + stats.attack + stats.defense + stats.spatk + stats.spdef + stats.speed;
     }
 
-    public getEvoNode(): NTreeNode<LoadedEvolution> {
+    public getEvoNode(): NTreeNode<PokemonEvolutionTerms> {
         return this.evolutionTree.findDepthFirst((node) => node.getData().pokemon == this.id)!;
     }
 

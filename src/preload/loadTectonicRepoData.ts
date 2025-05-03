@@ -1,5 +1,5 @@
+import { PokemonEvolutionTerms } from "@/app/data/tectonic/Pokemon";
 import { NTreeArrayNode, NTreeNode } from "@/app/data/types/NTreeNode";
-import { PokemonEvolutionTerms } from "@/app/data/types/Pokemon";
 import { uniq } from "@/app/data/util";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
@@ -58,6 +58,7 @@ export class LoadedAbility extends LoadedData<LoadedAbility> {
     name: string = "";
     description: string = "";
     flags: string[] = [];
+    isSignature: boolean = false;
 
     constructor() {
         super();
@@ -81,6 +82,7 @@ export class LoadedMove extends LoadedData<LoadedMove> {
     effectChance?: number;
     priority?: number;
     flags: string[] = [];
+    isSignature: boolean = false;
 
     constructor() {
         super();
@@ -491,6 +493,22 @@ function propagateTrainerData(trainers: Record<string, LoadedTrainer>): void {
     }
 }
 
+function propagateSignatures(data: LoadedDataJson) {
+    const abilityCounts = Object.fromEntries(Object.entries(data.abilities).map(([k, _]) => [k, 0]));
+    const moveCounts = Object.fromEntries(Object.entries(data.moves).map(([k, _]) => [k, 0]));
+
+    // Count only values of final evolutions
+    Object.values(data.pokemon)
+        .filter((x) => x.evolutionTree!.findDepthFirst((e) => e.getData().pokemon == x.key)?.isLeaf())
+        .forEach((x) => {
+            x.abilities.forEach((a) => abilityCounts[a]++);
+            x.getAllMoves().forEach((m) => moveCounts[m]++);
+        });
+
+    Object.entries(abilityCounts).forEach(([k, v]) => (data.abilities[k].isSignature = v <= 1));
+    Object.entries(moveCounts).forEach(([k, v]) => (data.moves[k].isSignature = v <= 1));
+}
+
 function buildTypeChart(types: Record<string, LoadedType>): number[][] {
     const size = Object.keys(types).length;
     const typeChart: number[][] = [];
@@ -598,6 +616,7 @@ async function loadData(dev: boolean = false): Promise<void> {
     loadedData.typeChart = buildTypeChart(loadedData.types);
     propgatePokemonData(version, loadedData.pokemon);
     propagateTrainerData(loadedData.trainers);
+    propagateSignatures(loadedData);
 
     // Pre-write setup
     setupPokemonDataForWrite(loadedData.pokemon);

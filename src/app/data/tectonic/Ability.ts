@@ -5,6 +5,7 @@ export class Ability {
     name: string = "";
     description: string = "";
     flags: string[] = [];
+    isSignature: boolean = false;
 
     static NULL: Ability = new Ability();
 
@@ -15,5 +16,6 @@ export class Ability {
         this.name = loaded.name;
         this.description = loaded.description;
         this.flags = loaded.flags;
+        this.isSignature = loaded.isSignature;
     }
 }

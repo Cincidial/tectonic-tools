@@ -1,22 +1,27 @@
 import { MoveData } from "@/app/damagecalc/components/MoveCard";
 import { DamageMultipliers } from "@/app/damagecalc/damageCalc";
+import { LoadedItem } from "@/preload/loadTectonicRepoData";
 import { BattleState } from "../battleState";
-import { LoadedItem } from "../loading/items";
 import { PartyPokemon } from "./PartyPokemon";
 import { Stats } from "./Pokemon";
 
 export class Item {
-    id: string;
-    name: string;
-    description: string;
-    pocket: number;
-    flags: string[];
-    constructor(item: LoadedItem) {
-        this.id = item.key;
-        this.name = item.name;
-        this.description = item.description;
-        this.pocket = item.pocket;
-        this.flags = item.flags;
+    id: string = "";
+    name: string = "";
+    description: string = "";
+    pocket: number = 0;
+    flags: string[] = [];
+
+    static NULL: Item = new Item();
+
+    constructor(loaded?: LoadedItem) {
+        if (!loaded) return;
+
+        this.id = loaded.key;
+        this.name = loaded.name;
+        this.description = loaded.description;
+        this.pocket = loaded.pocket;
+        this.flags = loaded.flags;
     }
 
     public getImage() {
