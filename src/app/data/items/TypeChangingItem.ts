@@ -1,4 +1,4 @@
-import { LoadedItem } from "@/preload/loadTectonicRepoData";
+import { LoadedItem } from "@/preload/loadedDataClasses";
 import { Item } from "../tectonic/Item";
 import { PartyPokemon } from "../types/PartyPokemon";
 

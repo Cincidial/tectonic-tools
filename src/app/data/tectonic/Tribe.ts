@@ -1,4 +1,4 @@
-import { LoadedTribe } from "@/preload/loadTectonicRepoData";
+import { LoadedTribe } from "@/preload/loadedDataClasses";
 
 export class Tribe {
     id: string = "";

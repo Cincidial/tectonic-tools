@@ -1,6 +1,7 @@
-import { Pokemon, PokemonEvolutionTerms } from "@/app/data/tectonic/Pokemon";
+import { Pokemon } from "@/app/data/tectonic/Pokemon";
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { NTreeNode } from "@/app/data/types/NTreeNode";
+import { PokemonEvolutionTerms } from "@/preload/loadedDataClasses";
 import Image from "next/image";
 
 interface PokemonEvolutionProps {

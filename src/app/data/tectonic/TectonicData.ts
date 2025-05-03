@@ -1,5 +1,4 @@
-import { LoadedDataJson } from "@/preload/loadTectonicRepoData";
-import { LoadedData } from "@/preload/tectonicFileParsers";
+import { LoadedData, LoadedDataJson } from "@/preload/loadedDataClasses";
 import loadedData from "public/data/loadedData.json";
 import { twoItemAbilities, TwoItemAbility } from "../abilities/TwoItemAbility";
 import { CategoryBoostingItem } from "../items/CategoryBoostingItem";

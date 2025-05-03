@@ -1,4 +1,4 @@
-import { LoadedTrainerType } from "@/preload/loadTectonicRepoData";
+import { LoadedTrainerType } from "@/preload/loadedDataClasses";
 
 export class TrainerType {
     id: string = "";

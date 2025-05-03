@@ -5,7 +5,7 @@ import { FilterInput } from "@/components/FilterInput";
 import { AVAILABLE_FILTERS, PokemonFilterType } from "@/components/filters";
 import InlineLink from "@/components/InlineLink";
 import InternalLink from "@/components/InternalLink";
-import { LoadedTrainer } from "@/preload/loadTectonicRepoData";
+import { LoadedTrainer } from "@/preload/loadedDataClasses";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";

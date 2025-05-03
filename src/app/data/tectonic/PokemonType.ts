@@ -1,4 +1,4 @@
-import { LoadedType } from "@/preload/loadTectonicRepoData";
+import { LoadedType } from "@/preload/loadedDataClasses";
 
 export class PokemonType {
     id: string = "";

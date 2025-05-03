@@ -1,4 +1,4 @@
-import { LoadedAbility } from "@/preload/loadTectonicRepoData";
+import { LoadedAbility } from "@/preload/loadedDataClasses";
 
 export class Ability {
     id: string = "";

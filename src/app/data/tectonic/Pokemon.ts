@@ -1,4 +1,4 @@
-import { LoadedPokemon } from "@/preload/loadTectonicRepoData";
+import { LoadedPokemon, PokemonEvolutionTerms } from "@/preload/loadedDataClasses";
 import { calculateHP, calculateStat } from "../stats";
 import { TectonicData } from "../tectonic/TectonicData";
 import { NTreeArrayNode, NTreeNode } from "../types/NTreeNode";
@@ -8,18 +8,6 @@ import { Item } from "./Item";
 import { Move } from "./Move";
 import { PokemonType } from "./PokemonType";
 import { Tribe } from "./Tribe";
-
-export class PokemonEvolutionTerms {
-    pokemon: string;
-    method: string;
-    condition: string;
-
-    constructor(pokemon: string, method: string, condition: string) {
-        this.pokemon = pokemon;
-        this.method = method;
-        this.condition = condition;
-    }
-}
 
 export interface Stats {
     hp: number;

@@ -1,7 +1,7 @@
 import { MoveData } from "@/app/damagecalc/components/MoveCard";
 import { Side } from "@/app/damagecalc/damageCalc";
 import { BattleState } from "@/app/data/battleState";
-import { LoadedMove } from "@/preload/loadTectonicRepoData";
+import { LoadedMove } from "@/preload/loadedDataClasses";
 import { StatusEffect } from "../conditions";
 import { TectonicData } from "../tectonic/TectonicData";
 import { PartyPokemon } from "../types/PartyPokemon";

@@ -1,46 +1,4 @@
-export class KVPair {
-    key: string;
-    value: string;
-
-    constructor(key: string, value: string) {
-        this.key = key;
-        this.value = value;
-    }
-}
-
-export class RawEncounterTable {
-    tableLine: string;
-    encounterSplits: string[][] = [];
-
-    constructor(tableLine: string = "") {
-        this.tableLine = tableLine;
-    }
-}
-
-export class RawEncounterMap {
-    mapLine: string;
-    tables: RawEncounterTable[] = [];
-
-    constructor(mapLine: string = "") {
-        this.mapLine = mapLine;
-    }
-}
-
-export abstract class LoadedData<SubClass extends LoadedData<SubClass>> {
-    static bracketKeyName: string = "Bracketvalue";
-
-    key: string = "";
-    protected populateMap: Record<string, (version: string, value: string) => void> = {};
-
-    populate(tectonicVersion: string, pairs: KVPair[]): SubClass {
-        pairs.forEach((pair) => {
-            if (pair.key in this.populateMap) {
-                this.populateMap[pair.key](tectonicVersion, pair.value);
-            }
-        });
-        return this as unknown as SubClass;
-    }
-}
+import { KVPair, LoadedData, RawEncounterMap, RawEncounterTable } from "./loadedDataClasses";
 
 export function parseVersionFile(file: string): string {
     // parsing ruby code as text is So Normal
