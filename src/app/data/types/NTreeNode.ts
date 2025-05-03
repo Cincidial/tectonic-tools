@@ -10,11 +10,12 @@ export class NTreeArrayNode<T> {
     static buildTree<T>(array: NTreeArrayNode<T>[]): NTreeNode<T> {
         const treeNodes = array.map((x) => new NTreeNode(x.data));
         array.forEach((x, index) => {
-            if (x.parentIndex) {
+            if (x.parentIndex !== undefined) {
                 treeNodes[x.parentIndex].addChildByNode(treeNodes[index]);
             }
         });
 
+        console.log(treeNodes);
         return treeNodes[0];
     }
 }
@@ -152,10 +153,14 @@ export class NTreeNode<T> {
     }
 
     toArray(): NTreeArrayNode<T>[] {
-        const array: NTreeNode<T>[] = [];
         let index = 0;
-
         this.depthFirst((_, node) => (node.arrayIndex = index++));
-        return array.map((x) => new NTreeArrayNode<T>(x.data, x.parent?.arrayIndex));
+
+        const array: NTreeArrayNode<T>[] = [];
+        this.depthFirst(
+            (_, node) => (array[node.arrayIndex] = new NTreeArrayNode<T>(node.data, node.parent?.arrayIndex))
+        );
+
+        return array;
     }
 }
