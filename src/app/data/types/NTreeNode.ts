@@ -15,7 +15,6 @@ export class NTreeArrayNode<T> {
             }
         });
 
-        console.log(treeNodes);
         return treeNodes[0];
     }
 }
