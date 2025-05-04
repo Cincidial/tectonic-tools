@@ -33,7 +33,7 @@ async function dataWrite<T>(filePath: string, contents: Record<string, T> | numb
     await writeFile(fullPath, output);
 }
 
-async function handleFiles<T>(paths: string[], processor: (files: string[]) => T, dev: boolean) {
+async function handleFiles<T>(paths: string[], processor: (files: string[]) => T, dev: boolean): Promise<T> {
     const baseUrl = `https://raw.githubusercontent.com/xeuorux/Pokemon-Tectonic/refs/heads/${
         dev ? "development" : "main"
     }/`;
@@ -191,29 +191,51 @@ async function loadData(dev: boolean = false): Promise<void> {
     );
     const loadedData: LoadedDataJson = {
         version: version,
-        types: await handleFiles(["PBS/types.txt"], (f: string[]) => parseStandardFile(version, LoadedType, f), dev),
-        tribes: await handleFiles(
+        types: {},
+        tribes: {},
+        abilities: {},
+        moves: {},
+        items: {},
+        pokemon: {},
+        forms: {},
+        trainerTypes: {},
+        trainers: {},
+        encounters: {},
+        typeChart: [],
+    };
+
+    await Promise.all([
+        await handleFiles(
+            ["PBS/types.txt"],
+            (f: string[]) => (loadedData.types = parseStandardFile(version, LoadedType, f)),
+            dev
+        ),
+        await handleFiles(
             ["PBS/tribes.txt"],
-            (f: string[]) => parseNewLineCommaFile(version, LoadedTribe, f[0]),
+            (f: string[]) => (loadedData.tribes = parseNewLineCommaFile(version, LoadedTribe, f[0])),
             dev
         ),
-        abilities: await handleFiles(
+        await handleFiles(
             ["PBS/abilities.txt", "PBS/abilities_new.txt"],
-            (f: string[]) => parseStandardFile(version, LoadedAbility, f),
+            (f: string[]) => (loadedData.abilities = parseStandardFile(version, LoadedAbility, f)),
             dev
         ),
-        moves: await handleFiles(
+        await handleFiles(
             ["PBS/moves.txt", "PBS/moves_new.txt"],
-            (f: string[]) => parseStandardFile(version, LoadedMove, f),
+            (f: string[]) => (loadedData.moves = parseStandardFile(version, LoadedMove, f)),
             dev
         ),
-        items: await handleFiles(["PBS/items.txt"], (f: string[]) => parseStandardFile(version, LoadedItem, f), dev),
-        pokemon: await handleFiles(
+        await handleFiles(
+            ["PBS/items.txt"],
+            (f: string[]) => (loadedData.items = parseStandardFile(version, LoadedItem, f)),
+            dev
+        ),
+        await handleFiles(
             ["PBS/pokemon.txt"],
-            (f: string[]) => parseStandardFile(version, LoadedPokemon, f),
+            (f: string[]) => (loadedData.pokemon = parseStandardFile(version, LoadedPokemon, f)),
             dev
         ),
-        forms: await handleFiles(
+        await handleFiles(
             ["PBS/pokemonforms.txt"],
             (f: string[]) => {
                 const loadedForms: Record<string, LoadedPokemon[]> = {};
@@ -224,21 +246,21 @@ async function loadData(dev: boolean = false): Promise<void> {
                     loadedForms[v.key].push(v);
                 });
 
-                return loadedForms;
+                return (loadedData.forms = loadedForms);
             },
             dev
         ),
-        trainerTypes: await handleFiles(
+        await handleFiles(
             ["PBS/trainertypes.txt"],
-            (f: string[]) => parseStandardFile(version, LoadedTrainerType, f),
+            (f: string[]) => (loadedData.trainerTypes = parseStandardFile(version, LoadedTrainerType, f)),
             dev
         ),
-        trainers: await handleFiles(
+        await handleFiles(
             ["PBS/trainers.txt"],
-            (f: string[]) => parseStandardFile(version, LoadedTrainer, f),
+            (f: string[]) => (loadedData.trainers = parseStandardFile(version, LoadedTrainer, f)),
             dev
         ),
-        encounters: await handleFiles(
+        await handleFiles(
             ["PBS/encounters.txt"],
             (f: string[]) => {
                 const record: Record<string, LoadedEncounterMap> = {};
@@ -247,12 +269,11 @@ async function loadData(dev: boolean = false): Promise<void> {
                     record[map.key] = map;
                 });
 
-                return record;
+                return (loadedData.encounters = record);
             },
             dev
         ),
-        typeChart: [],
-    };
+    ]);
 
     // Data propogation
     loadedData.typeChart = buildTypeChart(loadedData.types);
