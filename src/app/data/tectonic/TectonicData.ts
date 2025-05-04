@@ -53,7 +53,7 @@ import { Trainer } from "./Trainer";
 import { TrainerType } from "./TrainerType";
 import { Tribe } from "./Tribe";
 
-const data = loadedData as unknown as LoadedDataJson;
+const data = loadedData as LoadedDataJson;
 const moveSubclasses = [
     AllyDefScalingMove,
     BreakScreensMove,
@@ -129,6 +129,9 @@ type TectonicDataType = {
     typeChart: number[][];
 };
 
+// Note that the order of operations below is done explicitly.
+// The .NULL statics require other data to be loaded and cannot be done as part of their declaration.
+// To this end, the data not in-line loaded with TectonicData (left as {}) is done that way because it requires TectonicData to be instanciated first to populate
 export const TectonicData: TectonicDataType = {
     version: data.version,
     types: fromLoaded(data.types, PokemonType),
@@ -141,14 +144,15 @@ export const TectonicData: TectonicDataType = {
         Object.entries(data.encounters).map(([k, v]) => [k, { ...v, id: v.key.toString() } as EncounterMap])
     ) as Record<string, EncounterMap>,
     typeChart: data.typeChart,
-    moves: undefined!,
-    items: undefined!,
+    moves: {},
+    items: {},
     heldItems: [],
-    pokemon: undefined!,
-    forms: undefined!,
-    trainers: undefined!,
+    pokemon: {},
+    forms: {},
+    trainers: {},
 };
 
+// Start of janky loading, not seen otherwise to users of this data
 TectonicData.moves = fromLoadedMapped(data.moves, (x) => {
     const subclass = moveSubclasses.find((sc) => sc.moveCodes.includes(x.functionCode));
     return subclass ? new subclass(x) : new Move(x);
@@ -168,5 +172,6 @@ TectonicData.forms = fromLoadedArray(data.forms, Pokemon.loadForm);
 TectonicData.trainers = fromLoaded(data.trainers, Trainer);
 Trainer.NULL = new Trainer();
 
+// Start of post-load population
 Object.entries(TectonicData.forms).forEach(([k, v]) => TectonicData.pokemon[k].addForms([Pokemon.NULL, ...v]));
 TectonicData.heldItems = Object.values(TectonicData.items).filter((x) => x.pocket == 5);
