@@ -1,6 +1,9 @@
+import { LoadedAbility } from "@/preload/loadedDataClasses";
 import { Ability } from "../tectonic/Ability";
 import { Item } from "../tectonic/Item";
 import { isNull } from "../util";
+
+type validateItemFunction = (items: Item[]) => boolean;
 
 // assumes max two items
 function differentItems(items: Item[]): boolean {
@@ -23,11 +26,17 @@ export const twoItemAbilities: Record<string, (items: Item[]) => boolean> = {
 };
 
 export class TwoItemAbility extends Ability {
+    private validate: validateItemFunction;
+    constructor(ability: LoadedAbility) {
+        super(ability);
+        this.validate = twoItemAbilities[this.id];
+    }
+
     public validateItems(items: Item[]): boolean {
         // allow anything if an item remains null, since constraints should only apply if both items are (to be) selected
         if (items.some((i) => isNull(i))) {
             return true;
         }
-        return twoItemAbilities[this.id](items);
+        return this.validate(items);
     }
 }
