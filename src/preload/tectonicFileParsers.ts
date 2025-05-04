@@ -27,6 +27,7 @@ export function parseVersionFile(file: string): string {
 export function parseStandardFile<T extends LoadedData<T>>(
     tectonicVersion: string,
     ctor: new () => T,
+    populateMap: Record<string, (version: string, self: T, value: string) => void>,
     files: string[]
 ): Record<string, T> {
     const map: Record<string, T> = {};
@@ -37,7 +38,7 @@ export function parseStandardFile<T extends LoadedData<T>>(
         file.split(/\r?\n/).forEach((line) => {
             if (line.startsWith("#-")) {
                 if (pairs.length !== 0) {
-                    const value = new ctor().populate(tectonicVersion, pairs);
+                    const value = LoadedData.populate(tectonicVersion, new ctor(), populateMap, pairs);
                     map[value.key] = value;
                 }
 
@@ -53,7 +54,7 @@ export function parseStandardFile<T extends LoadedData<T>>(
         });
 
         if (pairs.length !== 0) {
-            const value = new ctor().populate(tectonicVersion, pairs);
+            const value = LoadedData.populate(tectonicVersion, new ctor(), populateMap, pairs);
             map[value.key] = value;
 
             pairs.length = 0;
@@ -66,6 +67,7 @@ export function parseStandardFile<T extends LoadedData<T>>(
 export function parseNewLineCommaFile<T extends LoadedData<T>>(
     tectonicVersion: string,
     ctor: new () => T,
+    populateMap: Record<string, (version: string, self: T, value: string) => void>,
     file: string
 ): Record<string, T> {
     const map: Record<string, T> = {};
@@ -73,7 +75,7 @@ export function parseNewLineCommaFile<T extends LoadedData<T>>(
         .filter((line) => line.length > 0)
         .forEach((line) => {
             const splitKV = line.split(",").map((x, index) => new KVPair(index.toString(), x));
-            const value = new ctor().populate(tectonicVersion, splitKV);
+            const value = LoadedData.populate(tectonicVersion, new ctor(), populateMap, splitKV);
             map[value.key] = value;
         });
 

@@ -99,7 +99,7 @@ export class Pokemon {
             spdef: loaded.spDefense,
         };
         this.abilities = loaded.abilities.map((a) => TectonicData.abilities[a]);
-        this.levelMoves = loaded.levelMoves.map(([level, id]) => [level, TectonicData.moves[id]]);
+        this.levelMoves = loaded.levelMoves.map((levelMove) => [levelMove.level, TectonicData.moves[levelMove.move]]);
         this.lineMoves = loaded.lineMoves.map((m) => TectonicData.moves[m]);
         this.tutorMoves = loaded.tutorMoves.map((m) => TectonicData.moves[m]);
         this.tribes = loaded.tribes.map((t) => TectonicData.tribes[t]);
@@ -122,7 +122,7 @@ export class Pokemon {
         form.type1 = loaded.type1 !== "" ? TectonicData.types[loaded.type1] : PokemonType.NULL;
         form.type2 = loaded.type2 ? TectonicData.types[loaded.type2] : undefined;
         form.abilities = loaded.abilities.map((a) => TectonicData.abilities[a]);
-        form.levelMoves = loaded.levelMoves.map(([level, id]) => [level, TectonicData.moves[id]]);
+        form.levelMoves = loaded.levelMoves.map((levelMove) => [levelMove.level, TectonicData.moves[levelMove.move]]);
         form.stats = {
             hp: loaded.hp,
             attack: loaded.attack,
