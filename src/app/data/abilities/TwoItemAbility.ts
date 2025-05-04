@@ -14,7 +14,7 @@ function allFlag(items: Item[], flag: string) {
     return items.every((i) => i.flags.includes(flag));
 }
 
-export const twoItemAbilities: Record<string, (items: Item[]) => boolean> = {
+export const twoItemAbilities: Record<string, validateItemFunction> = {
     ALLTHATGLITTERS: (items) => allFlag(items, "TypeGem") && differentItems(items),
     BERRYBUNCH: (items) => allFlag(items, "Berry") && differentItems(items),
     CLUMSYKINESIS: () => true,
