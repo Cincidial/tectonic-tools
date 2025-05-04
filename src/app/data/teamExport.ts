@@ -1,7 +1,6 @@
 import { Item } from "./tectonic/Item";
 import { Move } from "./tectonic/Move";
 import { Pokemon, Stat, StylePoints } from "./tectonic/Pokemon";
-import { PokemonType } from "./tectonic/PokemonType";
 import { TectonicData } from "./tectonic/TectonicData";
 import { PartyPokemon } from "./types/PartyPokemon";
 import { convertBase64UrlToBuffer, convertToBase64Url } from "./util";
@@ -121,7 +120,7 @@ function encodeChunk(version: VersionMap, view: DataView<ArrayBuffer>, byteOffse
     byteOffset += 4;
 
     const hasSecondItem = data.items.length > 1 && data.items[1].id != Item.NULL.id;
-    const hasItem1Type = data.itemType.id != PokemonType.NULL.id; // always true in practice
+    const hasItem1Type = data.hasTypeChangingItemAndCanChangeType();
     const hasForm = data.form != Pokemon.NULL.formId && data.form != -1;
 
     third_u32 |= getMonMoveShiftValue(2, MOVE3_SHIFT, MOVE3_MASK);

@@ -95,8 +95,12 @@ export class PartyPokemon {
         return calculatedStats;
     }
 
+    hasTypeChangingItemAndCanChangeType(): boolean {
+        return this.items.some((i) => i instanceof TypeChangingItem && i.canChangeType(this)) && !isNull(this.itemType);
+    }
+
     get types(): { type1: PokemonType; type2?: PokemonType } {
-        if (this.items.some((i) => i instanceof TypeChangingItem && i.canChangeType(this)) && !isNull(this.itemType)) {
+        if (this.hasTypeChangingItemAndCanChangeType()) {
             return { type1: this.itemType };
         }
         return { type1: this.species.getType1(this.form), type2: this.species.getType2(this.form) };
