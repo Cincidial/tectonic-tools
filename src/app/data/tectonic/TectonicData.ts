@@ -129,7 +129,7 @@ type TectonicDataType = {
     typeChart: number[][];
 };
 
-const PartialTectonicData: Partial<TectonicDataType> = {
+export const TectonicData: TectonicDataType = {
     version: data.version,
     types: fromLoaded(data.types, PokemonType),
     tribes: fromLoaded(data.tribes, Tribe),
@@ -141,36 +141,32 @@ const PartialTectonicData: Partial<TectonicDataType> = {
         Object.entries(data.encounters).map(([k, v]) => [k, { ...v, id: v.key.toString() } as EncounterMap])
     ) as Record<string, EncounterMap>,
     typeChart: data.typeChart,
-    moves: undefined,
-    items: undefined,
+    moves: undefined!,
+    items: undefined!,
     heldItems: [],
-    pokemon: undefined,
-    forms: undefined,
-    trainers: undefined,
+    pokemon: undefined!,
+    forms: undefined!,
+    trainers: undefined!,
 };
 
-PartialTectonicData.moves = fromLoadedMapped(data.moves, (x) => {
+TectonicData.moves = fromLoadedMapped(data.moves, (x) => {
     const subclass = moveSubclasses.find((sc) => sc.moveCodes.includes(x.functionCode));
     return subclass ? new subclass(x) : new Move(x);
 });
 Move.NULL = new Move();
 
-PartialTectonicData.items = fromLoadedMapped(data.items, (x) => {
+TectonicData.items = fromLoadedMapped(data.items, (x) => {
     const subclass = itemSubclasses.find((sc) => sc.itemIds.includes(x.key));
     return subclass ? new subclass(x) : new Item(x);
 });
 Item.NULL = new Item();
 
-PartialTectonicData.pokemon = fromLoaded(data.pokemon, Pokemon);
+TectonicData.pokemon = fromLoaded(data.pokemon, Pokemon);
 Pokemon.NULL = new Pokemon();
-PartialTectonicData.forms = fromLoadedArray(data.forms, Pokemon.loadForm);
+TectonicData.forms = fromLoadedArray(data.forms, Pokemon.loadForm);
 
-PartialTectonicData.trainers = fromLoaded(data.trainers, Trainer);
+TectonicData.trainers = fromLoaded(data.trainers, Trainer);
 Trainer.NULL = new Trainer();
 
-Object.entries(PartialTectonicData.forms).forEach(([k, v]) =>
-    PartialTectonicData.pokemon![k].addForms([Pokemon.NULL, ...v])
-);
-PartialTectonicData.heldItems = Object.values(PartialTectonicData.items).filter((x) => x.pocket == 5);
-
-export const TectonicData: TectonicDataType = PartialTectonicData as TectonicDataType;
+Object.entries(TectonicData.forms).forEach(([k, v]) => TectonicData.pokemon[k].addForms([Pokemon.NULL, ...v]));
+TectonicData.heldItems = Object.values(TectonicData.items).filter((x) => x.pocket == 5);
