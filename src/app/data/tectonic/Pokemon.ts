@@ -47,7 +47,12 @@ export const defaultStylePoints: StylePoints = {
 
 function getterFactory<T extends keyof Pokemon>(mon: Pokemon, key: T) {
     return function (form: number = -1) {
-        if (form in mon.forms && mon.forms[form][key] !== undefined) {
+        if (
+            form in mon.forms &&
+            mon.forms[form].id !== "" &&
+            mon.forms[form][key] !== undefined &&
+            mon.forms[form][key] !== ""
+        ) {
             return mon.forms[form][key];
         }
         return mon[key];
