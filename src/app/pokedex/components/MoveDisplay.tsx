@@ -28,7 +28,7 @@ export default function MoveDisplay({
         <>
             <div className="flex">
                 {/* Moves List */}
-                <div className="w-1/2">
+                <div className="w-1/2 overflow-y-auto">
                     {levels.length === 0 && (
                         <div className="mb-2">
                             <label className="text-gray-600 dark:text-gray-300 mr-2">Category:</label>
@@ -45,29 +45,27 @@ export default function MoveDisplay({
                             </select>
                         </div>
                     )}
-                    <div className="max-h-64 overflow-y-auto">
-                        <ul className="list-disc list-inside text-gray-600 dark:text-gray-300">
-                            {filteredMoves.map((move, index) => (
-                                <li
-                                    key={index}
-                                    className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
-                                    onMouseEnter={() => setSelectedMove(move)}
-                                    onClick={() => setSelectedMove(move)}
+                    <ul className="list-disc list-inside text-gray-600 dark:text-gray-300">
+                        {filteredMoves.map((move, index) => (
+                            <li
+                                key={index}
+                                className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                                onMouseEnter={() => setSelectedMove(move)}
+                                onClick={() => setSelectedMove(move)}
+                            >
+                                {levels.length > 0 ? (levels[index] === 0 ? "E: " : `${levels[index]}: `) : ""}
+                                <span
+                                    className={
+                                        (move.isSTAB(pokemon) ? "font-semibold" : "") +
+                                        " " +
+                                        (move.isSignature ? "text-yellow-500" : "")
+                                    }
                                 >
-                                    {levels.length > 0 ? (levels[index] === 0 ? "E: " : `${levels[index]}: `) : ""}
-                                    <span
-                                        className={
-                                            (move.isSTAB(pokemon) ? "font-semibold" : "") +
-                                            " " +
-                                            (move.isSignature ? "text-yellow-500" : "")
-                                        }
-                                    >
-                                        {move.name}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                                    {move.name}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
 
                 {/* Move Details */}
