@@ -4,7 +4,11 @@ import { Pokemon } from "@/app/data/tectonic/Pokemon";
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { calcTypeMatchup } from "@/app/data/typeChart";
 import { negativeMod } from "@/app/data/util";
+import AbilityCapsule from "@/components/AbilityCapsule";
 import BasicButton from "@/components/BasicButton";
+import CloseXButton from "@/components/CloseXButton";
+import FormChangerButtons from "@/components/FormChangerButtons";
+import TribeCapsule from "@/components/TribeCapsule";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -21,17 +25,7 @@ interface PokemonModalProps {
     handlePokemonClick: (pokemon: Pokemon | null) => void;
 }
 
-const tabs = [
-    "Info",
-    "Abilities",
-    "Stats",
-    "Def. Matchups",
-    "Atk. Matchups",
-    "Level Moves",
-    "Tutor Moves",
-    "Evolutions",
-    "Encounters",
-] as const;
+const tabs = ["Evolutions", "Def. Matchups", "Atk. Matchups", "Level Moves", "Tutor Moves", "Encounters"] as const;
 export type PokemonTabName = (typeof tabs)[number];
 
 const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemonClick }) => {
@@ -42,7 +36,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
     const [selectedStabAbility, setSelectedStabAbility] = useState<Ability>(
         currentPokemon?.abilities[0] ?? Ability.NULL
     );
-    const [activeTab, setActiveTab] = useState<PokemonTabName>("Info");
+    const [activeTab, setActiveTab] = useState<PokemonTabName>("Evolutions");
     const [currentForm, setCurrentForm] = useState<number>(0);
     const modalRef = useRef<HTMLDivElement>(null);
 
@@ -147,74 +141,65 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                     isVisible ? "scale-100" : "scale-95"
                 }`}
             >
-                <div className="p-6">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <Image
-                                src={currentPokemon.getImage(currentForm)}
-                                alt={currentPokemon.name}
-                                height="160"
-                                width="160"
-                                className="w-24 h-24"
+                <div className="px-4 py-2.5">
+                    <div className="flex justify-between mb-2">
+                        <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+                            {currentPokemon.dex}: {currentPokemon.name}{" "}
+                            {currentPokemon.getFormName(currentForm) &&
+                                "(" + currentPokemon.getFormName(currentForm) + ") "}
+                            - {currentPokemon.kind} Pokémon
+                        </h3>
+                        <CloseXButton onClick={handleClose} />
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <Image
+                            src={currentPokemon.getImage(currentForm)}
+                            alt={currentPokemon.name}
+                            height="160"
+                            width="160"
+                            className="min-w-40 max-w-40 h-40"
+                        />
+                        <div className="flex flex-col space-y-2">
+                            <FormChangerButtons
+                                formsCount={currentPokemon.forms.length}
+                                onPrevClick={() =>
+                                    setCurrentForm(negativeMod(currentForm - 1, currentPokemon.forms.length))
+                                }
+                                onNextClick={() => setCurrentForm((currentForm + 1) % currentPokemon.forms.length)}
                             />
-                            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                                {currentPokemon.dex}: {currentPokemon.name}{" "}
-                                {currentPokemon.getFormName(currentForm) &&
-                                    "(" + currentPokemon.getFormName(currentForm) + ")"}
-                            </h2>
                             <TypeBadge
                                 key={currentPokemon.getType1(currentForm).id}
                                 types={[currentPokemon.getType1(currentForm), currentPokemon.getType2(currentForm)]}
                                 useShort={false}
                                 element={TypeBadgeElementEnum.CAPSULE_ROW}
                             />
-                        </div>
-                        {currentPokemon.forms.length > 0 && (
-                            <div className="flex items-center space-x-2">
-                                {/* not basic buttons */}
-                                <button
-                                    onClick={() =>
-                                        setCurrentForm(negativeMod(currentForm - 1, currentPokemon.forms.length))
-                                    }
-                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M15 19l-7-7 7-7"
-                                        />
-                                    </svg>
-                                </button>
-                                <button
-                                    onClick={() => setCurrentForm((currentForm + 1) % currentPokemon.forms.length)}
-                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M9 5l7 7-7 7"
-                                        />
-                                    </svg>
-                                </button>
+                            <div className="flex space-x-1">
+                                {currentPokemon.tribes.map((t) => (
+                                    <TribeCapsule key={t.id} tribe={t} />
+                                ))}
                             </div>
-                        )}
-                        <button
-                            onClick={handleClose}
-                            className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        </button>
+                            <div className="flex space-x-1">
+                                {currentPokemon.getAbilities(currentForm).map((a) => (
+                                    <AbilityCapsule key={a.id} ability={a} />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-300">{currentPokemon.getPokedex(currentForm)}</p>
+                    <div>
+                        <table className="table-auto w-full mt-4 inline-block text-center align-middle border-collapse">
+                            <tbody>
+                                <StatRow name="HP" value={stats.hp} scale={1} />
+                                <StatRow name="Attack" value={stats.attack} scale={1} />
+                                <StatRow name="Defense" value={stats.defense} scale={1} />
+                                <EStatRow name="PEHP" pokemon={currentPokemon} form={currentForm} />
+                                <StatRow name="Sp. Atk" value={stats.spatk} scale={1} />
+                                <StatRow name="Sp. Def" value={stats.spdef} scale={1} />
+                                <EStatRow name="SEHP" pokemon={currentPokemon} form={currentForm} />
+                                <StatRow name="Speed" value={stats.speed} scale={1} />
+                                <StatRow name="Total" value={currentPokemon.BST(currentForm)} scale={6} />
+                            </tbody>
+                        </table>
                     </div>
 
                     {/* Tabs */}
@@ -244,37 +229,6 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
 
                     {/* Tab Content */}
                     <div className="mt-6">
-                        <TabContent tab="Info" activeTab={activeTab}>
-                            <div>
-                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-                                    {currentPokemon.kind} Pokémon
-                                </h3>
-                                <h3 className="font-semibold text-gray-800 dark:text-gray-100 mt-4">Tribes</h3>
-                                <ul className="list-disc list-inside text-gray-600 dark:text-gray-300">
-                                    {currentPokemon.tribes.map((tribe, index) => (
-                                        <li key={index}>{tribe.name}</li>
-                                    ))}
-                                </ul>
-                                <br />
-                                <p className="text-gray-600 dark:text-gray-300">
-                                    {currentPokemon.getPokedex(currentForm)}
-                                </p>
-                            </div>
-                        </TabContent>
-                        <TabContent tab="Abilities" activeTab={activeTab}>
-                            {currentPokemon.getAbilities(currentForm).map((a) => (
-                                <div key={a.id}>
-                                    <h3
-                                        className={`font-semibold ${
-                                            a.isSignature ? "text-yellow-500" : "text-gray-800 dark:text-gray-100"
-                                        }`}
-                                    >
-                                        {a.name}
-                                    </h3>
-                                    <p className="text-gray-600 dark:text-gray-300">{a.description}</p>
-                                </div>
-                            ))}
-                        </TabContent>
                         <TabContent tab="Stats" activeTab={activeTab}>
                             <div>
                                 <h3 className="font-semibold text-gray-800 dark:text-gray-100">Stats</h3>
