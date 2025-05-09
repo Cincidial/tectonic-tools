@@ -13,7 +13,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import EncounterDisplay from "./EncounterDisplay";
 import EStatRow from "./EStatRow";
-import MoveDisplay from "./MoveDisplay";
+import MoveTable from "./MoveTable";
 import PokemonEvolution from "./PokemonEvolution";
 import StatRow from "./StatRow";
 import TabContent from "./TabContent";
@@ -335,10 +335,13 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                             </div>
                         </TabContent>
                         <TabContent tab="Level Moves" activeTab={activeTab}>
-                            <MoveDisplay pokemon={currentPokemon} form={currentForm} moveKey="level" />
+                            <MoveTable moves={currentPokemon.getLevelMoves(currentForm)} showLevel={true} />
                         </TabContent>
                         <TabContent tab="Tutor Moves" activeTab={activeTab}>
-                            <MoveDisplay pokemon={currentPokemon} form={currentForm} moveKey="tutor" />
+                            <MoveTable
+                                moves={currentPokemon.lineMoves.concat(currentPokemon.tutorMoves).map((x) => [0, x])}
+                                showLevel={false}
+                            />
                         </TabContent>
                     </div>
                 </div>
