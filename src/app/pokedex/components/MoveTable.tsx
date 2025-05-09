@@ -23,6 +23,7 @@ export default function MoveTable({ moves, showLevel }: { moves: [number, Move][
             <div className="flex justify-center space-x-3 mb-3">
                 {moveCategories.map((c) => (
                     <FilterOptionButton
+                        key={c}
                         onClick={() => setSelectedCategory(selectedCategory === c ? undefined : c)}
                         isSelected={selectedCategory === c}
                     >
@@ -43,6 +44,7 @@ export default function MoveTable({ moves, showLevel }: { moves: [number, Move][
             <div className="grid grid-rows-2 grid-flow-col space-x-2 space-y-2 mb-3">
                 {Object.values(TectonicData.types).map((t) => (
                     <FilterOptionButton
+                        key={t.id}
                         onClick={() => setSelectedType(selectedType === t ? undefined : t)}
                         isSelected={selectedType === t}
                         padding="p-2"
@@ -67,7 +69,7 @@ export default function MoveTable({ moves, showLevel }: { moves: [number, Move][
                 <tbody>
                     {moves
                         .filter(
-                            ([_, m]) =>
+                            ([, m]) =>
                                 (selectedCategory === undefined || m.category === selectedCategory) &&
                                 (selectedType === undefined || m.type === selectedType)
                         )
