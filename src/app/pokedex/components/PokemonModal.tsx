@@ -74,8 +74,6 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
 
     const stats = currentPokemon.getStats(currentForm);
     const realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
-    const realTypesSlices = [realTypes.slice(0, realTypes.length / 2), realTypes.slice(realTypes.length / 2)];
-
     const defMatchupCalcs: Record<string, Record<string, number>> = {};
     const stabMatchupCalcs: Record<string, Record<string, number>> = {};
     let defMatchupDifferentForAbilities = false;
