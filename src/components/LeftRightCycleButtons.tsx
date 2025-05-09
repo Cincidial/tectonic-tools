@@ -1,16 +1,18 @@
 import { ReactNode } from "react";
 
-export default function FormChangerButton({
-    formsCount,
+export default function LeftRightCycleButtons({
+    isVisible,
+    text,
     onPrevClick,
     onNextClick,
 }: {
-    formsCount: number;
+    isVisible: boolean;
+    text: string;
     onPrevClick: () => void;
     onNextClick: () => void;
 }): ReactNode {
     return (
-        formsCount > 0 && (
+        isVisible && (
             <span className="flex items-center space-x-2">
                 <button
                     onClick={onPrevClick}
@@ -20,7 +22,7 @@ export default function FormChangerButton({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
-                <span>Change Form</span>
+                <span>{text}</span>
                 <button
                     onClick={onNextClick}
                     className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"

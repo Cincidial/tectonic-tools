@@ -1,5 +1,4 @@
 import { Ability } from "@/app/data/tectonic/Ability";
-import { EncounterMap } from "@/app/data/tectonic/Encounter";
 import { Pokemon } from "@/app/data/tectonic/Pokemon";
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { calcTypeMatchup } from "@/app/data/typeChart";
@@ -7,7 +6,7 @@ import { negativeMod } from "@/app/data/util";
 import AbilityCapsule from "@/components/AbilityCapsule";
 import BasicButton from "@/components/BasicButton";
 import CloseXButton from "@/components/CloseXButton";
-import FormChangerButtons from "@/components/FormChangerButtons";
+import LeftRightCycleButtons from "@/components/LeftRightCycleButtons";
 import TribeCapsule from "@/components/TribeCapsule";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import Image from "next/image";
@@ -25,7 +24,7 @@ interface PokemonModalProps {
     handlePokemonClick: (pokemon: Pokemon | null) => void;
 }
 
-const tabs = ["Info", "Matchups", "Level Moves", "Tutor Moves", "Encounters"] as const;
+const tabs = ["Info", "Matchups", "Level Moves", "Tutor Moves"] as const;
 export type PokemonTabName = (typeof tabs)[number];
 
 const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemonClick }) => {
@@ -72,21 +71,6 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
     };
 
     if (!isRendered || !currentPokemon) return null;
-
-    const currentEncounters = Object.values(TectonicData.encounters).filter((e) =>
-        Object.values(e.tables).some((t) => t.encounters.some((enc) => enc.pokemon === currentPokemon.id))
-    );
-
-    const prevoEncounters: Record<string, EncounterMap[]> = {};
-    currentPokemon.getEvoNode().callParents((node) => {
-        const currentSpecies = TectonicData.pokemon[node.getData().pokemon];
-        const newEncounters = Object.values(TectonicData.encounters).filter((e) =>
-            Object.values(e.tables).some((t) => t.encounters.some((enc) => enc.pokemon === currentSpecies.id))
-        );
-        if (newEncounters.length > 0) {
-            prevoEncounters[node.getData().pokemon] = newEncounters;
-        }
-    });
 
     const stats = currentPokemon.getStats(currentForm);
     const realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
@@ -153,7 +137,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex justify-between space-x-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex justify-center space-x-4 border-b border-gray-200 dark:border-gray-700">
                         {tabs.map((tab) => (
                             <button
                                 key={tab}
@@ -182,8 +166,9 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                                         className="min-w-40 max-w-40 h-40"
                                     />
                                     <div className="flex flex-col space-y-2">
-                                        <FormChangerButtons
-                                            formsCount={currentPokemon.forms.length}
+                                        <LeftRightCycleButtons
+                                            isVisible={currentPokemon.forms.length > 0}
+                                            text="Change Form"
                                             onPrevClick={() =>
                                                 setCurrentForm(
                                                     negativeMod(currentForm - 1, currentPokemon.forms.length)
@@ -233,6 +218,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                                         </tbody>
                                     </table>
                                 </div>
+                                <hr className="my-3" />
                                 <div className="mt-2">
                                     {currentPokemon.evolutionTree.isLeaf() ? (
                                         <p className="text-gray-600 dark:text-gray-300">Does not evolve.</p>
@@ -257,6 +243,8 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                                         </div>
                                     )}
                                 </div>
+                                <hr className="my-3" />
+                                <EncounterDisplay pokemon={currentPokemon} />
                             </div>
                         </TabContent>
                         <TabContent tab="Matchups" activeTab={activeTab}>
@@ -363,17 +351,6 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                         </TabContent>
                         <TabContent tab="Tutor Moves" activeTab={activeTab}>
                             <MoveDisplay pokemon={currentPokemon} form={currentForm} moveKey="tutor" />
-                        </TabContent>
-                        <TabContent tab={"Encounters"} activeTab={activeTab}>
-                            <EncounterDisplay encounters={currentEncounters} pokemon={currentPokemon} />
-                            {Object.entries(prevoEncounters).map(([prevo, encs]) => (
-                                <div key={prevo}>
-                                    <h4 className="font-semibold text-gray-800 dark:text-gray-100">
-                                        Previous Evolution - {TectonicData.pokemon[prevo].name}
-                                    </h4>
-                                    <EncounterDisplay encounters={encs} pokemon={TectonicData.pokemon[prevo]} />
-                                </div>
-                            ))}
                         </TabContent>
                     </div>
                 </div>
