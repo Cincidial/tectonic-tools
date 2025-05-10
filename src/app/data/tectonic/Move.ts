@@ -41,6 +41,7 @@ export class Move {
     bp: number = 0;
     accuracy: number = 0;
     pp: number = 0;
+    priority?: number;
     category: MoveCategory = "Status";
     target: MoveTarget = "User";
     customVarName?: string;
@@ -60,6 +61,7 @@ export class Move {
         this.bp = loaded.power;
         this.accuracy = loaded.accuracy;
         this.pp = loaded.pp;
+        this.priority = loaded.priority;
         this.category = loaded.category as MoveCategory;
         this.target = loaded.target as MoveTarget;
         this.isSignature = loaded.isSignature;

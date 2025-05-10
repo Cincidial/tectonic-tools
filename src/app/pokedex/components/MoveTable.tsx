@@ -56,13 +56,14 @@ export default function MoveTable({ moves, showLevel }: { moves: [number, Move][
             <table className="w-full divide-gray-200 dark:divide-gray-700">
                 <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        {showLevel && <TableHeader>Level</TableHeader>}
+                        {showLevel && <TableHeader>Lvl</TableHeader>}
                         <TableHeader>Name</TableHeader>
                         <TableHeader>Type</TableHeader>
                         <TableHeader>Cat</TableHeader>
-                        <TableHeader>Power</TableHeader>
+                        <TableHeader>Pow</TableHeader>
                         <TableHeader>Acc</TableHeader>
                         <TableHeader>PP</TableHeader>
+                        <TableHeader>Prio</TableHeader>
                         <TableHeader>Effect</TableHeader>
                     </tr>
                 </thead>
@@ -100,6 +101,7 @@ export default function MoveTable({ moves, showLevel }: { moves: [number, Move][
                                 <TableCell>{m.bp}</TableCell>
                                 <TableCell>{m.accuracy}</TableCell>
                                 <TableCell>{m.pp}</TableCell>
+                                <TableCell>{m.priority ?? "-"}</TableCell>
                                 <TableCell>{m.description}</TableCell>
                             </tr>
                         ))}
