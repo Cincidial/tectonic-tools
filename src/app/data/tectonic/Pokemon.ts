@@ -45,12 +45,21 @@ export const defaultStylePoints: StylePoints = {
     speed: 10,
 };
 
-function getterFactory<T extends keyof Pokemon>(mon: Pokemon, key: T) {
-    return function (form: number = -1) {
-        if (form !== 0 && form in mon.forms && mon.forms[form][key] !== undefined && mon.forms[form][key] !== "") {
-            return mon.forms[form][key];
+function getterFactory<T extends keyof Pokemon, R>(
+    mon: Pokemon,
+    key: T,
+    isNull: (value: R) => boolean
+): (form: number) => R {
+    return function (form: number = 0): R {
+        if (
+            form !== 0 &&
+            form in mon.forms &&
+            mon.forms[form][key] !== undefined &&
+            !isNull(mon.forms[form][key] as R)
+        ) {
+            return mon.forms[form][key] as R;
         }
-        return mon[key];
+        return mon[key] as R;
     };
 }
 
@@ -162,13 +171,13 @@ export class Pokemon {
         return this.evolutionTree.findDepthFirst((node) => node.getData().pokemon == this.id)!;
     }
 
-    public getFormName = getterFactory(this, "formName");
-    public getType1 = getterFactory(this, "type1");
-    public getType2 = getterFactory(this, "type2");
-    public getAbilities = getterFactory(this, "abilities");
-    public getStats = getterFactory(this, "stats");
-    public getPokedex = getterFactory(this, "pokedex");
-    public getLevelMoves = getterFactory(this, "levelMoves");
+    public getFormName = getterFactory(this, "formName", (value: string) => value === "");
+    public getType1 = getterFactory(this, "type1", (value: PokemonType) => value === PokemonType.NULL);
+    public getType2 = getterFactory(this, "type2", (value: PokemonType) => value === PokemonType.NULL);
+    public getAbilities = getterFactory(this, "abilities", (value: Ability[]) => value.length === 0);
+    public getStats = getterFactory(this, "stats", (value: Stats) => value === blankStats);
+    public getPokedex = getterFactory(this, "pokedex", (value: string) => value === "");
+    public getLevelMoves = getterFactory(this, "levelMoves", (value: [number, Move][]) => value.length === 0);
 
     public getPEHP(currentForm: number = 0) {
         const stats = this.getStats(currentForm);

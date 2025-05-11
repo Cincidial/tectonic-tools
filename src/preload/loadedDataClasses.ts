@@ -202,7 +202,7 @@ export class LoadedPokemon extends LoadedData<LoadedPokemon> {
         this.populateMap["Type1"] = (_, self, value) => (self.type1 = value);
         this.populateMap["Type2"] = (_, self, value) => (self.type2 = value);
         this.populateMap["Height"] = (_, self, value) => (self.height = parseFloat(value));
-        this.populateMap["Width"] = (_, self, value) => (self.weight = parseFloat(value));
+        this.populateMap["Weight"] = (_, self, value) => (self.weight = parseFloat(value));
         this.populateMap["BaseStats"] = (_, self, value) => {
             const stats = value.split(",");
             self.hp = parseInt(stats[0]);
