@@ -74,8 +74,9 @@ export function parseNewLineCommaFile<T extends LoadedData<T>>(
     file.split(/\r?\n/)
         .filter((line) => line.length > 0)
         .forEach((line) => {
-            const splitKV = line.split(",").map((x, index) => new KVPair(index.toString(), x));
-            const value = LoadedData.populate(tectonicVersion, new ctor(), populateMap, splitKV);
+            const value = LoadedData.populate(tectonicVersion, new ctor(), populateMap, [
+                new KVPair(LoadedData.commaDeliminatedLine, line),
+            ]);
             map[value.key] = value;
         });
 

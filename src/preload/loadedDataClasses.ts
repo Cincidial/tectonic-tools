@@ -4,6 +4,7 @@ import { uniq } from "@/app/data/util";
 // Note that the extending classes use statics in order to avoid fields from showing up in the output JSON
 export abstract class LoadedData<SubClass extends LoadedData<SubClass>> {
     static bracketKeyName: string = "Bracketvalue";
+    static commaDeliminatedLine: string = "CommaLine";
     static completedLoading: string = "completedLoading";
 
     key: string = "";
@@ -76,16 +77,29 @@ export class LoadedTribe extends LoadedData<LoadedTribe> {
 
     static populateMap: Record<string, (version: string, self: LoadedTribe, value: string) => void> = {};
     static {
-        this.populateMap["0"] = (version, self, value) => {
-            self.key = value;
-            if (version.startsWith("3.2")) self.name = self.key[0] + self.key.substring(1).toLowerCase();
+        this.populateMap[LoadedData.commaDeliminatedLine] = (version, self, value) => {
+            function getDesc(startIndex: number): string {
+                // The description may have commas, but is at the end. So join the whole thing
+                return split
+                    .slice(startIndex)
+                    .join()
+                    .replaceAll('"', "")
+                    .replaceAll(" and is currently {b}", "")
+                    .replaceAll(" and is currently {b1}", "");
+            }
+
+            const split = value.split(",");
+            self.key = split[0];
+            self.activationCount = parseInt(split[1]);
+
+            if (version.startsWith("3.2")) {
+                self.name = self.key[0] + self.key.substring(1).toLowerCase();
+                self.description = getDesc(2);
+            } else {
+                self.name = split[2];
+                self.description = getDesc(3);
+            }
         };
-        this.populateMap["1"] = (_, self, value) => (self.activationCount = parseInt(value));
-        this.populateMap["2"] = (version, self, value) => {
-            if (version.startsWith("3.2")) self.description = value.replaceAll('"', "");
-            else self.name = value;
-        };
-        this.populateMap["3"] = (_, self, value) => (self.description = value.replaceAll('"', ""));
     }
 }
 
