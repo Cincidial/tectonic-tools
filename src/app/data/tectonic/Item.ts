@@ -24,6 +24,7 @@ export class Item {
     }
 
     static NULL: Item = null!;
+    static IMG_NOT_FOUND = "Items/NOTFOUND.png";
 
     constructor(loaded?: LoadedItem) {
         if (!loaded) return;

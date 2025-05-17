@@ -15,7 +15,6 @@ import InternalLink from "@/components/InternalLink";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import type { NextPage } from "next";
 import Head from "next/head";
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { FilterInput } from "../../components/FilterInput";
 import { Ability } from "../data/tectonic/Ability";
@@ -24,6 +23,7 @@ import { Move } from "../data/tectonic/Move";
 import { Pokemon } from "../data/tectonic/Pokemon";
 import { TectonicData } from "../data/tectonic/TectonicData";
 import { Tribe } from "../data/tectonic/Tribe";
+import { uniq } from "../data/util";
 import PokemonModal from "./components/PokemonModal";
 import PokemonTable from "./components/PokemonTable";
 import TabContent from "./components/TabContent";
@@ -48,13 +48,15 @@ Object.values(TectonicData.pokemon).forEach((x) =>
         itemMons[i.id].push(x);
     })
 );
-const itemDisplayData = Object.values(TectonicData.items).map((i) => {
-    return {
-        item: i,
-        wildMons: i.id in itemMons ? itemMons[i.id] : [],
-        moveData: i.isTM && i.move ? TectonicData.moves[i.move] : undefined,
-    };
-});
+const itemDisplayData = Object.values(TectonicData.items)
+    .map((i) => {
+        return {
+            item: i,
+            wildMons: i.id in itemMons ? uniq(itemMons[i.id]) : [],
+            moveData: i.isTM && i.move ? TectonicData.moves[i.move] : undefined,
+        };
+    })
+    .filter((i) => i.item.isTM || i.item.isHeldItem || i.wildMons.length > 0);
 
 const Home: NextPage = () => {
     const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
@@ -280,7 +282,17 @@ const Home: NextPage = () => {
                                             }`}
                                         >
                                             <TableCell>
-                                                <Image alt={i.item.name} src={i.item.image} width={50} height={50} />
+                                                <img
+                                                    alt={i.item.name}
+                                                    src={i.item.image}
+                                                    onError={(img) => {
+                                                        if (img.currentTarget.src != Item.IMG_NOT_FOUND) {
+                                                            img.currentTarget.src = Item.IMG_NOT_FOUND;
+                                                        }
+                                                    }}
+                                                    width={50}
+                                                    height={50}
+                                                />
                                             </TableCell>
                                             <TableCell>{i.item.name}</TableCell>
                                             <TableCell>
