@@ -31,11 +31,10 @@ export enum TypeBadgeElementEnum {
 
 interface TypeBadgeProps {
     types: (PokemonType | undefined)[];
-    useShort: boolean;
     element: TypeBadgeElementEnum;
 }
 
-export default function TypeBadge({ types, useShort, element }: TypeBadgeProps) {
+export default function TypeBadge({ types, element }: TypeBadgeProps) {
     function getClasses(type: PokemonType) {
         return `h-fit text-white text-shadow-xs/100 text-s font-semibold cursor-default 
             ${getTypeColorClass(type, "bg")}`;
@@ -46,7 +45,7 @@ export default function TypeBadge({ types, useShort, element }: TypeBadgeProps) 
     }
 
     function getText(type: PokemonType) {
-        return <span className="my-auto">{useShort ? type.getShortName() : type.name}</span>;
+        return <span className="my-auto">{type.name}</span>;
     }
 
     function getIcon(type: PokemonType) {

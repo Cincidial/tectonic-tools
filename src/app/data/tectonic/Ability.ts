@@ -23,5 +23,33 @@ export class Ability {
         return 1;
     }
 
+    public hasSunSynergy() {
+        return this.flags.includes("SunSynergy");
+    }
+
+    public hasRainSynergy() {
+        return this.flags.includes("RainstormSynergy");
+    }
+
+    public hasHailSynergy() {
+        return this.flags.includes("HailSynergy");
+    }
+
+    public hasSandSynergy() {
+        return this.flags.includes("SandSynergy");
+    }
+
+    public hasEclipseSynergy() {
+        return this.flags.includes("EclipseSynergy");
+    }
+
+    public hasMoonglowSynergy() {
+        return this.flags.includes("MoonglowSynergy");
+    }
+
+    public hasAllWeatherSynergy() {
+        return this.flags.includes("AllWeatherSynergy");
+    }
+
     static abilityIds: string[] = [];
 }

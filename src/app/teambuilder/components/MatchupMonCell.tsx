@@ -20,16 +20,11 @@ export default function MatchupMonCell({ c, useMoves }: { c: PartyPokemon; useMo
                     <>
                         <TypeBadge
                             types={uniq(c.moves.filter((m) => m.isAttackingMove()).map((m) => m.getType(c, nullState)))}
-                            useShort={false}
                             element={TypeBadgeElementEnum.ICONS}
                         />
                     </>
                 ) : (
-                    <TypeBadge
-                        types={[c.types.type1, c.types.type2]}
-                        useShort={false}
-                        element={TypeBadgeElementEnum.ICONS}
-                    />
+                    <TypeBadge types={[c.types.type1, c.types.type2]} element={TypeBadgeElementEnum.ICONS} />
                 )}
             </div>
         </td>

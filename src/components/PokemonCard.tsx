@@ -201,7 +201,7 @@ export default function PokemonCard({
                             {data.species.name +
                                 (data.species.getFormName(data.form) ? " " + data.species.getFormName(data.form) : "")}
                         </p>
-                        <TypeBadge types={badgeTypes} useShort={false} element={TypeBadgeElementEnum.CAPSULE_ROW} />
+                        <TypeBadge types={badgeTypes} element={TypeBadgeElementEnum.CAPSULE_ROW} />
                     </div>
                     <div className="text-center">
                         <h3 className="font-semibold text-gray-800 dark:text-gray-100">Level</h3>
@@ -246,7 +246,6 @@ export default function PokemonCard({
                                     {data.moves[moveIndex].isAttackingMove() && (
                                         <TypeBadge
                                             types={[data.moves[moveIndex].getType(data, battleState || nullState)]}
-                                            useShort={false}
                                             element={TypeBadgeElementEnum.ICONS}
                                         />
                                     )}
@@ -356,11 +355,7 @@ export default function PokemonCard({
                                         ))}
                                     </Dropdown>
                                     {!isNull(data.itemType) && (
-                                        <TypeBadge
-                                            types={[data.itemType]}
-                                            useShort={false}
-                                            element={TypeBadgeElementEnum.ICONS}
-                                        />
+                                        <TypeBadge types={[data.itemType]} element={TypeBadgeElementEnum.ICONS} />
                                     )}
                                 </div>
                             )}

@@ -51,7 +51,6 @@ const PokemonTable: React.FC<PokemonTableProps> = ({ mons, onRowClick }) => {
                                     key={pokemon.type1.id}
                                     element={TypeBadgeElementEnum.CAPSULE_STACK}
                                     types={[pokemon.type1, pokemon.type2]}
-                                    useShort={false}
                                 />
                             </td>
                             <TableCell>

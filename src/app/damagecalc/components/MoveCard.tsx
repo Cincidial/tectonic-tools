@@ -133,7 +133,6 @@ export default function MoveCard({
                         <div className="text-right text-gray-400">Type:</div>
                         <TypeBadge
                             types={[data.move.getType(userData, battleState)]}
-                            useShort={false}
                             element={TypeBadgeElementEnum.CAPSULE_SINGLE}
                         />
                         <div className="text-right text-gray-400">Power:</div>

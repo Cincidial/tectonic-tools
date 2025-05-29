@@ -22,8 +22,4 @@ export class PokemonType {
         this.immunities = loaded.immunities;
         this.isRealType = loaded.isRealType;
     }
-
-    getShortName(): string {
-        return this.name.substring(0, 3).toUpperCase();
-    }
 }
