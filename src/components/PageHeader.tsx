@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { ReactNode } from "react";
+import { JSX, ReactNode, SVGProps } from "react";
+import BuilderIcon from "./svg_icons/BuilderIcon";
+import CalcsIcon from "./svg_icons/CalcsIcon";
+import HomeIcon from "./svg_icons/HomeIcon";
+import PokeballIcon from "./svg_icons/PokeballIcon";
 
 export enum PageType {
     Home,
@@ -9,25 +13,39 @@ export enum PageType {
 }
 
 export default function PageHeader({ currentPage }: { currentPage: PageType }): ReactNode {
-    function getLinkClass(type: PageType) {
-        return `px-4 py-2 text-2xl text-white hover:text-amber-200 ${type == currentPage ? "bg-white/15" : ""}`;
+    function HeaderButton({
+        type,
+        url,
+        icon,
+        text,
+    }: {
+        type: PageType;
+        url: string;
+        icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
+        text: string;
+    }) {
+        return (
+            <Link
+                href={url}
+                className={`my-auto px-4 py-2 text-xl text-white hover:text-amber-200 ${
+                    type == currentPage ? "border-b-2" : ""
+                }`}
+            >
+                <span>
+                    {icon({ className: "inline", width: 25, height: 25 })}
+                    <span className="hidden sm:inline ml-1">{text}</span>
+                </span>
+            </Link>
+        );
     }
 
     return (
         <>
-            <nav className="flex justify-around mb-3 bg-white/10 border-b">
-                <Link href={"../"} className={getLinkClass(PageType.Home)}>
-                    Pokémon Tectonic Tools
-                </Link>
-                <Link href={"/damagecalc"} className={getLinkClass(PageType.Calc)}>
-                    Damage Calculator
-                </Link>
-                <Link href={"/pokedex"} className={getLinkClass(PageType.Pokedex)}>
-                    Pokédex
-                </Link>
-                <Link href={"/teambuilder"} className={getLinkClass(PageType.Builder)}>
-                    Team Builder
-                </Link>
+            <nav className="w-full flex justify-around sm:justify-center mb-3 bg-white/10 border-b border-white/25">
+                <HeaderButton type={PageType.Home} url="../" icon={HomeIcon} text={"Tectonic Tools"} />
+                <HeaderButton type={PageType.Calc} url="/damagecalc" icon={CalcsIcon} text={"Calculator"} />
+                <HeaderButton type={PageType.Pokedex} url="/pokedex" icon={PokeballIcon} text={"Pokédex"} />
+                <HeaderButton type={PageType.Builder} url="/teambuilder" icon={BuilderIcon} text={"Builder"} />
             </nav>
         </>
     );

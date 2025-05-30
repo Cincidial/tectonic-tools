@@ -40,7 +40,7 @@ export interface PokemonTableProps {
     onRowClick: (pokemon: Pokemon) => void;
 }
 
-const tabNames = ["Pokemon", "Moves", "Abilities", "Items", "Tribes", "Type Chart"];
+const tabNames = ["Pokémon", "Moves", "Abilities", "Items", "Tribes", "Type Chart"];
 
 interface FilterableAbility {
     label: string;
@@ -94,7 +94,7 @@ const itemDisplayData = Object.values(TectonicData.items)
 const Home: NextPage = () => {
     const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
     const [filters, setFilters] = useState<PokemonFilterType[]>([]);
-    const [activeTab, setActiveTab] = useState<string>("Pokemon");
+    const [activeTab, setActiveTab] = useState<string>("Pokémon");
     const [currentFilter, setCurrentFilter] = useState<PokemonFilterType>(AVAILABLE_FILTERS[0]);
     const [itemFilter, setItemFilter] = useState<string | undefined>();
     const [typeChartAtkDualType, setTypeChartAtkDualType] = useState<PokemonType | undefined>();
@@ -132,22 +132,22 @@ const Home: NextPage = () => {
 
     const handleMoveClick = (move: Move) => {
         handleAddFilter(allMovesFilter, move.name.toLowerCase());
-        setActiveTab("Pokemon");
+        setActiveTab("Pokémon");
     };
 
     const handleAbilityClick = (ability: Ability) => {
         handleAddFilter(abilityNameFilter, ability.name.toLowerCase());
-        setActiveTab("Pokemon");
+        setActiveTab("Pokémon");
     };
 
     const handleItemClick = (item: Item) => {
         handleAddFilter(heldItemFilter, item.name.toLowerCase());
-        setActiveTab("Pokemon");
+        setActiveTab("Pokémon");
     };
 
     const handleTribeClick = (tribe: Tribe) => {
         handleAddFilter(tribesFilter, tribe.name.toLowerCase());
-        setActiveTab("Pokemon");
+        setActiveTab("Pokémon");
     };
 
     const realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
@@ -157,33 +157,30 @@ const Home: NextPage = () => {
                 <title>Pokémon Tectonic Online Pokédex</title>
                 <meta name="description" content="View Pokémon data for the fangame Pokémon Tectonic" />
             </Head>
-            <PageHeader currentPage={PageType.Pokedex} />
+            <PageHeader currentPage={PageType.Pokedex}></PageHeader>
 
-            <main className="container mx-auto px-4 pb-6">
-                <div className="text-center p-1.5 w-max mx-auto sticky top-0 bg-gray-900">
+            <main>
+                <div className="flex sm:justify-center overflow-x-auto pb-3 mb-1 sm:mb-0">
                     {tabNames.map((n) => (
-                        // not basic button
-                        <button
+                        <span
                             key={n}
-                            className={`p-2.5 text-2xl text-center no-underline inline-block rounded-lg mx-2 hover:bg-[#FFD166] hover:text-black hover:cursor-pointer ${
-                                n === activeTab ? "bg-[#FFD166] text-black" : "bg-gray-500"
+                            className={`px-2 py-1 text-xl whitespace-nowrap text-white hover:text-amber-200 cursor-pointer border-b-2 ${
+                                n == activeTab ? "border-white" : "border-white/25"
                             }`}
-                            onClick={() => setActiveTab(n)}
                         >
-                            {n}
-                        </button>
+                            <button onClick={() => setActiveTab(n)}>{n}</button>
+                        </span>
                     ))}
                 </div>
-                <TabContent tab="Pokemon" activeTab={activeTab}>
-                    <FilterInput
-                        currentFilter={currentFilter}
-                        filters={filters}
-                        onAddFilter={handleAddFilter}
-                        removeFilter={removeFilter}
-                        setCurrentFilter={setCurrentFilter}
-                    />
-
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <TabContent tab="Pokémon" activeTab={activeTab}>
+                    <div className="dark:bg-gray-800">
+                        <FilterInput
+                            currentFilter={currentFilter}
+                            filters={filters}
+                            onAddFilter={handleAddFilter}
+                            removeFilter={removeFilter}
+                            setCurrentFilter={setCurrentFilter}
+                        />
                         <PokemonTable mons={filteredPokemon} onRowClick={handlePokemonClick} />
                     </div>
                     {selectedPokemon && (
@@ -231,7 +228,7 @@ const Home: NextPage = () => {
                     </div>
                 </TabContent>
                 <TabContent tab="Abilities" activeTab={activeTab}>
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto dark:bg-gray-800">
                         <div>
                             {filterableAbilities.map((group, index) => (
                                 <div key={index} className="flex justify-center space-x-2 my-2">
@@ -249,7 +246,7 @@ const Home: NextPage = () => {
                                 </div>
                             ))}
                         </div>
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 bg-gray-900">
                             <thead className="bg-gray-50 dark:bg-gray-800">
                                 <tr>
                                     <TableHeader>Name</TableHeader>
@@ -274,99 +271,80 @@ const Home: NextPage = () => {
                     </div>
                 </TabContent>
                 <TabContent tab="Items" activeTab={activeTab}>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-800">
-                                <tr>
-                                    <TableHeader>
-                                        <></>
-                                    </TableHeader>
-                                    <TableHeader>Name</TableHeader>
-                                    <TableHeader>
-                                        <FilterOptionButton
-                                            isSelected={itemFilter == "Held"}
-                                            padding="px-2 py-1"
-                                            onClick={() => setItemFilter(itemFilter === "Held" ? undefined : "Held")}
-                                        >
-                                            Held
-                                        </FilterOptionButton>
-                                    </TableHeader>
-                                    <TableHeader>
-                                        <FilterOptionButton
-                                            isSelected={itemFilter == "Wild"}
-                                            padding="px-2 py-1"
-                                            onClick={() => setItemFilter(itemFilter === "Wild" ? undefined : "Wild")}
-                                        >
-                                            Wild Pokemon
-                                        </FilterOptionButton>
-                                    </TableHeader>
-                                    <TableHeader>Effect</TableHeader>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {itemDisplayData
-                                    .filter((i) =>
-                                        itemFilter === "Held"
-                                            ? i.item.isHeldItem
-                                            : itemFilter == "Wild"
-                                            ? i.wildMons.length > 0
-                                            : true
-                                    )
-                                    .map((i) => (
-                                        <tr
-                                            key={i.item.id}
-                                            onClick={() => (i.wildMons.length > 0 ? handleItemClick(i.item) : () => {})}
-                                            className={`hover:bg-blue-50 dark:hover:bg-blue-900 ${
-                                                i.wildMons.length > 0 ? "cursor-pointer" : "cursor-text"
-                                            }`}
-                                        >
-                                            <TableCell>
-                                                <ImageFallback
-                                                    alt={i.item.name}
-                                                    src={i.item.image}
-                                                    width={50}
-                                                    height={50}
-                                                />
-                                            </TableCell>
-                                            <TableCell>{i.item.name}</TableCell>
-                                            <TableCell>
-                                                <span className="text-2xl">{i.item.isHeldItem ? "\u2713" : ""}</span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="w-50 whitespace-break-spaces">
-                                                    {i.wildMons.map((x) => `${x.mon.name} - ${x.chance}%`).join("\n")}
+                    <div className="flex justify-center space-x-5 pb-2">
+                        <FilterOptionButton
+                            isSelected={itemFilter == "Held"}
+                            padding="px-2 py-1"
+                            onClick={() => setItemFilter(itemFilter === "Held" ? undefined : "Held")}
+                        >
+                            Held
+                        </FilterOptionButton>
+                        <FilterOptionButton
+                            isSelected={itemFilter == "Wild"}
+                            padding="px-2 py-1"
+                            onClick={() => setItemFilter(itemFilter === "Wild" ? undefined : "Wild")}
+                        >
+                            Wild Pokemon
+                        </FilterOptionButton>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                        {itemDisplayData
+                            .filter((i) =>
+                                itemFilter === "Held"
+                                    ? i.item.isHeldItem
+                                    : itemFilter == "Wild"
+                                    ? i.wildMons.length > 0
+                                    : true
+                            )
+                            .map((i) => (
+                                <div
+                                    key={i.item.id}
+                                    onClick={() => (i.wildMons.length > 0 ? handleItemClick(i.item) : () => {})}
+                                    className={`hover:bg-blue-900 p-1 w-fit sm:w-75 mx-auto even:bg-gray-700 border-1 border-white ${
+                                        i.wildMons.length > 0 ? "cursor-pointer" : ""
+                                    }`}
+                                >
+                                    <div className="flex justify-center">
+                                        <ImageFallback alt={i.item.name} src={i.item.image} width={50} height={50} />
+                                        <span className="text-lg ml-1 my-auto">
+                                            {i.item.name}
+                                            <div className="text-sm">{i.item.isHeldItem ? "(Held Item)" : ""}</div>
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 text-center whitespace-break-spaces">
+                                        {i.wildMons
+                                            .map((x) => <div key={x.mon.name}>{`${x.mon.name} - ${x.chance}%`}</div>)
+                                            .concat(
+                                                <div key={"desc"} className="col-span-full mt-1">
+                                                    {i.item.description}
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>{i.item.description}</TableCell>
-                                        </tr>
-                                    ))}
-                            </tbody>
-                        </table>
+                                            )}
+                                    </div>
+                                </div>
+                            ))}
                     </div>
                 </TabContent>
                 <TabContent tab="Tribes" activeTab={activeTab}>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-800">
-                                <tr>
-                                    <TableHeader>Name</TableHeader>
-                                    <TableHeader>Effect</TableHeader>
+                    <table className="mx-auto">
+                        <thead className="bg-blue-700 sticky top-0">
+                            <tr>
+                                <TableHeader>Name</TableHeader>
+                                <TableHeader>Effect</TableHeader>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.values(TectonicData.tribes).map((t) => (
+                                <tr
+                                    key={t.id}
+                                    onClick={() => handleTribeClick(t)}
+                                    className={`hover:bg-blue-50 dark:hover:bg-blue-900 cursor-pointer`}
+                                >
+                                    <TableCell>{t.name}</TableCell>
+                                    <TableCell>{t.description}</TableCell>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {Object.values(TectonicData.tribes).map((t) => (
-                                    <tr
-                                        key={t.id}
-                                        onClick={() => handleTribeClick(t)}
-                                        className={`hover:bg-blue-50 dark:hover:bg-blue-900 cursor-pointer`}
-                                    >
-                                        <TableCell>{t.name}</TableCell>
-                                        <TableCell>{t.description}</TableCell>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 </TabContent>
                 <TabContent tab="Type Chart" activeTab={activeTab}>
                     <table className="mx-auto border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
