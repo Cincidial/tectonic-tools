@@ -41,7 +41,7 @@ export default function PageHeader({ currentPage }: { currentPage: PageType }): 
 
     return (
         <>
-            <nav className="w-full flex justify-around sm:justify-center mb-3 bg-white/10 border-b border-white/25">
+            <nav className="w-full flex justify-around sm:justify-center bg-white/10 border-b border-white/25">
                 <HeaderButton type={PageType.Home} url="../" icon={HomeIcon} text={"Tectonic Tools"} />
                 <HeaderButton type={PageType.Calc} url="/damagecalc" icon={CalcsIcon} text={"Calculator"} />
                 <HeaderButton type={PageType.Pokedex} url="/pokedex" icon={PokeballIcon} text={"Pokédex"} />

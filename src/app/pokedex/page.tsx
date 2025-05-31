@@ -12,6 +12,8 @@ import {
 } from "@/components/filters";
 import ImageFallback from "@/components/ImageFallback";
 import PageHeader, { PageType } from "@/components/PageHeader";
+import ArrowUpIcon from "@/components/svg_icons/ArrowUp";
+import FilterIcon from "@/components/svg_icons/FilterIcon";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import type { NextPage } from "next";
 import Head from "next/head";
@@ -99,6 +101,7 @@ const Home: NextPage = () => {
     const [itemFilter, setItemFilter] = useState<string | undefined>();
     const [typeChartAtkDualType, setTypeChartAtkDualType] = useState<PokemonType | undefined>();
     const [abilityTableFilter, setAbilityTableFilter] = useState<FilterableAbility>();
+    const [scrollY, setScrollY] = useState(0);
 
     const handleAddFilter = (filter: PokemonFilterType, value: string) => {
         setFilters((prev) => [...prev, { ...filter, value }]);
@@ -125,6 +128,18 @@ const Home: NextPage = () => {
             document.body.style.overflow = ""; // Re-enable scrolling
         }
     }, [selectedPokemon]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollY(window.scrollY);
+        };
+        handleScroll();
+
+        window.addEventListener("scroll", handleScroll);
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
 
     const handlePokemonClick = (pokemon: Pokemon | null) => {
         setSelectedPokemon(pokemon);
@@ -160,17 +175,28 @@ const Home: NextPage = () => {
             <PageHeader currentPage={PageType.Pokedex}></PageHeader>
 
             <main>
-                <div className="flex sm:justify-center overflow-x-auto pb-3 mb-1 sm:mb-0">
-                    {tabNames.map((n) => (
-                        <span
-                            key={n}
-                            className={`px-2 py-1 text-xl whitespace-nowrap text-white hover:text-amber-200 cursor-pointer border-b-2 ${
-                                n == activeTab ? "border-white" : "border-white/25"
-                            }`}
-                        >
-                            <button onClick={() => setActiveTab(n)}>{n}</button>
-                        </span>
-                    ))}
+                <div className="flex sm:justify-center mr-2 sticky top-0 bg-gray-900 pt-1 mt-1">
+                    {scrollY != 0 ? (
+                        <ArrowUpIcon
+                            className="w-15 h-10 bg-blue-700 rounded-lg p-1 mx-2 hover:bg-yellow-highlight hover:fill-black cursor-pointer"
+                            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                        />
+                    ) : (
+                        <FilterIcon className="w-15 h-10 bg-blue-700 rounded-lg p-1 mx-2 hover:bg-yellow-highlight hover:fill-black cursor-pointer" />
+                    )}
+                    <span className="flex w-fit sm:justify-center overflow-x-auto pb-3 mb-1 sm:mb-0 text-xl whitespace-nowrap border-white text-white cursor-pointer">
+                        {tabNames.map((n) => (
+                            <span
+                                key={n}
+                                onClick={() => setActiveTab(n)}
+                                className={`px-2 py-1 hover:text-yellow-highlight border-b-2 ${
+                                    n == activeTab ? "" : "border-white/25"
+                                }`}
+                            >
+                                {n}
+                            </span>
+                        ))}
+                    </span>
                 </div>
                 <TabContent tab="Pokémon" activeTab={activeTab}>
                     <div className="dark:bg-gray-800">
@@ -255,7 +281,7 @@ const Home: NextPage = () => {
                             </thead>
                             <tbody>
                                 {Object.values(TectonicData.abilities)
-                                    .filter((a) => (abilityTableFilter ? abilityTableFilter.filter(a) : true))
+                                    .filter((a) => abilityTableFilter?.filter(a) ?? true)
                                     .map((a) => (
                                         <tr
                                             key={a.id}
@@ -284,10 +310,10 @@ const Home: NextPage = () => {
                             padding="px-2 py-1"
                             onClick={() => setItemFilter(itemFilter === "Wild" ? undefined : "Wild")}
                         >
-                            Wild Pokemon
+                            Wild
                         </FilterOptionButton>
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-3 mx-2">
                         {itemDisplayData
                             .filter((i) =>
                                 itemFilter === "Held"
@@ -300,7 +326,7 @@ const Home: NextPage = () => {
                                 <div
                                     key={i.item.id}
                                     onClick={() => (i.wildMons.length > 0 ? handleItemClick(i.item) : () => {})}
-                                    className={`hover:bg-blue-900 p-1 w-fit sm:w-75 mx-auto even:bg-gray-700 border-1 border-white ${
+                                    className={`hover:bg-yellow-highlight text-white hover:text-black p-1 w-fit sm:w-75 mx-auto even:bg-gray-600 odd:bg-gray-800 border border-white rounded-2xl ${
                                         i.wildMons.length > 0 ? "cursor-pointer" : ""
                                     }`}
                                 >
