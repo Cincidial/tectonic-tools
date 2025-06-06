@@ -1,6 +1,7 @@
 "use client";
 
 import FilterOptionButton from "@/components/FilterOptionButton";
+import ImageFallback, { IMG_NOT_FOUND } from "@/components/ImageFallback";
 import { LoadedEncounterMap, LoadedEncounterTable } from "@/preload/loadedDataClasses";
 import { NextPage } from "next";
 import Head from "next/head";
@@ -27,10 +28,12 @@ const tableDisplayNameMap: Record<string, string> = {
 
 class EncounterPick {
     encounterMonId: string;
+    monId: string;
     isCaught?: boolean = undefined;
 
-    constructor(encounterMonId: string) {
+    constructor(encounterMonId: string, monId: string) {
         this.encounterMonId = encounterMonId;
+        this.monId = monId;
     }
 }
 
@@ -116,7 +119,7 @@ class EncounterDisplayData {
     tableDisplayName: string;
     maxLevel: number;
     minLevel: number;
-    displayMonData: [encounterMonId: string, display: string][];
+    displayMonData: [encounterMonId: string, monId: string, display: string][];
 
     constructor(map: LoadedEncounterMap, table: LoadedEncounterTable) {
         this.key = `${map.key} - ${table.type} - ${table.encounters.join(",")}`;
@@ -133,7 +136,7 @@ class EncounterDisplayData {
             const mon = TectonicData.pokemon[e.pokemon];
             const monName = mon?.name ?? `Not Found - ${e.pokemon}`;
             const formName = mon == undefined ? undefined : mon.getFormName(e.form ?? 0);
-            this.displayMonData.push([e.pokemon, `${monName}${formName ? ` - ${formName}` : ""}`]);
+            this.displayMonData.push([e.pokemon, mon.id, `${monName}${formName ? ` - ${formName}` : ""}`]);
         }
 
         this.displayMonData = this.displayMonData.sort(([, displayA], [, displayB]) =>
@@ -159,8 +162,8 @@ function EncounterDisplay({
     selectedPlaythrough: number;
     data: EncounterDisplayData;
 }): ReactNode {
-    const [selectedOption, setSelectedOption] = useState<string | undefined>(
-        Playthrough.getPlayThrough(selectedPlaythrough)?.getPick(data.key)?.encounterMonId
+    const [selectedOption, setSelectedOption] = useState<EncounterPick | undefined>(
+        Playthrough.getPlayThrough(selectedPlaythrough)?.getPick(data.key)
     );
 
     return (
@@ -174,21 +177,29 @@ function EncounterDisplay({
                 <span className="text-sm rounded-full my-auto px-2 py-1 bg-blue-700">Lvl. {data.maxLevel}</span>
             </div>
             <hr className="mt-1 mb-3" />
-            <div></div>
-            <div className="flex flex-wrap">
-                {data.displayMonData.map(([encounterMonId, display], index) => (
+            <div>
+                <ImageFallback
+                    alt={"Selection"}
+                    src={selectedOption ? TectonicData.pokemon[selectedOption.monId].getImage() : IMG_NOT_FOUND}
+                    width={160}
+                    height={160}
+                    className={selectedOption ? "mx-auto" : "hidden"}
+                />
+            </div>
+            <div className="flex justify-center flex-wrap">
+                {data.displayMonData.map(([encounterMonId, monId, display], index) => (
                     <div
                         key={index}
-                        className={`w-fit px-2 py-1 m-1 border rounded-full hover:bg-selection-yellow hover:text-black ${
-                            selectedOption == encounterMonId ? "bg-selection-yellow text-black" : ""
+                        className={`w-fit h-fit px-2 py-1 m-1 border rounded-full cursor-pointer hover:bg-selection-yellow hover:text-black ${
+                            selectedOption?.encounterMonId == encounterMonId ? "bg-selection-yellow text-black" : ""
                         }`}
                         onClick={() => {
-                            const newSelection = selectedOption == encounterMonId ? undefined : encounterMonId;
+                            const newSelection =
+                                selectedOption?.encounterMonId == encounterMonId
+                                    ? undefined
+                                    : new EncounterPick(encounterMonId, monId);
                             if (newSelection) {
-                                Playthrough.getPlayThrough(selectedPlaythrough)?.setPick(
-                                    data.key,
-                                    new EncounterPick(newSelection)
-                                );
+                                Playthrough.getPlayThrough(selectedPlaythrough)?.setPick(data.key, newSelection);
                             } else {
                                 Playthrough.getPlayThrough(selectedPlaythrough)?.removePick(data.key);
                             }
