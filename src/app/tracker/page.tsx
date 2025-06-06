@@ -1,5 +1,6 @@
 "use client";
 
+import FilterOptionButton from "@/components/FilterOptionButton";
 import { LoadedEncounterMap, LoadedEncounterTable } from "@/preload/loadedDataClasses";
 import { NextPage } from "next";
 import Head from "next/head";
@@ -133,14 +134,14 @@ class EncounterDisplayData {
         this.displayMonNames = this.displayMonNames.sort();
     }
 
-    static buildDisplayData(): EncounterDisplayData[] {
-        const regularTables = Object.values(TectonicData.encounters).flatMap((m) =>
-            m.tables.filter((t) => t.type != "Special").map((t) => new EncounterDisplayData(m, t))
-        );
-        const specialTables = Object.values(TectonicData.encounters).flatMap((m) =>
-            m.tables.filter((t) => t.type == "Special").map((t) => new EncounterDisplayData(m, t))
-        );
-        return regularTables.concat(specialTables).sort((a, b) => a.maxLevel - b.maxLevel);
+    static buildDisplayData(displaySpecial: boolean): EncounterDisplayData[] {
+        return Object.values(TectonicData.encounters)
+            .flatMap((m) =>
+                m.tables
+                    .filter((t) => (displaySpecial ? t.type == "Special" : t.type != "Special"))
+                    .map((t) => new EncounterDisplayData(m, t))
+            )
+            .sort((a, b) => a.maxLevel - b.maxLevel);
     }
 }
 
@@ -148,6 +149,7 @@ const EncounterTracker: NextPage = () => {
     const [_, setLoaded] = useState<boolean>(false);
     const [selectedPlaythrough, setSelectedPlaythrough] = useState<number | undefined>(undefined);
     const [playthroughName, setPlaythroughName] = useState<string>("New Playthrough");
+    const [displaySpecial, setDisplaySpecial] = useState<boolean>(false);
 
     useEffect(() => {
         Playthrough.loadLocalData();
@@ -163,34 +165,44 @@ const EncounterTracker: NextPage = () => {
 
             {selectedPlaythrough ? (
                 <main className="min-h-screen flex flex-col space-y-3 p-3 bg-gray-900 text-white">
-                    <div className="flex justify-between w-full md:w-150 mx-auto pb-2 bg-gray-900 sticky top-0">
+                    <div className="flex justify-between space-x-5 w-full md:w-150 mx-auto pb-2 bg-gray-900 sticky top-0">
                         <button
                             className="text-4xl hover:text-selection-yellow"
                             onClick={() => setSelectedPlaythrough(undefined)}
                         >
                             {"\u21A2"}
                         </button>
-                        <input
-                            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            type="text"
-                            placeholder="Playthrough Name"
-                            value={playthroughName}
-                            onChange={(e) => {
-                                setPlaythroughName(e.target.value);
-                                Playthrough.getPlayThrough(selectedPlaythrough)?.setName(e.target.value);
-                            }}
-                        />
+                        <div className="flex space-x-2">
+                            <input
+                                className="w-40 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                type="text"
+                                placeholder="Playthrough Name"
+                                value={playthroughName}
+                                onChange={(e) => {
+                                    setPlaythroughName(e.target.value);
+                                    Playthrough.getPlayThrough(selectedPlaythrough)?.setName(e.target.value);
+                                }}
+                            />
+                            <FilterOptionButton
+                                onClick={() => setDisplaySpecial(displaySpecial ? false : true)}
+                                isSelected={displaySpecial}
+                            >
+                                <span className="text-3xl">&#127872;</span>
+                            </FilterOptionButton>
+                        </div>
                         <button
                             className="text-4xl hover:text-selection-yellow"
                             onClick={() => {
-                                Playthrough.getPlayThrough(selectedPlaythrough)?.delete();
-                                setSelectedPlaythrough(undefined);
+                                if (confirm("Delete playthrough?")) {
+                                    Playthrough.getPlayThrough(selectedPlaythrough)?.delete();
+                                    setSelectedPlaythrough(undefined);
+                                }
                             }}
                         >
                             {"\u2715"}
                         </button>
                     </div>
-                    {EncounterDisplayData.buildDisplayData().map((data, index) => (
+                    {EncounterDisplayData.buildDisplayData(displaySpecial).map((data, index) => (
                         <div key={index} className="w-full md:w-150 border rounded-2xl p-2 mx-auto">
                             <div className="flex justify-between">
                                 <div className="flex flex-col md:flex-row md:space-x-2 text-xl">
@@ -206,7 +218,10 @@ const EncounterTracker: NextPage = () => {
                             <div></div>
                             <div className="flex flex-wrap">
                                 {data.displayMonNames.map((name, index) => (
-                                    <div key={index} className="w-fit px-2 py-1 m-1 border rounded-full">
+                                    <div
+                                        key={index}
+                                        className="w-fit px-2 py-1 m-1 border rounded-full hover:bg-selection-yellow hover:text-black"
+                                    >
                                         {name}
                                     </div>
                                 ))}
