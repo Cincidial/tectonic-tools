@@ -46,16 +46,20 @@ class Playthrough {
         this.name = name;
     }
 
-    static addNewPlaythrough(name?: string): Playthrough {
+    static addNewPlaythrough(name?: string): number {
         const playthrough = new Playthrough(name ?? "New Playthrough");
         this.localData.push(playthrough);
 
         this.saveLocalData();
-        return playthrough;
+        return playthrough.key;
     }
 
-    static getPlayThroughs(): Playthrough[] {
-        return this.localData;
+    static getPlayThroughs(): number[] {
+        return this.localData.map((x) => x.key);
+    }
+
+    static getPlayThrough(key?: number): Playthrough | undefined {
+        return this.localData.find((x) => x.key == key);
     }
 
     static loadLocalData(): Playthrough[] {
@@ -142,7 +146,7 @@ class EncounterDisplayData {
 
 const EncounterTracker: NextPage = () => {
     const [_, setLoaded] = useState<boolean>(false);
-    const [selectedPlaythrough, setSelectedPlaythrough] = useState<Playthrough | undefined>(undefined);
+    const [selectedPlaythrough, setSelectedPlaythrough] = useState<number | undefined>(undefined);
     const [playthroughName, setPlaythroughName] = useState<string>("New Playthrough");
 
     useEffect(() => {
@@ -173,13 +177,13 @@ const EncounterTracker: NextPage = () => {
                             value={playthroughName}
                             onChange={(e) => {
                                 setPlaythroughName(e.target.value);
-                                selectedPlaythrough.setName(playthroughName);
+                                Playthrough.getPlayThrough(selectedPlaythrough)?.setName(e.target.value);
                             }}
                         />
                         <button
                             className="text-4xl hover:text-selection-yellow"
                             onClick={() => {
-                                selectedPlaythrough.delete();
+                                Playthrough.getPlayThrough(selectedPlaythrough)?.delete();
                                 setSelectedPlaythrough(undefined);
                             }}
                         >
@@ -236,9 +240,12 @@ const EncounterTracker: NextPage = () => {
                         <div
                             key={index}
                             className="w-full md:w-150 text-center border rounded-2xl p-2 my-2 mx-auto hover:bg-selection-yellow hover:text-black"
-                            onClick={() => setSelectedPlaythrough(x)}
+                            onClick={() => {
+                                setPlaythroughName(Playthrough.getPlayThrough(x)?.getName() ?? playthroughName);
+                                setSelectedPlaythrough(x);
+                            }}
                         >
-                            {x.getName()}
+                            {Playthrough.getPlayThrough(x)?.getName()}
                         </div>
                     ))}
                 </main>
