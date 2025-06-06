@@ -3,7 +3,7 @@
 import { LoadedEncounterMap, LoadedEncounterTable } from "@/preload/loadedDataClasses";
 import { NextPage } from "next";
 import Head from "next/head";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { TectonicData } from "../data/tectonic/TectonicData";
 
 const tableDisplayNameMap: Record<string, string> = {
@@ -24,7 +24,84 @@ const tableDisplayNameMap: Record<string, string> = {
     FishingContest: "Surfing",
 };
 
-class encounterDisplayData {
+class EncounterPick {
+    pokemonId: string;
+    isCaught?: boolean = undefined;
+
+    constructor(pokemonId: string) {
+        this.pokemonId = pokemonId;
+    }
+}
+
+class Playthrough {
+    private static localStorageKey = "EncounterTrackerLocalStorageKey";
+    private static localData: Playthrough[] = [];
+
+    private key: number;
+    private name: string = "Playthrough 1";
+    private picks: Record<string, EncounterPick> = {};
+
+    private constructor(name: string) {
+        this.key = performance.now();
+        this.name = name;
+    }
+
+    static addNewPlaythrough(name?: string): Playthrough {
+        const playthrough = new Playthrough(name ?? "New Playthrough");
+        this.localData.push(playthrough);
+
+        this.saveLocalData();
+        return playthrough;
+    }
+
+    static getPlayThroughs(): Playthrough[] {
+        return this.localData;
+    }
+
+    static loadLocalData(): Playthrough[] {
+        const value = localStorage.getItem(this.localStorageKey);
+        const loaded = (this.localData = value ? JSON.parse(value) : []) as Playthrough[];
+
+        this.localData = loaded.map((x) => {
+            const playthrough = new Playthrough(x.name);
+            playthrough.key = x.key;
+            playthrough.picks = x.picks;
+
+            return playthrough;
+        });
+        return this.localData;
+    }
+
+    static saveLocalData() {
+        localStorage.setItem(this.localStorageKey, JSON.stringify(this.localData));
+    }
+
+    setName(name: string) {
+        this.name = name;
+        Playthrough.saveLocalData();
+    }
+
+    getName(): string {
+        return this.name;
+    }
+
+    setPick(key: string, pick: EncounterPick) {
+        this.picks[key] = pick;
+        Playthrough.saveLocalData();
+    }
+
+    getPick(key: string): EncounterPick | undefined {
+        return this.picks[key];
+    }
+
+    delete() {
+        Playthrough.localData = Playthrough.localData.filter((x) => x.key != this.key);
+        Playthrough.saveLocalData();
+    }
+}
+
+class EncounterDisplayData {
+    key: string;
     map: LoadedEncounterMap;
     tableDisplayName: string;
     maxLevel: number;
@@ -32,6 +109,7 @@ class encounterDisplayData {
     displayMonNames: string[];
 
     constructor(map: LoadedEncounterMap, table: LoadedEncounterTable) {
+        this.key = `${map.key} - ${table.type} - ${table.encounters.join(",")}`;
         this.map = map;
         this.tableDisplayName = tableDisplayNameMap[table.type];
         this.minLevel = 10000;
@@ -50,17 +128,28 @@ class encounterDisplayData {
 
         this.displayMonNames = this.displayMonNames.sort();
     }
+
+    static buildDisplayData(): EncounterDisplayData[] {
+        const regularTables = Object.values(TectonicData.encounters).flatMap((m) =>
+            m.tables.filter((t) => t.type != "Special").map((t) => new EncounterDisplayData(m, t))
+        );
+        const specialTables = Object.values(TectonicData.encounters).flatMap((m) =>
+            m.tables.filter((t) => t.type == "Special").map((t) => new EncounterDisplayData(m, t))
+        );
+        return regularTables.concat(specialTables).sort((a, b) => a.maxLevel - b.maxLevel);
+    }
 }
 
-const regularTables = Object.values(TectonicData.encounters).flatMap((m) =>
-    m.tables.filter((t) => t.type != "Special").map((t) => new encounterDisplayData(m, t))
-);
-const specialTables = Object.values(TectonicData.encounters).flatMap((m) =>
-    m.tables.filter((t) => t.type == "Special").map((t) => new encounterDisplayData(m, t))
-);
-const displayData = regularTables.concat(specialTables).sort((a, b) => a.maxLevel - b.maxLevel);
-
 const EncounterTracker: NextPage = () => {
+    const [_, setLoaded] = useState<boolean>(false);
+    const [selectedPlaythrough, setSelectedPlaythrough] = useState<Playthrough | undefined>(undefined);
+    const [playthroughName, setPlaythroughName] = useState<string>("New Playthrough");
+
+    useEffect(() => {
+        Playthrough.loadLocalData();
+        setLoaded(true);
+    });
+
     return (
         <Fragment>
             <Head>
@@ -68,30 +157,92 @@ const EncounterTracker: NextPage = () => {
                 <meta name="description" content="Pokémon encounter tracker for the fangame Pokémon Tectonic" />
             </Head>
 
-            <main className="flex flex-col space-y-3 p-3 bg-gray-900 text-white">
-                {displayData.map((data, index) => (
-                    <div key={index} className="w-full md:w-150 border rounded-2xl p-2 mx-auto">
-                        <div className="flex justify-between">
-                            <div className="flex flex-col md:flex-row md:space-x-2 text-xl">
-                                <div>{data.map.name}</div>
-                                <div className="hidden md:inline">-</div>
-                                <div>{data.tableDisplayName}</div>
-                            </div>
-                            <span className="text-sm rounded-full my-auto px-2 py-1 bg-blue-700">
-                                Lvl. {data.maxLevel}
-                            </span>
-                        </div>
-                        <hr className="mt-1 mb-3" />
-                        <div className="flex flex-wrap space-x-2 space-y-2">
-                            {data.displayMonNames.map((name, index) => (
-                                <div key={index} className="w-fit px-2 py-1 border rounded-full">
-                                    {name}
-                                </div>
-                            ))}
-                        </div>
+            {selectedPlaythrough ? (
+                <main className="min-h-screen flex flex-col space-y-3 p-3 bg-gray-900 text-white">
+                    <div className="flex justify-between w-full md:w-150 mx-auto pb-2 bg-gray-900 sticky top-0">
+                        <button
+                            className="text-4xl hover:text-selection-yellow"
+                            onClick={() => setSelectedPlaythrough(undefined)}
+                        >
+                            {"\u21A2"}
+                        </button>
+                        <input
+                            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            type="text"
+                            placeholder="Playthrough Name"
+                            value={playthroughName}
+                            onChange={(e) => {
+                                setPlaythroughName(e.target.value);
+                                selectedPlaythrough.setName(playthroughName);
+                            }}
+                        />
+                        <button
+                            className="text-4xl hover:text-selection-yellow"
+                            onClick={() => {
+                                selectedPlaythrough.delete();
+                                setSelectedPlaythrough(undefined);
+                            }}
+                        >
+                            {"\u2715"}
+                        </button>
                     </div>
-                ))}
-            </main>
+                    {EncounterDisplayData.buildDisplayData().map((data, index) => (
+                        <div key={index} className="w-full md:w-150 border rounded-2xl p-2 mx-auto">
+                            <div className="flex justify-between">
+                                <div className="flex flex-col md:flex-row md:space-x-2 text-xl">
+                                    <div>{data.map.name}</div>
+                                    <div className="hidden md:inline">-</div>
+                                    <div>{data.tableDisplayName}</div>
+                                </div>
+                                <span className="text-sm rounded-full my-auto px-2 py-1 bg-blue-700">
+                                    Lvl. {data.maxLevel}
+                                </span>
+                            </div>
+                            <hr className="mt-1 mb-3" />
+                            <div></div>
+                            <div className="flex flex-wrap">
+                                {data.displayMonNames.map((name, index) => (
+                                    <div key={index} className="w-fit px-2 py-1 m-1 border rounded-full">
+                                        {name}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </main>
+            ) : (
+                <main className="min-h-screen p-3 bg-gray-900 text-white">
+                    <div className="text-3xl text-center">Tectonic Tracker</div>
+                    <div className="flex w-fit mx-auto mt-2">
+                        <input
+                            className="px-4 py-2 mt-1.25 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            type="text"
+                            value={playthroughName}
+                            placeholder="New Playthrough"
+                            onChange={(e) => setPlaythroughName(e.target.value)}
+                        />
+                        <button
+                            className="text-5xl ml-2 hover:text-selection-yellow"
+                            onClick={() => {
+                                setSelectedPlaythrough(Playthrough.addNewPlaythrough(playthroughName));
+                            }}
+                        >
+                            {"\u2295"}
+                        </button>
+                    </div>
+                    <hr className="my-3" />
+                    <div className="text-center text-2xl">Playthroughs</div>
+                    {Playthrough.getPlayThroughs().map((x, index) => (
+                        <div
+                            key={index}
+                            className="w-full md:w-150 text-center border rounded-2xl p-2 my-2 mx-auto hover:bg-selection-yellow hover:text-black"
+                            onClick={() => setSelectedPlaythrough(x)}
+                        >
+                            {x.getName()}
+                        </div>
+                    ))}
+                </main>
+            )}
         </Fragment>
     );
 };
