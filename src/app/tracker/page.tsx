@@ -4,7 +4,7 @@ import FilterOptionButton from "@/components/FilterOptionButton";
 import { LoadedEncounterMap, LoadedEncounterTable } from "@/preload/loadedDataClasses";
 import { NextPage } from "next";
 import Head from "next/head";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, ReactNode, useEffect, useState } from "react";
 import { TectonicData } from "../data/tectonic/TectonicData";
 
 const tableDisplayNameMap: Record<string, string> = {
@@ -26,11 +26,11 @@ const tableDisplayNameMap: Record<string, string> = {
 };
 
 class EncounterPick {
-    pokemonId: string;
+    encounterMonId: string;
     isCaught?: boolean = undefined;
 
-    constructor(pokemonId: string) {
-        this.pokemonId = pokemonId;
+    constructor(encounterMonId: string) {
+        this.encounterMonId = encounterMonId;
     }
 }
 
@@ -95,6 +95,11 @@ class Playthrough {
         Playthrough.saveLocalData();
     }
 
+    removePick(key: string) {
+        delete this.picks[key];
+        Playthrough.saveLocalData();
+    }
+
     getPick(key: string): EncounterPick | undefined {
         return this.picks[key];
     }
@@ -111,7 +116,7 @@ class EncounterDisplayData {
     tableDisplayName: string;
     maxLevel: number;
     minLevel: number;
-    displayMonNames: string[];
+    displayMonData: [encounterMonId: string, display: string][];
 
     constructor(map: LoadedEncounterMap, table: LoadedEncounterTable) {
         this.key = `${map.key} - ${table.type} - ${table.encounters.join(",")}`;
@@ -119,7 +124,7 @@ class EncounterDisplayData {
         this.tableDisplayName = tableDisplayNameMap[table.type];
         this.minLevel = 10000;
         this.maxLevel = -1;
-        this.displayMonNames = [];
+        this.displayMonData = [];
 
         for (let e of table.encounters) {
             this.minLevel = Math.min(this.minLevel, e.minLevel);
@@ -128,10 +133,12 @@ class EncounterDisplayData {
             const mon = TectonicData.pokemon[e.pokemon];
             const monName = mon?.name ?? `Not Found - ${e.pokemon}`;
             const formName = mon == undefined ? undefined : mon.getFormName(e.form ?? 0);
-            this.displayMonNames.push(`${monName}${formName ? ` - ${formName}` : ""}`);
+            this.displayMonData.push([e.pokemon, `${monName}${formName ? ` - ${formName}` : ""}`]);
         }
 
-        this.displayMonNames = this.displayMonNames.sort();
+        this.displayMonData = this.displayMonData.sort(([, displayA], [, displayB]) =>
+            displayA.localeCompare(displayB)
+        );
     }
 
     static buildDisplayData(displaySpecial: boolean): EncounterDisplayData[] {
@@ -143,6 +150,57 @@ class EncounterDisplayData {
             )
             .sort((a, b) => a.maxLevel - b.maxLevel);
     }
+}
+
+function EncounterDisplay({
+    selectedPlaythrough,
+    data,
+}: {
+    selectedPlaythrough: number;
+    data: EncounterDisplayData;
+}): ReactNode {
+    const [selectedOption, setSelectedOption] = useState<string | undefined>(
+        Playthrough.getPlayThrough(selectedPlaythrough)?.getPick(data.key)?.encounterMonId
+    );
+
+    return (
+        <div className="w-full md:w-150 border rounded-2xl p-2 mx-auto">
+            <div className="flex justify-between">
+                <div className="flex flex-col md:flex-row md:space-x-2 text-xl">
+                    <div>{data.map.name}</div>
+                    <div className="hidden md:inline">-</div>
+                    <div>{data.tableDisplayName}</div>
+                </div>
+                <span className="text-sm rounded-full my-auto px-2 py-1 bg-blue-700">Lvl. {data.maxLevel}</span>
+            </div>
+            <hr className="mt-1 mb-3" />
+            <div></div>
+            <div className="flex flex-wrap">
+                {data.displayMonData.map(([encounterMonId, display], index) => (
+                    <div
+                        key={index}
+                        className={`w-fit px-2 py-1 m-1 border rounded-full hover:bg-selection-yellow hover:text-black ${
+                            selectedOption == encounterMonId ? "bg-selection-yellow text-black" : ""
+                        }`}
+                        onClick={() => {
+                            const newSelection = selectedOption == encounterMonId ? undefined : encounterMonId;
+                            if (newSelection) {
+                                Playthrough.getPlayThrough(selectedPlaythrough)?.setPick(
+                                    data.key,
+                                    new EncounterPick(newSelection)
+                                );
+                            } else {
+                                Playthrough.getPlayThrough(selectedPlaythrough)?.removePick(data.key);
+                            }
+                            setSelectedOption(newSelection);
+                        }}
+                    >
+                        {display}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }
 
 const EncounterTracker: NextPage = () => {
@@ -184,7 +242,7 @@ const EncounterTracker: NextPage = () => {
                                 }}
                             />
                             <FilterOptionButton
-                                onClick={() => setDisplaySpecial(displaySpecial ? false : true)}
+                                onClick={() => setDisplaySpecial(!displaySpecial)}
                                 isSelected={displaySpecial}
                             >
                                 <span className="text-3xl">&#127872;</span>
@@ -202,31 +260,8 @@ const EncounterTracker: NextPage = () => {
                             {"\u2715"}
                         </button>
                     </div>
-                    {EncounterDisplayData.buildDisplayData(displaySpecial).map((data, index) => (
-                        <div key={index} className="w-full md:w-150 border rounded-2xl p-2 mx-auto">
-                            <div className="flex justify-between">
-                                <div className="flex flex-col md:flex-row md:space-x-2 text-xl">
-                                    <div>{data.map.name}</div>
-                                    <div className="hidden md:inline">-</div>
-                                    <div>{data.tableDisplayName}</div>
-                                </div>
-                                <span className="text-sm rounded-full my-auto px-2 py-1 bg-blue-700">
-                                    Lvl. {data.maxLevel}
-                                </span>
-                            </div>
-                            <hr className="mt-1 mb-3" />
-                            <div></div>
-                            <div className="flex flex-wrap">
-                                {data.displayMonNames.map((name, index) => (
-                                    <div
-                                        key={index}
-                                        className="w-fit px-2 py-1 m-1 border rounded-full hover:bg-selection-yellow hover:text-black"
-                                    >
-                                        {name}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                    {EncounterDisplayData.buildDisplayData(displaySpecial).map((e, index) => (
+                        <EncounterDisplay key={index} selectedPlaythrough={selectedPlaythrough} data={e} />
                     ))}
                 </main>
             ) : (
