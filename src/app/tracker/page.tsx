@@ -5,6 +5,7 @@ import ImageFallback, { IMG_NOT_FOUND } from "@/components/ImageFallback";
 import { LoadedEncounterMap, LoadedEncounterTable } from "@/preload/loadedDataClasses";
 import { NextPage } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 import { TectonicData } from "../data/tectonic/TectonicData";
 
@@ -130,7 +131,7 @@ class EncounterDisplayData {
         this.maxLevel = -1;
         this.displayMonData = [];
 
-        for (let e of table.encounters) {
+        for (const e of table.encounters) {
             this.minLevel = Math.min(this.minLevel, e.minLevel);
             this.maxLevel = Math.max(this.maxLevel, e.maxLevel ?? e.minLevel);
 
@@ -254,7 +255,7 @@ function EncounterDisplay({
 }
 
 const EncounterTracker: NextPage = () => {
-    const [_, setLoaded] = useState<boolean>(false);
+    const [, setLoaded] = useState<boolean>(false);
     const [selectedPlaythrough, setSelectedPlaythrough] = useState<number | undefined>(undefined);
     const [playthroughName, setPlaythroughName] = useState<string>("New Playthrough");
     const [displaySpecial, setDisplaySpecial] = useState<boolean>(false);
@@ -262,12 +263,12 @@ const EncounterTracker: NextPage = () => {
     useEffect(() => {
         Playthrough.loadLocalData();
         setLoaded(true);
-    });
+    }, []);
 
     return (
         <Fragment>
             <Head>
-                <title>Pokémon Tectonic Encounter Tracker</title>
+                <title>Tectonic Encounter Tracker</title>
                 <meta name="description" content="Pokémon encounter tracker for the fangame Pokémon Tectonic" />
             </Head>
 
@@ -320,7 +321,11 @@ const EncounterTracker: NextPage = () => {
                 </main>
             ) : (
                 <main className="min-h-screen p-3 bg-gray-900 text-white">
-                    <div className="text-3xl text-center">Tectonic Tracker</div>
+                    <div className="text-3xl text-center">
+                        <Link className="hover:text-blue-400" href="../">
+                            Tectonic Tracker
+                        </Link>
+                    </div>
                     <div className="flex w-fit mx-auto mt-2">
                         <input
                             className="px-4 py-2 mt-1.25 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
