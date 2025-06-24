@@ -13,6 +13,7 @@ import GhostTypeIcon from "./type_icons/components/GhostTypeIcon";
 import GrassTypeIcon from "./type_icons/components/GrassTypeIcon";
 import GroundTypeIcon from "./type_icons/components/GroundTypeIcon";
 import IceTypeIcon from "./type_icons/components/IceTypeIcon";
+import MutantTypeIcon from "./type_icons/components/MutantTypeIcon";
 import NormalTypeIcon from "./type_icons/components/NormalTypeIcon";
 import PoisonTypeIcon from "./type_icons/components/PoisonTypeIcon";
 import PsychicTypeIcon from "./type_icons/components/PsychicTypeIcon";
@@ -89,6 +90,8 @@ export default function TypeBadge({ types, element }: TypeBadgeProps) {
                 return <SteelTypeIcon width={widthHeight} height={widthHeight} />;
             case "WATER":
                 return <WaterTypeIcon width={widthHeight} height={widthHeight} />;
+            case "MUTANT":
+                return <MutantTypeIcon width={widthHeight} height={widthHeight} />;
             case "QMARKS":
             default:
                 return <QMarksTypeIcon width={widthHeight} height={widthHeight} />;
