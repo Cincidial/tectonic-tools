@@ -175,7 +175,7 @@ export class Pokemon {
     public getType1 = getterFactory(this, "type1", (value: PokemonType) => value === PokemonType.NULL);
     public getType2 = getterFactory(this, "type2", (value: PokemonType) => value === PokemonType.NULL);
     public getAbilities = getterFactory(this, "abilities", (value: Ability[]) => value.length === 0);
-    public getStats = getterFactory(this, "stats", (value: Stats) => value === blankStats);
+    public getStats = getterFactory(this, "stats", (value: Stats) => value.hp === blankStats.hp); // Nothing should have 0 hp, so if it is 0 then it must not have been set
     public getPokedex = getterFactory(this, "pokedex", (value: string) => value === "");
     public getLevelMoves = getterFactory(this, "levelMoves", (value: [number, Move][]) => value.length === 0);
 
