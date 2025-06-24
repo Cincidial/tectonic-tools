@@ -5,7 +5,7 @@ import { MatchupModifyAbility } from "./MatchupModifyAbility";
 const halfDmgAbilities: Record<string, string[]> = {
     EXORCIST: ["PSYCHIC", "GHOST"],
     FEATHERCOAT: ["ICE", "FLYING"],
-    REALIST: ["DRAGON", "FAIRY"],
+    REALIST: ["DRAGON", "FAIRY", "GHOST"],
     TOUGH: ["FIGHTING", "ROCK"],
     UNAFRAID: ["DARK", "BUG"],
     THICKFAT: ["FIRE", "ICE"],
