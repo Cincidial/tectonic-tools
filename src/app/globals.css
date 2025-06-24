@@ -78,6 +78,8 @@ body {
     --color-bug-bg: #5a690c;
     --color-mutant: #a27292;
     --color-mutant-bg: #53374a;
+    --color-qmarks: #444;
+    --color-qmarks-bg: #222;
     --color-hyper-effective: #2e8bcf;
     --color-super-effective: #2e8b57;
     --color-not-effective: #b04f4a;
@@ -85,6 +87,6 @@ body {
     --color-not-very-effective: #f7be81;
 }
 
-@source inline("{hover:bg,bg,to,from}-{fire,water,steel,rock,psychic,poison,normal,ice,ground,grass,ghost,flying,fighting,fairy,electric,dragon,dark,bug,mutant}{,-bg}");
+@source inline("{hover:bg,bg,to,from}-{fire,water,steel,rock,psychic,poison,normal,ice,ground,grass,ghost,flying,fighting,fairy,electric,dragon,dark,bug,mutant,qmarks}{,-bg}");
 
 @source inline("grid-rows-{1,2}");
