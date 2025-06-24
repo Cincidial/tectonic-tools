@@ -12,7 +12,7 @@ const immunityAbilities: Record<string, string[]> = {
     FIREFIGHTER: ["FIRE"],
     FLYTRAP: ["BUG"],
     FOOLHARDY: ["PSYCHIC"],
-    FULLBLUBBER: ["WATER", "ICE"],
+    FULLBLUBBER: ["FIRE", "ICE"],
     GLASSFIRING: ["FIRE"],
     HEARTLESS: ["FAIRY"],
     HEARTOFJUSTICE: ["DARK"],
