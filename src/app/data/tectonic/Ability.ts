@@ -24,7 +24,7 @@ export class Ability {
     }
 
     public hasSunSynergy() {
-        return this.flags.includes("SunSynergy");
+        return this.flags.includes("SunshineSynergy");
     }
 
     public hasRainSynergy() {
@@ -36,7 +36,7 @@ export class Ability {
     }
 
     public hasSandSynergy() {
-        return this.flags.includes("SandSynergy");
+        return this.flags.includes("SandstormSynergy");
     }
 
     public hasEclipseSynergy() {
