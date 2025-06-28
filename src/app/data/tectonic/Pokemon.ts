@@ -198,4 +198,8 @@ export class Pokemon {
     public getImage(currentForm: number = 0) {
         return "/Pokemon/" + this.id + (currentForm > 0 ? "_" + this.forms[currentForm].formId : "") + ".png";
     }
+
+    public getIcon(currentForm: number = 0) {
+        return "/PokemonIcons/" + this.id + (currentForm > 0 ? "_" + this.forms[currentForm].formId : "") + ".png";
+    }
 }
