@@ -18,6 +18,9 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 import { FilterInput } from "../../components/FilterInput";
+import MoveTable from "../../components/MoveTable";
+import PokemonModal from "../../components/PokemonModal";
+import TypeChartCell from "../../components/TypeChartCell";
 import { ExtraTypeAbility } from "../data/abilities/ExtraTypeAbility";
 import { TypeImmunityAbility } from "../data/abilities/TypeImmunityAbility";
 import { TypeResistAbility } from "../data/abilities/TypeResistAbility";
@@ -29,13 +32,10 @@ import { PokemonType } from "../data/tectonic/PokemonType";
 import { TectonicData } from "../data/tectonic/TectonicData";
 import { Tribe } from "../data/tectonic/Tribe";
 import { uniq } from "../data/util";
-import MoveTable from "./components/MoveTable";
-import PokemonModal from "./components/PokemonModal";
 import PokemonTable from "./components/PokemonTable";
 import TabContent from "./components/TabContent";
 import TableCell from "./components/TableCell";
 import TableHeader from "./components/TableHeader";
-import TypeChartCell from "./components/TypeChartCell";
 
 export interface PokemonTableProps {
     mons: Pokemon[];
