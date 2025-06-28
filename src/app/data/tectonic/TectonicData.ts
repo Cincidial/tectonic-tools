@@ -142,6 +142,7 @@ type TectonicDataType = {
     items: Record<string, Item>;
     heldItems: Array<Item>;
     pokemon: Record<string, Pokemon>;
+    pokemonList: Pokemon[];
     forms: Record<string, Pokemon[]>;
     trainerTypes: Record<string, TrainerType>;
     trainers: Record<string, Trainer>;
@@ -166,6 +167,7 @@ export const TectonicData: TectonicDataType = {
     items: {},
     heldItems: [],
     pokemon: {},
+    pokemonList: [],
     forms: {},
     trainers: {},
 };
@@ -190,6 +192,7 @@ TectonicData.items = fromLoadedMapped(data.items, (x) => {
 Item.NULL = new Item();
 
 TectonicData.pokemon = fromLoaded(data.pokemon, Pokemon);
+TectonicData.pokemonList = Object.values(TectonicData.pokemon);
 Pokemon.NULL = new Pokemon();
 TectonicData.forms = fromLoadedArray(data.forms, Pokemon.loadForm);
 
