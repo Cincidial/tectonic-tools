@@ -12,11 +12,11 @@ import TribeCapsule from "@/components/TribeCapsule";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import TabContent from "../app/pokedex/components/TabContent";
 import EncounterDisplay from "./EncounterDisplay";
 import MoveTable from "./MoveTable";
 import PokemonEvolution from "./PokemonEvolution";
 import StatRow from "./StatRow";
+import TabContent from "./TabContent";
 import TypeChartCell from "./TypeChartCell";
 
 interface PokemonModalProps {
