@@ -85,7 +85,8 @@ export function calcTypeMatchup(atk: AttackerData, def: DefenderData) {
             defAbilityCalc = defAbilityCalc == 0 && thirdType != null ? 1.0 : defAbilityCalc;
         } else if (atkAbility.id == "TINTEDLENS") {
             atkAbilityCalc = defType1Calc * defType2Calc * defAbilityCalc < 1 ? 2 : 1;
-        } else if (atkAbility.id == "EXPERTISE") {
+        } else if (atkAbility.id == "EXPERTISE" && defType1Calc * defType2Calc > 1) {
+            // only boost super effective hits
             atkAbilityCalc = 1.3;
         }
     }
