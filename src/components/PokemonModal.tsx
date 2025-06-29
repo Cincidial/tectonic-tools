@@ -1,4 +1,5 @@
 import { Ability } from "@/app/data/tectonic/Ability";
+import { Move } from "@/app/data/tectonic/Move";
 import { Pokemon } from "@/app/data/tectonic/Pokemon";
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { calcTypeMatchup } from "@/app/data/typeChart";
@@ -19,15 +20,18 @@ import StatRow from "./StatRow";
 import TabContent from "./TabContent";
 import TypeChartCell from "./TypeChartCell";
 
-interface PokemonModalProps {
+export interface PokemonModalProps {
     pokemon: Pokemon | null;
+    moveSelector?: ((m: Move) => void) | null;
     handlePokemonClick: (pokemon: Pokemon | null) => void;
 }
 
-const tabs = ["Info", "Evolutions & Locations", "Level Moves", "Tutor Moves"] as const;
-export type PokemonTabName = (typeof tabs)[number];
+const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector, handlePokemonClick }) => {
+    const tabs = moveSelector
+        ? ["Level Moves", "Tutor Moves"]
+        : (["Info", "Evolutions & Locations", "Level Moves", "Tutor Moves"] as const);
+    type PokemonTabName = (typeof tabs)[number];
 
-const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemonClick }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isRendered, setIsRendered] = useState(false);
     const [currentPokemon, setCurrentPokemon] = useState(mon);
@@ -35,7 +39,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
     const [selectedStabAbility, setSelectedStabAbility] = useState<Ability>(
         currentPokemon?.abilities[0] ?? Ability.NULL
     );
-    const [activeTab, setActiveTab] = useState<PokemonTabName>("Info");
+    const [activeTab, setActiveTab] = useState<PokemonTabName>(moveSelector ? "Level Moves" : "Info");
     const [currentForm, setCurrentForm] = useState<number>(0);
     const modalRef = useRef<HTMLDivElement>(null);
 
@@ -52,13 +56,12 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                     modalRef.current.scrollTop = 0;
                 }
             }, 10);
-        } else {
-            setIsVisible(false);
-            setTimeout(() => setIsRendered(false), 300);
+            document.body.style.overflow = "hidden"; // Disable scrolling
         }
     }, [mon]);
 
     const handleClose = () => {
+        document.body.style.overflow = ""; // Re-enable scrolling
         setIsVisible(false);
         setTimeout(() => {
             setIsRendered(false);
@@ -157,8 +160,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                                 <div className="flex space-x-3">
                                     <div className="flex flex-col items-center space-y-2 min-w-50">
                                         <LeftRightCycleButtons
-                                            isVisible={currentPokemon.forms.length > 0}
-                                            text="Change Form"
+                                            buttonsVisible={currentPokemon.forms.length > 0}
                                             onPrevClick={() =>
                                                 setCurrentForm(
                                                     negativeMod(currentForm - 1, currentPokemon.forms.length)
@@ -167,7 +169,9 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                                             onNextClick={() =>
                                                 setCurrentForm((currentForm + 1) % currentPokemon.forms.length)
                                             }
-                                        />
+                                        >
+                                            <span>Change Form</span>
+                                        </LeftRightCycleButtons>
                                         <Image
                                             src={currentPokemon.getImage(currentForm)}
                                             alt={currentPokemon.name}
@@ -222,7 +226,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                                     <tbody>
                                         {currentPokemon.getAbilities(currentForm).map((a) => (
                                             <tr key={a.id} className="bg-emerald-300/10">
-                                                <td className="whitespace-nowrap pl-1.5 pr-3 py-3 text-right">
+                                                <td className="whitespace-nowrap pl-1.5 pr-3 py-3 text-md text-right">
                                                     <AbilityCapsule ability={a} />
                                                 </td>
                                                 <td>
@@ -239,7 +243,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                                     <tbody>
                                         {currentPokemon.tribes.map((t) => (
                                             <tr key={t.id} className="bg-red-300/10">
-                                                <td className="whitespace-nowrap pl-1.5 pr-3 py-3 text-right">
+                                                <td className="whitespace-nowrap pl-1.5 pr-3 py-3 text-md text-right">
                                                     <TribeCapsule tribe={t} />
                                                 </td>
                                                 <td>
@@ -407,12 +411,17 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, handlePokemon
                             </table>
                         </TabContent>
                         <TabContent tab="Level Moves" activeTab={activeTab}>
-                            <MoveTable moves={currentPokemon.getLevelMoves(currentForm)} showLevel={true} />
+                            <MoveTable
+                                moves={currentPokemon.getLevelMoves(currentForm)}
+                                showLevel={true}
+                                onMoveClick={(m) => (moveSelector ? moveSelector(m) : {})}
+                            />
                         </TabContent>
                         <TabContent tab="Tutor Moves" activeTab={activeTab}>
                             <MoveTable
                                 moves={currentPokemon.lineMoves.concat(currentPokemon.tutorMoves).map((x) => [0, x])}
                                 showLevel={false}
+                                onMoveClick={(m) => (moveSelector ? moveSelector(m) : {})}
                             />
                         </TabContent>
                     </div>
