@@ -1,7 +1,7 @@
-import { Item } from "@/app/data/tectonic/Item";
 import Image from "next/image";
 import { ReactNode, useState } from "react";
 
+export const IMG_NOT_FOUND = "/Items/NOTFOUND.png";
 export default function ImageFallback({
     alt,
     src,
@@ -25,7 +25,7 @@ export default function ImageFallback({
         <Image
             alt={alt}
             title={title}
-            src={isError ? Item.IMG_NOT_FOUND : src}
+            src={isError ? IMG_NOT_FOUND : src}
             onError={() => {
                 setError(true);
             }}
