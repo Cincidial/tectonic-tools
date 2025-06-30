@@ -1,3 +1,6 @@
+import { Pokemon } from "./tectonic/Pokemon";
+import { TectonicData } from "./tectonic/TectonicData";
+
 export class EncounterPick {
     encounterMonId: string;
     monId: string;
@@ -35,14 +38,14 @@ export class Playthrough {
     }
 
     static getPlayThroughs(): number[] {
-        return this.localData.map((x) => x.key);
+        return this.localData.map((x) => x.key) ?? [];
     }
 
     static getPlayThrough(key?: number): Playthrough | undefined {
         return this.localData.find((x) => x.key == key);
     }
 
-    static loadLocalData(): Playthrough[] {
+    static loadLocalData() {
         const value = localStorage.getItem(this.localStorageKey);
         const loaded = (this.localData = value ? JSON.parse(value) : []) as Playthrough[];
 
@@ -53,7 +56,6 @@ export class Playthrough {
 
             return playthrough;
         });
-        return this.localData;
     }
 
     static saveLocalData() {
@@ -93,10 +95,13 @@ export class Playthrough {
         return false;
     }
 
-    hasPickAnywhere(encounterMonId: string): boolean {
-        return Object.values(this.locationPickData).some(
-            (x) => !x.flagMissing && x.picks.some((x) => x.encounterMonId == encounterMonId)
-        );
+    getPickedMonMap(): Record<string, Pokemon> {
+        const result: Record<string, Pokemon> = {};
+        Object.values(this.locationPickData)
+            .flatMap((x) => x.picks)
+            .forEach((x) => (result[x.monId] = TectonicData.pokemon[x.monId]));
+
+        return result;
     }
 
     setPickMissed(key: string, missed: boolean): void {
