@@ -1,16 +1,18 @@
 "use client";
 
 import FilterOptionButton from "@/components/FilterOptionButton";
-import ImageFallback, { IMG_NOT_FOUND } from "@/components/ImageFallback";
+import ImageFallback from "@/components/ImageFallback";
 import { LoadedEncounterMap, LoadedEncounterTable } from "@/preload/loadedDataClasses";
 import { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { Fragment, ReactNode, useEffect, useState } from "react";
+import { Item } from "../data/tectonic/Item";
+import { Pokemon } from "../data/tectonic/Pokemon";
 import { TectonicData } from "../data/tectonic/TectonicData";
 
 const tableDisplayNameMap: Record<string, string> = {
-    Special: "Other",
+    Special: "Special",
     Land: "Grass",
     LandTinted: "Secret Grass",
     FloweryGrass: "Yellow Flowers",
@@ -30,13 +32,16 @@ const tableDisplayNameMap: Record<string, string> = {
 class EncounterPick {
     encounterMonId: string;
     monId: string;
-    isCaught: boolean;
 
-    constructor(encounterMonId: string, monId: string, isCaught: boolean) {
+    constructor(encounterMonId: string, monId: string) {
         this.encounterMonId = encounterMonId;
         this.monId = monId;
-        this.isCaught = isCaught;
     }
+}
+
+class LocationPickData {
+    picks: EncounterPick[] = [];
+    flagMissing: boolean = false;
 }
 
 class Playthrough {
@@ -45,7 +50,7 @@ class Playthrough {
 
     private key: number;
     private name: string = "Playthrough 1";
-    private picks: Record<string, EncounterPick> = {};
+    private locationPickData: Record<string, LocationPickData> = {};
 
     private constructor(name: string) {
         this.key = performance.now();
@@ -75,7 +80,7 @@ class Playthrough {
         this.localData = loaded.map((x) => {
             const playthrough = new Playthrough(x.name);
             playthrough.key = x.key;
-            playthrough.picks = x.picks;
+            playthrough.locationPickData = x.locationPickData;
 
             return playthrough;
         });
@@ -95,18 +100,51 @@ class Playthrough {
         return this.name;
     }
 
-    setPick(key: string, pick: EncounterPick) {
-        this.picks[key] = pick;
+    addPick(key: string, pick: EncounterPick) {
+        if (!(key in this.locationPickData)) {
+            this.locationPickData[key] = new LocationPickData();
+        }
+
+        this.locationPickData[key].picks.push(pick);
         Playthrough.saveLocalData();
     }
 
-    removePick(key: string) {
-        delete this.picks[key];
+    removePick(key: string, encounterMonId: string) {
+        this.locationPickData[key].picks = this.locationPickData[key].picks.filter(
+            (x) => x.encounterMonId != encounterMonId
+        );
         Playthrough.saveLocalData();
     }
 
-    getPick(key: string): EncounterPick | undefined {
-        return this.picks[key];
+    hasPick(key: string, encounterMonId: string): boolean {
+        if (key in this.locationPickData) {
+            return this.locationPickData[key].picks.some((x) => x.encounterMonId == encounterMonId);
+        }
+
+        return false;
+    }
+
+    hasPickAnywhere(encounterMonId: string): boolean {
+        return Object.values(this.locationPickData).some(
+            (x) => !x.flagMissing && x.picks.some((x) => x.encounterMonId == encounterMonId)
+        );
+    }
+
+    setPickMissed(key: string, missed: boolean): void {
+        if (!(key in this.locationPickData)) {
+            this.locationPickData[key] = new LocationPickData();
+        }
+
+        this.locationPickData[key].flagMissing = missed;
+        Playthrough.saveLocalData();
+    }
+
+    wasPickMissed(key: string): boolean {
+        if (key in this.locationPickData) {
+            return this.locationPickData[key].flagMissing;
+        }
+
+        return false;
     }
 
     delete() {
@@ -121,16 +159,18 @@ class EncounterDisplayData {
     tableDisplayName: string;
     maxLevel: number;
     minLevel: number;
-    displayMonData: [encounterMonId: string, monId: string, display: string][];
+    items: Item[];
+    displayMonData: [encounterMonId: string, mon: Pokemon, display: string][];
 
     constructor(map: LoadedEncounterMap, table: LoadedEncounterTable) {
-        this.key = `${map.key} - ${table.type} - ${table.encounters.join(",")}`;
+        this.key = `${map.key} - ${table.type}`;
         this.map = map;
         this.tableDisplayName = tableDisplayNameMap[table.type];
         this.minLevel = 10000;
         this.maxLevel = -1;
         this.displayMonData = [];
 
+        const itemsMap: Record<string, Item> = {};
         for (const e of table.encounters) {
             this.minLevel = Math.min(this.minLevel, e.minLevel);
             this.maxLevel = Math.max(this.maxLevel, e.maxLevel ?? e.minLevel);
@@ -138,23 +178,77 @@ class EncounterDisplayData {
             const mon = TectonicData.pokemon[e.pokemon];
             const monName = mon?.name ?? `Not Found - ${e.pokemon}`;
             const formName = mon == undefined ? undefined : mon.getFormName(e.form ?? 0);
-            this.displayMonData.push([e.pokemon, mon.id, `${monName}${formName ? ` - ${formName}` : ""}`]);
+
+            mon.items.forEach((item) => (itemsMap[item[0].id] = item[0]));
+            this.displayMonData.push([e.pokemon, mon, `${monName}${formName ? ` - ${formName}` : ""}`]);
         }
 
         this.displayMonData = this.displayMonData.sort(([, displayA], [, displayB]) =>
-            displayA.localeCompare(displayB)
+            displayA.name.localeCompare(displayB.name)
         );
+        this.items = Object.values(itemsMap);
     }
 
-    static buildDisplayData(displaySpecial: boolean): EncounterDisplayData[] {
-        return Object.values(TectonicData.encounters)
-            .flatMap((m) =>
-                m.tables
-                    .filter((t) => (displaySpecial ? t.type == "Special" : t.type != "Special"))
-                    .map((t) => new EncounterDisplayData(m, t))
-            )
-            .sort((a, b) => a.maxLevel - b.maxLevel);
+    filter(input: string): boolean {
+        return (
+            this.map.name.toLowerCase().includes(input) ||
+            this.tableDisplayName.toLowerCase().includes(input) ||
+            this.displayMonData.some((x) => x[2].toLowerCase().includes(input)) ||
+            this.items.some((x) => x.name.toLowerCase().includes(input))
+        );
     }
+}
+
+function EncounterDisplayMon({
+    selectedPlaythrough,
+    encounterKey,
+    eMonId,
+    pokemon,
+}: {
+    selectedPlaythrough: number;
+    encounterKey: string;
+    eMonId: string;
+    pokemon: Pokemon;
+}): ReactNode {
+    const [pickedHere, setPickedHere] = useState<boolean>(
+        Playthrough.getPlayThrough(selectedPlaythrough)!.hasPick(encounterKey, eMonId)
+    );
+
+    return (
+        <div className="flex flex-col items-center">
+            <ImageFallback
+                src={pokemon.getIcon()}
+                className={`hover:bg-yellow-highlight cursor-pointer ${pickedHere ? "bg-yellow-highlight" : ""}`}
+                alt={pokemon.name}
+                width={64}
+                height={64}
+                onClick={() => {
+                    const playthrough = Playthrough.getPlayThrough(selectedPlaythrough)!;
+                    if (playthrough.hasPick(encounterKey, eMonId)) {
+                        playthrough.removePick(encounterKey, eMonId);
+                        setPickedHere(false);
+                    } else {
+                        playthrough.addPick(encounterKey, new EncounterPick(eMonId, pokemon.id));
+                        setPickedHere(true);
+                    }
+                }}
+                title={pokemon.name}
+            />
+            <div className="flex flex-wrap justify-center">
+                {pokemon.uniqueItems.map((item) => (
+                    <ImageFallback
+                        key={item.id}
+                        src={item.image}
+                        alt={item.name}
+                        width={48}
+                        height={48}
+                        title={item.name}
+                        className="w-8 h-8"
+                    />
+                ))}
+            </div>
+        </div>
+    );
 }
 
 function EncounterDisplay({
@@ -164,107 +258,65 @@ function EncounterDisplay({
     selectedPlaythrough: number;
     data: EncounterDisplayData;
 }): ReactNode {
-    const [selectedOption, setSelectedOption] = useState<EncounterPick | undefined>(undefined);
-
-    useEffect(() => {
-        setSelectedOption(Playthrough.getPlayThrough(selectedPlaythrough)?.getPick(data.key));
-    }, [selectedPlaythrough, data]);
+    const [flagMissing, setflagMissing] = useState<boolean>(
+        Playthrough.getPlayThrough(selectedPlaythrough)!.wasPickMissed(data.key)
+    );
 
     return (
         <div className="w-full md:w-150 border rounded-2xl p-2 mx-auto">
-            <div className="flex justify-between">
-                <div className="flex flex-col md:flex-row md:space-x-2 text-xl">
-                    <div>{data.map.name}</div>
-                    <div className="hidden md:inline">-</div>
-                    <div>{data.tableDisplayName}</div>
-                </div>
-                <span className="text-sm rounded-full my-auto px-2 py-1 bg-blue-700">Lvl. {data.maxLevel}</span>
-            </div>
-            <hr className="mt-1 mb-3" />
-            <div className="text-center">
-                <div className={selectedOption ? "flex justify-center" : "hidden"}>
-                    <ImageFallback
-                        alt={"Selection"}
-                        src={selectedOption ? TectonicData.pokemon[selectedOption.monId].getImage() : IMG_NOT_FOUND}
-                        width={160}
-                        height={160}
-                    />
-                    <div className="text-xl my-auto">
-                        <div
-                            className={`w-fit h-fit px-2 py-1 m-1 border rounded-full cursor-pointer hover:bg-selection-yellow hover:text-black ${
-                                selectedOption?.isCaught ? "bg-selection-yellow text-black" : ""
-                            }`}
+            <div>
+                <div className="flex justify-between">
+                    <div className="flex flex-col md:flex-row md:space-x-2 text-xl">
+                        <div>{data.map.name}</div>
+                        <div className="hidden md:inline">-</div>
+                        <div>{data.tableDisplayName}</div>
+                    </div>
+                    <div className="flex flex-col md:flex-row gap-2 text-xl">
+                        <span className="text-sm rounded-full my-auto px-2 py-1 bg-blue-700">Lvl. {data.maxLevel}</span>
+                        <FilterOptionButton
+                            isSelected={flagMissing}
                             onClick={() => {
-                                const newPick = new EncounterPick(
-                                    selectedOption!.encounterMonId,
-                                    selectedOption!.monId,
-                                    true
-                                );
-                                Playthrough.getPlayThrough(selectedPlaythrough)?.setPick(data.key, newPick);
-                                setSelectedOption(newPick);
+                                Playthrough.getPlayThrough(selectedPlaythrough)!.setPickMissed(data.key, !flagMissing);
+                                setflagMissing(!flagMissing);
                             }}
                         >
-                            &#10004; Caught
-                        </div>
-                        <div
-                            className={`w-fit h-fit px-2 py-1 m-1 border rounded-full cursor-pointer hover:bg-selection-yellow hover:text-black ${
-                                !selectedOption?.isCaught ? "bg-selection-yellow text-black" : ""
-                            }`}
-                            onClick={() => {
-                                const newPick = new EncounterPick(
-                                    selectedOption!.encounterMonId,
-                                    selectedOption!.monId,
-                                    false
-                                );
-                                Playthrough.getPlayThrough(selectedPlaythrough)?.setPick(data.key, newPick);
-                                setSelectedOption(newPick);
-                            }}
-                        >
-                            &#10799; Lost
-                        </div>
+                            Missed
+                        </FilterOptionButton>
                     </div>
                 </div>
-                <span className={selectedOption ? "hidden" : "text-xl text-amber-300"}>Encounter Available</span>
+                <hr className="mt-1 mb-3 text-blue-500/50" />
             </div>
-            <div className="flex justify-center flex-wrap">
-                {data.displayMonData.map(([encounterMonId, monId, display], index) => (
-                    <div
+            <div className="flex flex-wrap justify-center gap-1">
+                {data.displayMonData.map((eMon, index) => (
+                    <EncounterDisplayMon
                         key={index}
-                        className={`w-fit h-fit px-2 py-1 m-1 border rounded-full cursor-pointer hover:bg-selection-yellow hover:text-black ${
-                            selectedOption?.encounterMonId == encounterMonId ? "bg-selection-yellow text-black" : ""
-                        }`}
-                        onClick={() => {
-                            const newSelection =
-                                selectedOption?.encounterMonId == encounterMonId
-                                    ? undefined
-                                    : new EncounterPick(encounterMonId, monId, true);
-                            if (newSelection) {
-                                Playthrough.getPlayThrough(selectedPlaythrough)?.setPick(data.key, newSelection);
-                            } else {
-                                Playthrough.getPlayThrough(selectedPlaythrough)?.removePick(data.key);
-                            }
-                            setSelectedOption(newSelection);
-                        }}
-                    >
-                        {display}
-                    </div>
+                        selectedPlaythrough={selectedPlaythrough}
+                        encounterKey={data.key}
+                        eMonId={eMon[0]}
+                        pokemon={eMon[1]}
+                    />
                 ))}
             </div>
         </div>
     );
 }
 
+const encounterDisplayData: EncounterDisplayData[] = Object.values(TectonicData.encounters)
+    .flatMap((m) => m.tables.map((t) => new EncounterDisplayData(m, t)))
+    .sort((a, b) => a.maxLevel - b.maxLevel);
+
 const EncounterTracker: NextPage = () => {
-    const [, setLoaded] = useState<boolean>(false);
+    const [loaded, setLoaded] = useState<boolean>(false);
     const [selectedPlaythrough, setSelectedPlaythrough] = useState<number | undefined>(undefined);
     const [playthroughName, setPlaythroughName] = useState<string>("New Playthrough");
-    const [displaySpecial, setDisplaySpecial] = useState<boolean>(false);
+    const [locationFilter, setLocationFilter] = useState<string>("");
 
     useEffect(() => {
         Playthrough.loadLocalData();
         setLoaded(true);
     }, []);
 
+    if (!loaded) return;
     return (
         <Fragment>
             <Head>
@@ -274,37 +326,28 @@ const EncounterTracker: NextPage = () => {
 
             {selectedPlaythrough ? (
                 <main className="min-h-screen flex flex-col space-y-3 p-3 bg-gray-900 text-white">
-                    <div className="flex justify-between space-x-5 w-full md:w-150 mx-auto pb-2 bg-gray-900 sticky top-0">
+                    <div className="flex justify-between space-x-5 w-full md:w-150 mx-auto pb-2">
                         <button
-                            className="text-4xl hover:text-selection-yellow cursor-pointer"
+                            className="text-4xl hover:text-yellow-highlight cursor-pointer"
                             onClick={() => {
                                 setSelectedPlaythrough(undefined);
-                                setDisplaySpecial(false);
                                 setPlaythroughName("New Playthrough");
                             }}
                         >
                             {"\u21A2"}
                         </button>
-                        <div className="flex space-x-2">
-                            <input
-                                className="w-40 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                type="text"
-                                placeholder="Playthrough Name"
-                                value={playthroughName}
-                                onChange={(e) => {
-                                    setPlaythroughName(e.target.value);
-                                    Playthrough.getPlayThrough(selectedPlaythrough)?.setName(e.target.value);
-                                }}
-                            />
-                            <FilterOptionButton
-                                onClick={() => setDisplaySpecial(!displaySpecial)}
-                                isSelected={displaySpecial}
-                            >
-                                <span className="text-3xl">&#127872;</span>
-                            </FilterOptionButton>
-                        </div>
+                        <input
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            type="text"
+                            placeholder="Playthrough Name"
+                            value={playthroughName}
+                            onChange={(e) => {
+                                setPlaythroughName(e.target.value);
+                                Playthrough.getPlayThrough(selectedPlaythrough)?.setName(e.target.value);
+                            }}
+                        />
                         <button
-                            className="text-4xl hover:text-selection-yellow cursor-pointer"
+                            className="text-4xl hover:text-yellow-highlight cursor-pointer"
                             onClick={() => {
                                 if (confirm("Delete playthrough?")) {
                                     Playthrough.getPlayThrough(selectedPlaythrough)?.delete();
@@ -315,9 +358,19 @@ const EncounterTracker: NextPage = () => {
                             {"\u2715"}
                         </button>
                     </div>
-                    {EncounterDisplayData.buildDisplayData(displaySpecial).map((e, index) => (
-                        <EncounterDisplay key={index} selectedPlaythrough={selectedPlaythrough} data={e} />
-                    ))}
+                    <div className="flex flex-col gap-2 w-full md:w-150 mx-auto ">
+                        <input
+                            className="w-full border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
+                            value={locationFilter}
+                            onChange={(e) => setLocationFilter(e.target.value)}
+                            placeholder="Location, Pokemon, or item"
+                        />
+                        {encounterDisplayData
+                            .filter((x) => x.filter(locationFilter.toLocaleLowerCase()))
+                            .map((e) => (
+                                <EncounterDisplay key={e.key} selectedPlaythrough={selectedPlaythrough} data={e} />
+                            ))}
+                    </div>
                 </main>
             ) : (
                 <main className="min-h-screen p-3 bg-gray-900 text-white">
@@ -335,7 +388,7 @@ const EncounterTracker: NextPage = () => {
                             onChange={(e) => setPlaythroughName(e.target.value)}
                         />
                         <button
-                            className="text-5xl ml-2 hover:text-selection-yellow"
+                            className="text-5xl ml-2 hover:text-yellow-highlight"
                             onClick={() => {
                                 setSelectedPlaythrough(Playthrough.addNewPlaythrough(playthroughName));
                             }}
@@ -348,7 +401,7 @@ const EncounterTracker: NextPage = () => {
                     {Playthrough.getPlayThroughs().map((x, index) => (
                         <div
                             key={index}
-                            className="w-full md:w-150 text-center border rounded-2xl p-2 my-2 mx-auto hover:bg-selection-yellow hover:text-black cursor-pointer"
+                            className="w-full md:w-150 text-center border rounded-2xl p-2 my-2 mx-auto hover:bg-yellow-highlight hover:text-black cursor-pointer"
                             onClick={() => {
                                 setPlaythroughName(Playthrough.getPlayThrough(x)?.getName() ?? playthroughName);
                                 setSelectedPlaythrough(x);
