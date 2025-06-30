@@ -15,8 +15,8 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
     const [type2, setType2] = useState<PokemonType | undefined>(undefined);
 
     return (
-        <div className="w-full p-4">
-            <div className="flex justify-center space-x-2 py-2">
+        <div className="w-full">
+            <div className="flex flex-wrap justify-center space-x-2 py-2">
                 <input
                     className="border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
                     type="text"
@@ -73,7 +73,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                     </FilterOptionButton>
                 ))}
             </div>
-            <div className="w-fit h-64 overflow-auto mx-auto">
+            <div className="w-fit h-48 overflow-auto mx-auto">
                 <div className="flex flex-wrap mx-auto">
                     {TectonicData.pokemonList
                         .filter(
