@@ -76,7 +76,6 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
     if (!isRendered || !currentPokemon) return null;
 
     const stats = currentPokemon.getStats(currentForm);
-    const realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
     const defMatchupCalcs: Record<string, Record<string, number>> = {};
     const stabMatchupCalcs: Record<string, Record<string, number>> = {};
     let defMatchupDifferentForAbilities = false;
@@ -86,7 +85,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
         const firstStabAbilityChart = Object.values(stabMatchupCalcs).find(() => true);
         defMatchupCalcs[a.id] = {};
         stabMatchupCalcs[a.id] = {};
-        realTypes.forEach((t) => {
+        TectonicData.realTypes.forEach((t) => {
             defMatchupCalcs[a.id][t.id] = calcTypeMatchup(
                 { type: t },
                 {
@@ -159,19 +158,21 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                             <div>
                                 <div className="flex space-x-3">
                                     <div className="flex flex-col items-center space-y-2 min-w-50">
-                                        <LeftRightCycleButtons
-                                            buttonsVisible={currentPokemon.forms.length > 0}
-                                            onPrevClick={() =>
-                                                setCurrentForm(
-                                                    negativeMod(currentForm - 1, currentPokemon.forms.length)
-                                                )
-                                            }
-                                            onNextClick={() =>
-                                                setCurrentForm((currentForm + 1) % currentPokemon.forms.length)
-                                            }
-                                        >
-                                            <span>Change Form</span>
-                                        </LeftRightCycleButtons>
+                                        {currentPokemon.forms.length > 0 && (
+                                            <LeftRightCycleButtons
+                                                buttonsVisible={true}
+                                                onPrevClick={() =>
+                                                    setCurrentForm(
+                                                        negativeMod(currentForm - 1, currentPokemon.forms.length)
+                                                    )
+                                                }
+                                                onNextClick={() =>
+                                                    setCurrentForm((currentForm + 1) % currentPokemon.forms.length)
+                                                }
+                                            >
+                                                <span>Change Form</span>
+                                            </LeftRightCycleButtons>
+                                        )}
                                         <Image
                                             src={currentPokemon.getImage(currentForm)}
                                             alt={currentPokemon.name}
@@ -274,7 +275,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                 <table className="my-2">
                                     <thead>
                                         <tr>
-                                            {realTypes.map((t) => (
+                                            {TectonicData.realTypes.map((t) => (
                                                 <TypeBadge
                                                     key={t.id}
                                                     types={[t]}
@@ -285,7 +286,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            {realTypes.map((t) => (
+                                            {TectonicData.realTypes.map((t) => (
                                                 <TypeChartCell
                                                     key={t.id}
                                                     mult={defMatchupCalcs[selectedDefAbility.id][t.id]}
@@ -314,7 +315,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                 <table className="my-2">
                                     <thead>
                                         <tr>
-                                            {realTypes.map((t) => (
+                                            {TectonicData.realTypes.map((t) => (
                                                 <TypeBadge
                                                     key={t.id}
                                                     types={[t]}
@@ -325,7 +326,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            {realTypes.map((t) => {
+                                            {TectonicData.realTypes.map((t) => {
                                                 return (
                                                     <TypeChartCell
                                                         key={t.id}
@@ -414,14 +415,24 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                             <MoveTable
                                 moves={currentPokemon.getLevelMoves(currentForm)}
                                 showLevel={true}
-                                onMoveClick={(m) => (moveSelector ? moveSelector(m) : {})}
+                                onMoveClick={(m) => {
+                                    if (moveSelector) {
+                                        moveSelector(m);
+                                        handleClose();
+                                    }
+                                }}
                             />
                         </TabContent>
                         <TabContent tab="Tutor Moves" activeTab={activeTab}>
                             <MoveTable
                                 moves={currentPokemon.lineMoves.concat(currentPokemon.tutorMoves).map((x) => [0, x])}
                                 showLevel={false}
-                                onMoveClick={(m) => (moveSelector ? moveSelector(m) : {})}
+                                onMoveClick={(m) => {
+                                    if (moveSelector) {
+                                        moveSelector(m);
+                                        handleClose();
+                                    }
+                                }}
                             />
                         </TabContent>
                     </div>

@@ -10,6 +10,7 @@ import { Pokemon, StylePoints } from "@/app/data/tectonic/Pokemon";
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { isNull, negativeMod, safeKeys } from "@/app/data/util";
+import Image from "next/image";
 import { useState } from "react";
 import { getTypeColorClass } from "./colours";
 import Dropdown from "./DropDown";
@@ -58,7 +59,7 @@ export default function PokemonCardHorizontal({
     }
 
     return (
-        <div className="w-fit h-73 m-1 rounded-lg p-1.5 text-white bg-gray-800">
+        <div className="w-fit h-73 m-1 rounded-lg p-1.5 text-white bg-gray-800 border-white/50 border-1">
             <div className="flex justify-between ml-1">
                 <LeftRightCycleButtons
                     buttonsVisible={partyMon.species.forms.length > 0}
@@ -95,7 +96,7 @@ export default function PokemonCardHorizontal({
                     <tr>
                         <td className="cursor-pointer" onClick={showInfoModal}>
                             <div className="flex flex-col space-y-1 w-25">
-                                <ImageFallback
+                                <Image
                                     alt={partyMon.species.name}
                                     src={partyMon.species.getImage(partyMon.form)}
                                     width={160}
@@ -254,13 +255,15 @@ export default function PokemonCardHorizontal({
                     <tr className="bg-gray-900">
                         <td className="w-10">{partyMon.level}</td>
                         {safeKeys(partyMon.getBaseStats()).map((k) => (
-                            <td className="w-15">{partyMon.getStats()[k]}</td>
+                            <td key={k} className="w-15">
+                                {partyMon.getStats()[k]}
+                            </td>
                         ))}
                     </tr>
                     <tr className="bg-emerald-700">
                         <td className="bg-gray-800"></td>
                         {safeKeys(partyMon.getBaseStats()).map((k) => (
-                            <td>
+                            <td key={k}>
                                 <input
                                     type="number"
                                     min={MIN_SP}

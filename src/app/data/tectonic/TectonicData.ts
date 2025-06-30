@@ -148,6 +148,7 @@ type TectonicDataType = {
     trainers: Record<string, Trainer>;
     encounters: Record<string, EncounterMap>;
     typeChart: number[][];
+    realTypes: PokemonType[];
 };
 
 // Note that the order of operations below is done explicitly.
@@ -170,7 +171,10 @@ export const TectonicData: TectonicDataType = {
     pokemonList: [],
     forms: {},
     trainers: {},
+    realTypes: [],
 };
+
+TectonicData.realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
 
 // Start of janky loading, not seen otherwise to users of this data
 TectonicData.abilities = fromLoadedMapped(data.abilities, (x) => {

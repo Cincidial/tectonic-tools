@@ -136,7 +136,6 @@ export default function PokemonCard({
         update({ statSteps: newSteps });
     }
 
-    const realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
     const badgeTypes = [data.types.type1, data.types.type2];
     if (data.ability instanceof ExtraTypeAbility) {
         badgeTypes.push(data.ability.extraType);
@@ -336,7 +335,7 @@ export default function PokemonCard({
                                             updateItemType(e.target.value);
                                         }}
                                     >
-                                        {realTypes.map((t) => (
+                                        {TectonicData.realTypes.map((t) => (
                                             <option key={t.id} value={t.id} className="bg-gray-800">
                                                 {t.name}
                                             </option>

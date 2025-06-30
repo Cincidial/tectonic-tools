@@ -152,7 +152,6 @@ const Home: NextPage = () => {
         setActiveTab("Pokemon");
     };
 
-    const realTypes = Object.values(TectonicData.types).filter((t) => t.isRealType);
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
             <Head>
@@ -369,13 +368,13 @@ const Home: NextPage = () => {
                                     </th>
                                 )}
 
-                                {realTypes.map((def) => (
+                                {TectonicData.realTypes.map((def) => (
                                     <TypeBadge key={def.id} element={TypeBadgeElementEnum.TABLE_HEADER} types={[def]} />
                                 ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {realTypes.map((atk) => (
+                            {TectonicData.realTypes.map((atk) => (
                                 <tr
                                     key={atk.id}
                                     className={`${getTypeColorClass(atk, "hover:bg")} cursor-pointer`}
@@ -384,7 +383,7 @@ const Home: NextPage = () => {
                                     }
                                 >
                                     <TypeBadge element={TypeBadgeElementEnum.TABLE_ROW} types={[atk]} />
-                                    {realTypes.map((def) => (
+                                    {TectonicData.realTypes.map((def) => (
                                         <TypeChartCell
                                             key={def.index}
                                             atk={typeChartAtkDualType ?? atk}

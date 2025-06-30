@@ -76,7 +76,7 @@ export default function MoveTable({
                                 title={c}
                                 height="60"
                                 width="51"
-                                className="inline w-8 h-6 mr-1"
+                                className="inline w-8 h-8 mr-1"
                             />
                             {c}
                         </span>
@@ -151,7 +151,7 @@ export default function MoveTable({
                                             title={m.category}
                                             height="60"
                                             width="51"
-                                            className="w-8 h-6 mx-auto"
+                                            className="w-8 h-8 mx-auto"
                                         />
                                     </TableCell>
                                     <TableCell>{m.bp}</TableCell>
