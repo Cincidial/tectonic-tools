@@ -62,7 +62,7 @@ export default function PokemonCardHorizontal({
     }
 
     return (
-        <div className="w-fit h-75 m-1 rounded-lg p-1.5 text-white bg-gray-800 border-white/50 border-1">
+        <div className="w-fit h-76 m-1 rounded-lg p-1.5 text-white bg-gray-800 border-white/50 border-1">
             <div className="flex justify-between ml-1">
                 <LeftRightCycleButtons
                     buttonsVisible={partyMon.species.forms.length > 0}
@@ -98,7 +98,7 @@ export default function PokemonCardHorizontal({
                 <tbody>
                     <tr>
                         <td className="cursor-pointer" onClick={showInfoModal}>
-                            <div className="flex flex-col space-y-1 w-25">
+                            <div className="flex flex-col space-y-1 w-25 h-46">
                                 <Image
                                     alt={partyMon.species.name}
                                     src={partyMon.species.getImage(partyMon.form)}
@@ -249,9 +249,9 @@ export default function PokemonCardHorizontal({
                         <th>HP</th>
                         <th>Atk</th>
                         <th>Sp. Atk</th>
+                        <th>Speed</th>
                         <th>Def</th>
                         <th>Sp. Def</th>
-                        <th>Spe</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -276,7 +276,7 @@ export default function PokemonCardHorizontal({
                         ))}
                     </tr>
                     <tr className="bg-emerald-700">
-                        <td className="bg-gray-800">SP {STYLE_POINT_CAP - spSum(partyMon.stylePoints)}</td>
+                        <td className="bg-emerald-800">SP {STYLE_POINT_CAP - spSum(partyMon.stylePoints)}</td>
                         {safeKeys(partyMon.getBaseStats()).map((k) => (
                             <td key={k}>
                                 <input
