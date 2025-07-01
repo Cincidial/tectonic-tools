@@ -3,7 +3,7 @@
 import { TwoItemAbility } from "@/app/data/abilities/TwoItemAbility";
 import { nullState } from "@/app/data/battleState";
 import { TypeChangingItem } from "@/app/data/items/TypeChangingItem";
-import { MAX_SP, MIN_SP, STYLE_POINT_CAP, styleFromStat } from "@/app/data/teamExport";
+import { MAX_LEVEL, MAX_SP, MIN_LEVEL, MIN_SP, STYLE_POINT_CAP, styleFromStat } from "@/app/data/teamExport";
 import { Item } from "@/app/data/tectonic/Item";
 import { Move } from "@/app/data/tectonic/Move";
 import { Pokemon, StylePoints } from "@/app/data/tectonic/Pokemon";
@@ -52,7 +52,7 @@ export default function PokemonCardHorizontal({
     function updateSP(stat: keyof StylePoints, value: number) {
         const newSP = { ...partyMon.stylePoints, [stat]: value };
         const spSum = Object.values(newSP).reduce((total, sp) => total + sp, 0);
-        if (spSum <= STYLE_POINT_CAP) {
+        if (spSum <= STYLE_POINT_CAP && value >= MIN_SP && value <= MAX_SP) {
             partyMon.stylePoints = newSP;
             onUpdate();
         }
@@ -253,7 +253,19 @@ export default function PokemonCardHorizontal({
                 </thead>
                 <tbody>
                     <tr className="bg-gray-900">
-                        <td className="w-10">{partyMon.level}</td>
+                        <td className="w-10">
+                            <input
+                                type="number"
+                                min={MIN_LEVEL}
+                                max={MAX_LEVEL}
+                                value={partyMon.level}
+                                onChange={(e) => {
+                                    const value = parseInt(e.target.value);
+                                    partyMon.level = value >= MIN_LEVEL && value <= MAX_LEVEL ? value : partyMon.level;
+                                    onUpdate();
+                                }}
+                            />
+                        </td>
                         {safeKeys(partyMon.getBaseStats()).map((k) => (
                             <td key={k} className="w-15">
                                 {partyMon.getStats()[k]}
