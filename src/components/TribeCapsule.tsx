@@ -6,7 +6,7 @@ export default function TribeCapsule({ tribe, count }: { tribe: Tribe; count?: n
         <span
             className={`rounded-full w-fit h-fit ${
                 count == null ? "px-2" : "pl-2"
-            } py-1 text-white text-shadow-xs/100 font-semibold cursor-default bg-amber-700`}
+            } py-1 text-white text-shadow-xs/100 font-semibold cursor-default bg-amber-700 border border-white`}
             title={tribe.description}
         >
             {tribe.name}

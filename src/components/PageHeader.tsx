@@ -35,7 +35,7 @@ export default function PageHeader({ currentPage }: { currentPage: PageType }): 
             >
                 <span>
                     {icon({ className: "inline", width: 25, height: 25 })}
-                    <span className="hidden sm:inline ml-1">{text}</span>
+                    <span className="hidden md:inline ml-1">{text}</span>
                 </span>
             </Link>
         );
@@ -43,7 +43,7 @@ export default function PageHeader({ currentPage }: { currentPage: PageType }): 
 
     return (
         <>
-            <nav className="w-full flex justify-around sm:justify-center bg-gray-700 border-b border-white/25">
+            <nav className="w-full flex justify-around md:justify-center bg-gray-700 border-b border-white/25">
                 <HeaderButton type={PageType.Home} url="../" icon={HomeIcon} text={"Tectonic Tools"} />
                 <HeaderButton type={PageType.Calc} url="/damagecalc" icon={CalcsIcon} text={"Calculator"} />
                 <HeaderButton type={PageType.Pokedex} url="/pokedex" icon={PokeballIcon} text={"Pokédex"} />
