@@ -2,6 +2,7 @@
 
 import FilterOptionButton from "@/components/FilterOptionButton";
 import ImageFallback from "@/components/ImageFallback";
+import PageHeader, { PageType } from "@/components/PageHeader";
 import { LoadedEncounterMap, LoadedEncounterTable } from "@/preload/loadedDataClasses";
 import { NextPage } from "next";
 import Head from "next/head";
@@ -201,6 +202,7 @@ const EncounterTracker: NextPage = () => {
                 <meta name="description" content="Pokémon encounter tracker for the fangame Pokémon Tectonic" />
             </Head>
 
+            <PageHeader currentPage={PageType.Tracker} />
             {selectedPlaythrough ? (
                 <main className="min-h-screen flex flex-col space-y-3 p-3 bg-gray-900 text-white">
                     <div className="flex justify-between space-x-5 w-full md:w-150 mx-auto pb-2">

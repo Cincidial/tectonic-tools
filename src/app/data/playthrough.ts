@@ -98,6 +98,7 @@ export class Playthrough {
     getPickedMonMap(): Record<string, Pokemon> {
         const result: Record<string, Pokemon> = {};
         Object.values(this.locationPickData)
+            .filter((x) => !x.flagMissing)
             .flatMap((x) => x.picks)
             .forEach((x) => (result[x.monId] = TectonicData.pokemon[x.monId]));
 

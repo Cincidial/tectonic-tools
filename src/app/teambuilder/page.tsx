@@ -2,6 +2,7 @@
 
 import BasicButton from "@/components/BasicButton";
 import { MiniDexFilter } from "@/components/MiniDexFilter";
+import PageHeader, { PageType } from "@/components/PageHeader";
 import PokemonCardHorizontal from "@/components/PokemonCardHorizontal";
 import TribeCapsule from "@/components/TribeCapsule";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
@@ -76,10 +77,11 @@ const TeamBuilder: NextPage = () => {
                 <title>Pokémon Tectonic Team Builder</title>
                 <meta name="description" content="Analyse team composition for the fangame Pokémon Tectonic" />
             </Head>
+            <PageHeader currentPage={PageType.Builder} />
 
             <main className="container mx-auto">
                 <div className="flex flex-col justify-center items-center pb-10 relative">
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex gap-2 mt-3">
                         <input
                             type="text"
                             placeholder="Team code"
