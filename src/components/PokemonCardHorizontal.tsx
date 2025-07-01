@@ -49,17 +49,20 @@ export default function PokemonCardHorizontal({
         setModalMon(null);
     }
 
+    function spSum(sp: StylePoints): number {
+        return Object.values(sp).reduce((total, x) => total + x, 0);
+    }
+
     function updateSP(stat: keyof StylePoints, value: number) {
         const newSP = { ...partyMon.stylePoints, [stat]: value };
-        const spSum = Object.values(newSP).reduce((total, sp) => total + sp, 0);
-        if (spSum <= STYLE_POINT_CAP && value >= MIN_SP && value <= MAX_SP) {
+        if (spSum(newSP) <= STYLE_POINT_CAP && value >= MIN_SP && value <= MAX_SP) {
             partyMon.stylePoints = newSP;
             onUpdate();
         }
     }
 
     return (
-        <div className="w-fit h-73 m-1 rounded-lg p-1.5 text-white bg-gray-800 border-white/50 border-1">
+        <div className="w-fit h-75 m-1 rounded-lg p-1.5 text-white bg-gray-800 border-white/50 border-1">
             <div className="flex justify-between ml-1">
                 <LeftRightCycleButtons
                     buttonsVisible={partyMon.species.forms.length > 0}
@@ -273,7 +276,7 @@ export default function PokemonCardHorizontal({
                         ))}
                     </tr>
                     <tr className="bg-emerald-700">
-                        <td className="bg-gray-800"></td>
+                        <td className="bg-gray-800">SP {STYLE_POINT_CAP - spSum(partyMon.stylePoints)}</td>
                         {safeKeys(partyMon.getBaseStats()).map((k) => (
                             <td key={k}>
                                 <input
