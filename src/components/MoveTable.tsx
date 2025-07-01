@@ -7,15 +7,12 @@ import Image from "next/image";
 import { Fragment, ReactNode, useState } from "react";
 
 function TableHeader({ children }: { children: ReactNode }) {
-    return <th className="px-1 py-3 text-center text-sm font-bold text-gray-500 dark:text-gray-300">{children}</th>;
+    return <th className="px-1 py-3 text-center text-sm font-bold text-gray-300">{children}</th>;
 }
 
 function TableCell({ span, padding = "px-1", children }: { span?: number; padding?: string; children: ReactNode }) {
     return (
-        <td
-            className={`${padding} text-center text-sm text-gray-900 dark:text-gray-200 whitespace-break-spaces`}
-            colSpan={span}
-        >
+        <td className={`${padding} text-center text-sm text-gray-200 whitespace-break-spaces`} colSpan={span}>
             {children}
         </td>
     );
@@ -26,9 +23,7 @@ function MoveTargetCell({ move, position, children }: { move: Move; position: bo
     move.getTargetPositions().forEach((a, i) => a.forEach((v, j) => (useBg ||= v && position[i][j])));
 
     return (
-        <td className={`border px-2 py-0.5 text-xs dark:text-black ${useBg ? "bg-blue-300" : "bg-white/50"}`}>
-            {children}
-        </td>
+        <td className={`border px-2 py-0.5 text-xs text-black ${useBg ? "bg-blue-300" : "bg-white/50"}`}>{children}</td>
     );
 }
 

@@ -227,7 +227,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                     <tbody>
                                         {currentPokemon.getAbilities(currentForm).map((a) => (
                                             <tr key={a.id} className="bg-emerald-300/10">
-                                                <td className="whitespace-nowrap pl-1.5 pr-3 py-3 text-md text-right">
+                                                <td className="whitespace-nowrap pl-1.5 pr-3 py-3 text-base text-right">
                                                     <AbilityCapsule ability={a} />
                                                 </td>
                                                 <td>
@@ -244,7 +244,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                     <tbody>
                                         {currentPokemon.tribes.map((t) => (
                                             <tr key={t.id} className="bg-red-300/10">
-                                                <td className="whitespace-nowrap pl-1.5 pr-3 py-3 text-md text-right">
+                                                <td className="whitespace-nowrap pl-1.5 pr-3 py-3 text-base text-right">
                                                     <TribeCapsule tribe={t} />
                                                 </td>
                                                 <td>
