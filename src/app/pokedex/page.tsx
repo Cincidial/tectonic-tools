@@ -11,8 +11,7 @@ import {
     tribesFilter,
 } from "@/components/filters";
 import ImageFallback from "@/components/ImageFallback";
-import InlineLink from "@/components/InlineLink";
-import InternalLink from "@/components/InternalLink";
+import PageHeader, { PageType } from "@/components/PageHeader";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import type { NextPage } from "next";
 import Head from "next/head";
@@ -158,22 +157,9 @@ const Home: NextPage = () => {
                 <title>Pokémon Tectonic Online Pokédex</title>
                 <meta name="description" content="View Pokémon data for the fangame Pokémon Tectonic" />
             </Head>
+            <PageHeader currentPage={PageType.Pokedex}></PageHeader>
 
-            <main className="container mx-auto py-8 px-4">
-                <div className="flex flex-col justify-center items-center mb-10 relative">
-                    <h1 className="text-3xl font-bold text-center mb-8 text-blue-800 dark:text-blue-300">
-                        Pokémon Tectonic Online Pokédex
-                    </h1>
-                    <p>
-                        This tool is a work in progress! While it&apos;s largely functional, improvements are still
-                        planned. See the to-do list and contribute on{" "}
-                        <InlineLink url="https://github.com/AlphaKretin/tectonic-tools">GitHub</InlineLink>.
-                    </p>
-                    <p>
-                        <InternalLink url="../">Return to homepage</InternalLink>
-                    </p>
-                </div>
-
+            <main className="container mx-auto py-2 px-4">
                 <div className="text-center p-1.5 w-max mx-auto bg-gray-900">
                     {tabNames.map((n) => (
                         // not basic button
