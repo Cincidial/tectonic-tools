@@ -95,12 +95,14 @@ export class Playthrough {
         return false;
     }
 
-    getPickedMonMap(): Record<string, Pokemon> {
+    getPickedMonMapWithEvos(): Record<string, Pokemon> {
         const result: Record<string, Pokemon> = {};
         Object.values(this.locationPickData)
             .filter((x) => !x.flagMissing)
-            .flatMap((x) => x.picks)
-            .forEach((x) => (result[x.monId] = TectonicData.pokemon[x.monId]));
+            .flatMap((x) =>
+                x.picks.flatMap((p) => TectonicData.pokemon[p.monId].evolutionTree.toArray().map((e) => e.data.pokemon))
+            )
+            .forEach((x) => (result[x] = TectonicData.pokemon[x]));
 
         return result;
     }

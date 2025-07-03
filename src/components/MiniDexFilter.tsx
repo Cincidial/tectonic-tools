@@ -131,7 +131,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                             filter(
                                 x,
                                 playthrough != -1
-                                    ? Playthrough.getPlayThrough(playthrough)?.getPickedMonMap()
+                                    ? Playthrough.getPlayThrough(playthrough)?.getPickedMonMapWithEvos()
                                     : undefined
                             )
                         )
