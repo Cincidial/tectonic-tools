@@ -1,3 +1,4 @@
+import { MoveData } from "@/app/damagecalc/components/MoveCard";
 import { LoadedAbility } from "@/preload/loadedDataClasses";
 
 export class Ability {
@@ -19,7 +20,8 @@ export class Ability {
         this.isSignature = loaded.isSignature;
     }
 
-    public movePowerMultiplier(): number {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public movePowerMultiplier(move: MoveData): number {
         return 1;
     }
 

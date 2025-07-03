@@ -37,6 +37,7 @@ export class Move {
     id: string = "";
     name: string = "";
     description: string = "";
+    functionCode: string = "";
     type: PokemonType = TectonicData.types["NORMAL"];
     bp: number = 0;
     accuracy: number = 0;
@@ -58,6 +59,7 @@ export class Move {
         this.id = loaded.key;
         this.name = loaded.name;
         this.description = loaded.description;
+        this.functionCode = loaded.functionCode;
         this.type = TectonicData.types[loaded.type];
         this.bp = loaded.power;
         this.accuracy = loaded.accuracy;
@@ -75,6 +77,11 @@ export class Move {
 
     public isSpread(): boolean {
         return spreadTargets.indexOf(this.target) > -1;
+    }
+
+    public isRecoil(): boolean {
+        // lazy hack
+        return this.functionCode.includes("Recoil");
     }
 
     public getTargetPositions(): boolean[][] {

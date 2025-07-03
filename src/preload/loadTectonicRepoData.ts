@@ -17,6 +17,8 @@ import {
 } from "./loadedDataClasses";
 import { parseEncounterFile, parseNewLineCommaFile, parseStandardFile, parseVersionFile } from "./tectonicFileParsers";
 
+const PUBLIC_VERSION_COMMIT = "6dd1d52a5376afa53fa9c9bfe85b9a7995ef2366";
+
 async function dataRead(filePath: string) {
     const basePath = path.join(__dirname, "../../public/data/");
     const fullPath = basePath + filePath;
@@ -34,9 +36,9 @@ async function dataWrite<T>(filePath: string, contents: Record<string, T> | numb
 }
 
 async function handleFiles<T>(paths: string[], processor: (files: string[]) => T, dev: boolean): Promise<T> {
-    const baseUrl = `https://raw.githubusercontent.com/xeuorux/Pokemon-Tectonic/refs/heads/${
-        dev ? "development" : "main"
-    }/`;
+    const baseUrl = dev
+        ? "https://raw.githubusercontent.com/xeuorux/Pokemon-Tectonic/refs/heads/development/"
+        : `https://raw.githubusercontent.com/xeuorux/Pokemon-Tectonic/${PUBLIC_VERSION_COMMIT}/`;
 
     const responses = await Promise.all(paths.map((path) => fetch(baseUrl + path)));
     const files: string[] = [];

@@ -1,5 +1,6 @@
 import { LoadedData, LoadedDataJson, LoadedEncounterMap } from "@/preload/loadedDataClasses";
 import loadedData from "public/data/loadedData.json";
+import { BaseDamageBoostAbility } from "../abilities/BaseDamageBoostAbility";
 import { CancelWeatherAbility } from "../abilities/CancelWeatherAbility";
 import { ExtraTypeAbility } from "../abilities/ExtraTypeAbility";
 import { STABBoostAbility } from "../abilities/STABBoostAbility";
@@ -109,6 +110,7 @@ const itemSubclasses = [
 ];
 
 const abilitySubclasses = [
+    BaseDamageBoostAbility,
     CancelWeatherAbility,
     ExtraTypeAbility,
     STABBoostAbility,
