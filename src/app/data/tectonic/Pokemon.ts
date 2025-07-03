@@ -45,6 +45,14 @@ export const defaultStylePoints: StylePoints = {
     speed: 10,
 };
 
+export const zeroStylePoints: StylePoints = {
+    hp: 0,
+    attacks: 0,
+    defense: 0,
+    spdef: 0,
+    speed: 0,
+};
+
 function getterFactory<T extends keyof Pokemon, R>(
     mon: Pokemon,
     key: T,

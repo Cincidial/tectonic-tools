@@ -6,7 +6,7 @@ import { TypeChangingItem } from "@/app/data/items/TypeChangingItem";
 import { MAX_LEVEL, MAX_SP, MIN_LEVEL, MIN_SP, STYLE_POINT_CAP, styleFromStat } from "@/app/data/teamExport";
 import { Item } from "@/app/data/tectonic/Item";
 import { Move } from "@/app/data/tectonic/Move";
-import { Pokemon, StylePoints } from "@/app/data/tectonic/Pokemon";
+import { Pokemon, StylePoints, zeroStylePoints } from "@/app/data/tectonic/Pokemon";
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { isNull, negativeMod, safeKeys } from "@/app/data/util";
@@ -276,7 +276,15 @@ export default function PokemonCardHorizontal({
                         ))}
                     </tr>
                     <tr className="bg-emerald-700">
-                        <td className="bg-emerald-800">SP {STYLE_POINT_CAP - spSum(partyMon.stylePoints)}</td>
+                        <td
+                            className="bg-emerald-800 cursor-point"
+                            onClick={() => {
+                                partyMon.stylePoints = zeroStylePoints;
+                                onUpdate();
+                            }}
+                        >
+                            SP {STYLE_POINT_CAP - spSum(partyMon.stylePoints)}
+                        </td>
                         {safeKeys(partyMon.getBaseStats()).map((k) => (
                             <td key={k}>
                                 <input
