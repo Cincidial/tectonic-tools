@@ -113,7 +113,7 @@ export default function PokemonCardHorizontal({
                             </div>
                         </td>
                         <td>
-                            <div className="flex flex-col justify-between ml-2 w-45 h-42 text-sm">
+                            <div className="flex flex-col justify-center gap-1 ml-2 w-45 h-42 text-sm">
                                 <Dropdown
                                     value={partyMon.ability.id}
                                     onChange={(e) => {
