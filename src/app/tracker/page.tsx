@@ -67,6 +67,10 @@ class EncounterDisplayData {
         this.items = Object.values(itemsMap);
     }
 
+    isSpecialEncounter(): boolean {
+        return this.tableDisplayName == "Special";
+    }
+
     filter(input: string): boolean {
         return (
             this.map.name.toLowerCase().includes(input) ||
@@ -79,15 +83,16 @@ class EncounterDisplayData {
 
 function EncounterDisplayMon({
     selectedPlaythrough,
-    encounterKey,
+    encounterData,
     eMonId,
     pokemon,
 }: {
     selectedPlaythrough: number;
-    encounterKey: string;
+    encounterData: EncounterDisplayData;
     eMonId: string;
     pokemon: Pokemon;
 }): ReactNode {
+    const encounterKey = encounterData.key;
     const [pickedHere, setPickedHere] = useState<boolean>(
         Playthrough.getPlayThrough(selectedPlaythrough)!.hasPick(encounterKey, eMonId)
     );
@@ -112,19 +117,21 @@ function EncounterDisplayMon({
                 }}
                 title={pokemon.name}
             />
-            <div className="flex flex-wrap justify-center">
-                {pokemon.uniqueItems.map((item) => (
-                    <ImageFallback
-                        key={item.id}
-                        src={item.image}
-                        alt={item.name}
-                        width={48}
-                        height={48}
-                        title={item.name}
-                        className="w-8 h-8"
-                    />
-                ))}
-            </div>
+            {!encounterData.isSpecialEncounter() && (
+                <div className="flex flex-wrap justify-center">
+                    {pokemon.uniqueItems.map((item) => (
+                        <ImageFallback
+                            key={item.id}
+                            src={item.image}
+                            alt={item.name}
+                            width={48}
+                            height={48}
+                            title={item.name}
+                            className="w-8 h-8"
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -169,7 +176,7 @@ function EncounterDisplay({
                     <EncounterDisplayMon
                         key={index}
                         selectedPlaythrough={selectedPlaythrough}
-                        encounterKey={data.key}
+                        encounterData={data}
                         eMonId={eMon[0]}
                         pokemon={eMon[1]}
                     />
