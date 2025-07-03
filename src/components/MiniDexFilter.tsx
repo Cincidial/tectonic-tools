@@ -96,6 +96,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                     </select>
                     <span
                         className="text-2xl my-auto cursor-pointer text-white hover:text-yellow-highlight"
+                        title="Refresh"
                         onClick={() => setLoaded(false)}
                     >
                         &#10227;

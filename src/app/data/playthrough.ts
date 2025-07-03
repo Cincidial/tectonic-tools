@@ -87,6 +87,10 @@ export class Playthrough {
         Playthrough.saveLocalData();
     }
 
+    hasAnyPick(key: string): boolean {
+        return key in this.locationPickData && this.locationPickData[key].picks.length > 0;
+    }
+
     hasPick(key: string, encounterMonId: string): boolean {
         if (key in this.locationPickData) {
             return this.locationPickData[key].picks.some((x) => x.encounterMonId == encounterMonId);

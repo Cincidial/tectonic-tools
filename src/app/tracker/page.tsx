@@ -71,119 +71,17 @@ class EncounterDisplayData {
         return this.tableDisplayName == "Special";
     }
 
-    filter(input: string): boolean {
+    filter(input: string, showIncompleteOnly: boolean, playthrough: Playthrough): boolean {
+        const hasAnyPick = playthrough.hasAnyPick(this.key);
+        const wasPickMissed = playthrough.wasPickMissed(this.key);
         return (
-            this.map.name.toLowerCase().includes(input) ||
-            this.tableDisplayName.toLowerCase().includes(input) ||
-            this.displayMonData.some((x) => x[2].toLowerCase().includes(input)) ||
-            this.items.some((x) => x.name.toLowerCase().includes(input))
+            (!showIncompleteOnly || (showIncompleteOnly && !hasAnyPick && !wasPickMissed)) &&
+            (this.map.name.toLowerCase().includes(input) ||
+                this.tableDisplayName.toLowerCase().includes(input) ||
+                this.displayMonData.some((x) => x[2].toLowerCase().includes(input)) ||
+                this.items.some((x) => x.name.toLowerCase().includes(input)))
         );
     }
-}
-
-function EncounterDisplayMon({
-    selectedPlaythrough,
-    encounterData,
-    eMonId,
-    pokemon,
-}: {
-    selectedPlaythrough: number;
-    encounterData: EncounterDisplayData;
-    eMonId: string;
-    pokemon: Pokemon;
-}): ReactNode {
-    const encounterKey = encounterData.key;
-    const [pickedHere, setPickedHere] = useState<boolean>(
-        Playthrough.getPlayThrough(selectedPlaythrough)!.hasPick(encounterKey, eMonId)
-    );
-
-    return (
-        <div className="flex flex-col items-center">
-            <ImageFallback
-                src={pokemon.getIcon()}
-                className={`hover:bg-yellow-highlight cursor-pointer ${pickedHere ? "bg-yellow-highlight" : ""}`}
-                alt={pokemon.name}
-                width={64}
-                height={64}
-                onClick={() => {
-                    const playthrough = Playthrough.getPlayThrough(selectedPlaythrough)!;
-                    if (playthrough.hasPick(encounterKey, eMonId)) {
-                        playthrough.removePick(encounterKey, eMonId);
-                        setPickedHere(false);
-                    } else {
-                        playthrough.addPick(encounterKey, new EncounterPick(eMonId, pokemon.id));
-                        setPickedHere(true);
-                    }
-                }}
-                title={pokemon.name}
-            />
-            {!encounterData.isSpecialEncounter() && (
-                <div className="flex flex-wrap justify-center">
-                    {pokemon.uniqueItems.map((item) => (
-                        <ImageFallback
-                            key={item.id}
-                            src={item.image}
-                            alt={item.name}
-                            width={48}
-                            height={48}
-                            title={item.name}
-                            className="w-8 h-8"
-                        />
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-}
-
-function EncounterDisplay({
-    selectedPlaythrough,
-    data,
-}: {
-    selectedPlaythrough: number;
-    data: EncounterDisplayData;
-}): ReactNode {
-    const [flagMissing, setflagMissing] = useState<boolean>(
-        Playthrough.getPlayThrough(selectedPlaythrough)!.wasPickMissed(data.key)
-    );
-
-    return (
-        <div className="w-full md:w-150 border rounded-2xl p-2 mx-auto">
-            <div>
-                <div className="flex justify-between">
-                    <div className="flex flex-col md:flex-row md:space-x-2 text-xl">
-                        <div>{data.map.name}</div>
-                        <div className="hidden md:inline">-</div>
-                        <div>{data.tableDisplayName}</div>
-                    </div>
-                    <div className="flex flex-col md:flex-row gap-2 text-xl">
-                        <span className="text-sm rounded-full my-auto px-2 py-1 bg-blue-700">Lvl. {data.maxLevel}</span>
-                        <FilterOptionButton
-                            isSelected={flagMissing}
-                            onClick={() => {
-                                Playthrough.getPlayThrough(selectedPlaythrough)!.setPickMissed(data.key, !flagMissing);
-                                setflagMissing(!flagMissing);
-                            }}
-                        >
-                            Missed
-                        </FilterOptionButton>
-                    </div>
-                </div>
-                <hr className="mt-1 mb-3 text-blue-500/50" />
-            </div>
-            <div className="flex flex-wrap justify-center gap-1">
-                {data.displayMonData.map((eMon, index) => (
-                    <EncounterDisplayMon
-                        key={index}
-                        selectedPlaythrough={selectedPlaythrough}
-                        encounterData={data}
-                        eMonId={eMon[0]}
-                        pokemon={eMon[1]}
-                    />
-                ))}
-            </div>
-        </div>
-    );
 }
 
 const encounterDisplayData: EncounterDisplayData[] = Object.values(TectonicData.encounters)
@@ -191,17 +89,114 @@ const encounterDisplayData: EncounterDisplayData[] = Object.values(TectonicData.
     .sort((a, b) => a.maxLevel - b.maxLevel);
 
 const EncounterTracker: NextPage = () => {
+    const [showIncompleteOnly, setShowIncompleteOnly] = useState<boolean>(false);
     const [loaded, setLoaded] = useState<boolean>(false);
-    const [selectedPlaythrough, setSelectedPlaythrough] = useState<number | undefined>(undefined);
+    const [selectedPlaythroughId, setselectedPlaythroughId] = useState<number | undefined>(undefined);
     const [playthroughName, setPlaythroughName] = useState<string>("New Playthrough");
     const [locationFilter, setLocationFilter] = useState<string>("");
+    const [pickedMonMapWithEvos, setPickedMonMapWithEvos] = useState<Record<string, Pokemon>>();
+
+    function EncounterDisplay({ data }: { data: EncounterDisplayData }): ReactNode {
+        const flagMissing = Playthrough.getPlayThrough(selectedPlaythroughId)!.wasPickMissed(data.key);
+
+        return (
+            <div className="w-full md:w-150 border rounded-2xl p-2 mx-auto">
+                <div>
+                    <div className="flex justify-between">
+                        <div className="flex flex-col md:flex-row md:space-x-2 text-xl">
+                            <div>{data.map.name}</div>
+                            <div className="hidden md:inline">-</div>
+                            <div>{data.tableDisplayName}</div>
+                        </div>
+                        <div className="flex flex-col md:flex-row gap-2 text-xl">
+                            <span className="text-sm rounded-full my-auto px-2 py-1 bg-blue-700">
+                                Lvl. {data.maxLevel}
+                            </span>
+                            <FilterOptionButton
+                                isSelected={flagMissing}
+                                onClick={() => {
+                                    Playthrough.getPlayThrough(selectedPlaythroughId)!.setPickMissed(
+                                        data.key,
+                                        !flagMissing
+                                    );
+                                    setLoaded(false);
+                                }}
+                            >
+                                Missed
+                            </FilterOptionButton>
+                        </div>
+                    </div>
+                    <hr className="mt-1 mb-3 text-blue-500/50" />
+                </div>
+                <div className="flex flex-wrap justify-center gap-1">
+                    {data.displayMonData.map((eMon, index) => (
+                        <EncounterDisplayMon key={index} encounterData={data} eMonId={eMon[0]} pokemon={eMon[1]} />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    function EncounterDisplayMon({
+        encounterData,
+        eMonId,
+        pokemon,
+    }: {
+        encounterData: EncounterDisplayData;
+        eMonId: string;
+        pokemon: Pokemon;
+    }): ReactNode {
+        const encounterKey = encounterData.key;
+        const pickedHere = Playthrough.getPlayThrough(selectedPlaythroughId)!.hasPick(encounterKey, eMonId);
+        const isDuplicate = pokemon.id in (pickedMonMapWithEvos ?? {});
+
+        return (
+            <div className="flex flex-col items-center">
+                <ImageFallback
+                    src={pokemon.getIcon()}
+                    className={`hover:bg-yellow-highlight cursor-pointer ${
+                        pickedHere ? "bg-yellow-highlight" : isDuplicate ? "grayscale bg-gray-500" : ""
+                    }`}
+                    alt={pokemon.name}
+                    width={64}
+                    height={64}
+                    onClick={() => {
+                        const playthrough = Playthrough.getPlayThrough(selectedPlaythroughId)!;
+                        if (playthrough.hasPick(encounterKey, eMonId)) {
+                            playthrough.removePick(encounterKey, eMonId);
+                        } else {
+                            playthrough.addPick(encounterKey, new EncounterPick(eMonId, pokemon.id));
+                        }
+                        setPickedMonMapWithEvos(playthrough.getPickedMonMapWithEvos());
+                    }}
+                    title={pokemon.name}
+                />
+                {!encounterData.isSpecialEncounter() && (
+                    <div className="flex flex-wrap justify-center">
+                        {pokemon.uniqueItems.map((item) => (
+                            <ImageFallback
+                                key={item.id}
+                                src={item.image}
+                                alt={item.name}
+                                width={48}
+                                height={48}
+                                title={item.name}
+                                className="w-8 h-8"
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     useEffect(() => {
-        Playthrough.loadLocalData();
-        setLoaded(true);
-    }, []);
+        if (!loaded) {
+            Playthrough.loadLocalData();
+            setLoaded(true);
+        }
+    }, [loaded]);
 
-    if (!loaded) return;
     return (
         <Fragment>
             <Head>
@@ -210,13 +205,14 @@ const EncounterTracker: NextPage = () => {
             </Head>
 
             <PageHeader currentPage={PageType.Tracker} />
-            {selectedPlaythrough ? (
+            {selectedPlaythroughId ? (
                 <main className="min-h-screen flex flex-col space-y-3 p-3 bg-gray-900 text-white">
                     <div className="flex justify-between space-x-5 w-full md:w-150 mx-auto pb-2">
                         <button
                             className="text-4xl hover:text-yellow-highlight cursor-pointer"
+                            title="Back"
                             onClick={() => {
-                                setSelectedPlaythrough(undefined);
+                                setselectedPlaythroughId(undefined);
                                 setPlaythroughName("New Playthrough");
                             }}
                         >
@@ -229,15 +225,23 @@ const EncounterTracker: NextPage = () => {
                             value={playthroughName}
                             onChange={(e) => {
                                 setPlaythroughName(e.target.value);
-                                Playthrough.getPlayThrough(selectedPlaythrough)?.setName(e.target.value);
+                                Playthrough.getPlayThrough(selectedPlaythroughId)?.setName(e.target.value);
                             }}
                         />
+                        <FilterOptionButton
+                            isSelected={showIncompleteOnly}
+                            title="Toggle view"
+                            onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
+                        >
+                            <span className="text-3xl">&#65311;</span>
+                        </FilterOptionButton>
                         <button
                             className="text-4xl hover:text-yellow-highlight cursor-pointer"
+                            title="Delete"
                             onClick={() => {
                                 if (confirm("Delete playthrough?")) {
-                                    Playthrough.getPlayThrough(selectedPlaythrough)?.delete();
-                                    setSelectedPlaythrough(undefined);
+                                    Playthrough.getPlayThrough(selectedPlaythroughId)?.delete();
+                                    setselectedPlaythroughId(undefined);
                                 }
                             }}
                         >
@@ -252,9 +256,15 @@ const EncounterTracker: NextPage = () => {
                             placeholder="Location, Pokemon, or item"
                         />
                         {encounterDisplayData
-                            .filter((x) => x.filter(locationFilter.toLocaleLowerCase()))
+                            .filter((x) =>
+                                x.filter(
+                                    locationFilter.toLocaleLowerCase(),
+                                    showIncompleteOnly,
+                                    Playthrough.getPlayThrough(selectedPlaythroughId)!
+                                )
+                            )
                             .map((e) => (
-                                <EncounterDisplay key={e.key} selectedPlaythrough={selectedPlaythrough} data={e} />
+                                <EncounterDisplay key={e.key} data={e} />
                             ))}
                     </div>
                 </main>
@@ -276,7 +286,7 @@ const EncounterTracker: NextPage = () => {
                         <button
                             className="text-5xl ml-2 hover:text-yellow-highlight"
                             onClick={() => {
-                                setSelectedPlaythrough(Playthrough.addNewPlaythrough(playthroughName));
+                                setselectedPlaythroughId(Playthrough.addNewPlaythrough(playthroughName));
                             }}
                         >
                             {"\u2295"}
@@ -289,8 +299,10 @@ const EncounterTracker: NextPage = () => {
                             key={index}
                             className="w-full md:w-150 text-center border rounded-2xl p-2 my-2 mx-auto hover:bg-yellow-highlight hover:text-black cursor-pointer"
                             onClick={() => {
-                                setPlaythroughName(Playthrough.getPlayThrough(x)?.getName() ?? playthroughName);
-                                setSelectedPlaythrough(x);
+                                const playthrough = Playthrough.getPlayThrough(x)!;
+                                setPlaythroughName(playthrough.getName() ?? playthroughName);
+                                setPickedMonMapWithEvos(playthrough.getPickedMonMapWithEvos());
+                                setselectedPlaythroughId(x);
                             }}
                         >
                             {Playthrough.getPlayThrough(x)?.getName()}
