@@ -51,7 +51,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                     list="pokemonData"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Pokemon"
+                    placeholder="Filter: Pokemon"
                 />
                 <datalist id="pokemonData">
                     {Object.values(TectonicData.pokemon).map((p) => (
@@ -63,7 +63,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                     list="abilitiesData"
                     value={ability}
                     onChange={(e) => setAbility(e.target.value)}
-                    placeholder="Ability"
+                    placeholder="Filter: Ability"
                 />
                 <datalist id="abilitiesData">
                     {Object.values(TectonicData.abilities).map((a) => (
@@ -75,7 +75,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                     list="movesData"
                     value={move}
                     onChange={(e) => setMove(e.target.value)}
-                    placeholder="Move"
+                    placeholder="Filter: Move"
                 />
                 <datalist id="movesData">
                     {Object.values(TectonicData.moves).map((n) => (
@@ -87,7 +87,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                     list="tribesData"
                     value={tribe}
                     onChange={(e) => setTribe(e.target.value)}
-                    placeholder="Tribe"
+                    placeholder="Filter: Tribe"
                 />
                 <datalist id="tribesData">
                     {Object.values(TectonicData.tribes).map((t) => (
@@ -101,7 +101,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                         onChange={(e) => setPlaythrough(parseInt(e.target.value))}
                     >
                         <option key={-1} value="-1">
-                            Select a playthrough
+                            Filter: Tracker Encounters
                         </option>
                         {Object.values(Playthrough.getPlayThroughs()).map((x, i) => (
                             <option key={i} value={x}>
