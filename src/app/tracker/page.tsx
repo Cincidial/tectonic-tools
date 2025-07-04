@@ -31,6 +31,23 @@ const tableDisplayNameMap: Record<string, string> = {
     FishingContest: "Surfing",
 };
 
+class EncounterMap {
+    name: string;
+    displayData: EncounterDisplayData[];
+    maxLevel: number = 0;
+
+    constructor(map: LoadedEncounterMap) {
+        this.name = map.name;
+        this.displayData = map.tables.map((t) => new EncounterDisplayData(map, t));
+        this.displayData.forEach((x) => (this.maxLevel = Math.max(this.maxLevel, x.maxLevel)));
+    }
+
+    filter(input: string, showIncompleteOnly: boolean, playthrough: Playthrough): boolean {
+        const count = this.displayData.filter((x) => x.filter(input, showIncompleteOnly, playthrough)).length;
+        return showIncompleteOnly && input.length == 0 ? count == this.displayData.length : count > 0;
+    }
+}
+
 class EncounterDisplayData {
     key: string;
     map: LoadedEncounterMap;
@@ -74,8 +91,9 @@ class EncounterDisplayData {
     filter(input: string, showIncompleteOnly: boolean, playthrough: Playthrough): boolean {
         const hasAnyPick = playthrough.hasAnyPick(this.key);
         const wasPickMissed = playthrough.wasPickMissed(this.key);
+
         return (
-            (!showIncompleteOnly || (showIncompleteOnly && !hasAnyPick && !wasPickMissed)) &&
+            (input.length > 0 || !showIncompleteOnly || (showIncompleteOnly && !hasAnyPick && !wasPickMissed)) &&
             (this.map.name.toLowerCase().includes(input) ||
                 this.tableDisplayName.toLowerCase().includes(input) ||
                 this.displayMonData.some((x) => x[2].toLowerCase().includes(input)) ||
@@ -84,8 +102,8 @@ class EncounterDisplayData {
     }
 }
 
-const encounterDisplayData: EncounterDisplayData[] = Object.values(TectonicData.encounters)
-    .flatMap((m) => m.tables.map((t) => new EncounterDisplayData(m, t)))
+const encounterMaps: EncounterMap[] = Object.values(TectonicData.encounters)
+    .map((m) => new EncounterMap(m))
     .sort((a, b) => a.maxLevel - b.maxLevel);
 
 const EncounterTracker: NextPage = () => {
@@ -100,15 +118,11 @@ const EncounterTracker: NextPage = () => {
         const flagMissing = Playthrough.getPlayThrough(selectedPlaythroughId)!.wasPickMissed(data.key);
 
         return (
-            <div className="w-full md:w-150 border rounded-2xl p-2 mx-auto">
+            <div className="w-full mx-auto">
                 <div>
-                    <div className="flex justify-between">
-                        <div className="flex flex-col md:flex-row md:space-x-2 text-xl">
-                            <div>{data.map.name}</div>
-                            <div className="hidden md:inline">-</div>
-                            <div>{data.tableDisplayName}</div>
-                        </div>
-                        <div className="flex flex-col md:flex-row gap-2 text-xl">
+                    <div className="flex justify-between items-center mt-2 pl-2 text-xl bg-white/10">
+                        {data.tableDisplayName}
+                        <div className="flex flex-col md:flex-row gap-2 ">
                             <span className="text-sm rounded-full my-auto px-2 py-1 bg-blue-700">
                                 Lvl. {data.maxLevel}
                             </span>
@@ -126,7 +140,6 @@ const EncounterTracker: NextPage = () => {
                             </FilterOptionButton>
                         </div>
                     </div>
-                    <hr className="mt-1 mb-3 text-blue-500/50" />
                 </div>
                 <div className="flex flex-wrap justify-center gap-1">
                     {data.displayMonData.map((eMon, index) => (
@@ -257,16 +270,22 @@ const EncounterTracker: NextPage = () => {
                                 onChange={(e) => setLocationFilter(e.target.value)}
                                 placeholder="Location, Pokemon, or item"
                             />
-                            {encounterDisplayData
-                                .filter((x) =>
-                                    x.filter(
+                            {encounterMaps
+                                .filter((m) =>
+                                    m.filter(
                                         locationFilter.toLocaleLowerCase(),
                                         showIncompleteOnly,
                                         Playthrough.getPlayThrough(selectedPlaythroughId)!
                                     )
                                 )
-                                .map((e) => (
-                                    <EncounterDisplay key={e.key} data={e} />
+                                .map((m) => (
+                                    <div key={m.name} className="w-full md:w-150 border rounded-2xl p-2 mx-auto">
+                                        <div className="text-2xl text-center">{m.name}</div>
+                                        <hr className="mt-1 mb-3 text-blue-500/50" />
+                                        {m.displayData.map((e) => (
+                                            <EncounterDisplay key={e.key} data={e} />
+                                        ))}
+                                    </div>
                                 ))}
                         </div>
                     </main>
