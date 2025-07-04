@@ -89,6 +89,7 @@ const itemDisplayData = Object.values(TectonicData.items)
     .filter((i) => i.item.isTM || i.item.isHeldItem || i.wildMons.length > 0);
 
 const Home: NextPage = () => {
+    const [pokedexAsCards, setPokedexAsCards] = useState<boolean>(true);
     const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
     const [filters, setFilters] = useState<PokemonFilterType[]>([]);
     const [activeTab, setActiveTab] = useState<string>("Pokemon");
@@ -159,77 +160,155 @@ const Home: NextPage = () => {
                         removeFilter={removeFilter}
                         setCurrentFilter={setCurrentFilter}
                     />
-                    <table className="table-fixed mx-auto">
-                        <tbody>
-                            {filteredPokemon.map((mon) => (
-                                <tr
-                                    key={mon.id}
-                                    onClick={() => setSelectedPokemon(mon)}
-                                    className={`flex rounded-md px-1 py-2 my-2 cursor-pointer border border-white ${getTypeGradient(
-                                        mon
-                                    )}`}
-                                >
-                                    <td className="flex flex-col justify-between w-30 md:w-35 mr-2 text-base md:text-xl">
-                                        <span className="invertIgnore w-fit px-3 py-1 rounded-full bg-black/65 border border-white/65">
-                                            {mon.dex}
-                                        </span>
-                                        <ImageFallback
-                                            src={mon.getImage()}
-                                            alt={mon.name}
-                                            title={mon.name}
-                                            width={160}
-                                            height={160}
-                                            className="invertIgnore w-18 h-18 md:w-24 md:h-24 mx-auto"
-                                        />
-                                        <div className="invertIgnore text-center px-2 py-1 rounded-full bg-black/65 border border-white/65">
-                                            {mon.name}
-                                        </div>
-                                    </td>
-                                    <td className="invertIgnore flex flex-col justify-center gap-2 w-50 md:w-80 text-xs md:text-base">
-                                        <TypeBadge
-                                            key={mon.type1.id}
-                                            element={TypeBadgeElementEnum.CAPSULE_ROW}
-                                            types={[mon.type1, mon.type2]}
-                                        />
-                                        <div className="flex flex-wrap gap-2">
-                                            {mon.abilities.map((a, i) => (
-                                                <AbilityCapsule key={i} ability={a} />
-                                            ))}
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {mon.tribes.map((t) => (
-                                                <TribeCapsule key={t.id} tribe={t} />
-                                            ))}
-                                        </div>
-                                        <table className="border border-white/50">
-                                            <thead>
-                                                <tr className="bg-gray-800 text-center">
-                                                    <th className="p-1">HP</th>
-                                                    <th>Atk</th>
-                                                    <th>Def</th>
-                                                    <th>SpA</th>
-                                                    <th>SpD</th>
-                                                    <th>Spe</th>
-                                                    <th>BST</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr className="bg-gray-700 text-center">
-                                                    <td>{mon.stats.hp}</td>
-                                                    <td>{mon.stats.attack}</td>
-                                                    <td>{mon.stats.defense}</td>
-                                                    <td>{mon.stats.spatk}</td>
-                                                    <td>{mon.stats.spdef}</td>
-                                                    <td>{mon.stats.speed}</td>
-                                                    <td>{mon.BST()}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </td>
+                    <div className="hidden md:flex justify-center gap-2">
+                        <FilterOptionButton isSelected={pokedexAsCards} onClick={() => setPokedexAsCards(true)}>
+                            Cards
+                        </FilterOptionButton>
+                        <FilterOptionButton isSelected={!pokedexAsCards} onClick={() => setPokedexAsCards(false)}>
+                            Table
+                        </FilterOptionButton>
+                    </div>
+                    {pokedexAsCards ? (
+                        <table className="table-fixed mx-auto">
+                            <tbody>
+                                {filteredPokemon.map((mon) => (
+                                    <tr
+                                        key={mon.id}
+                                        onClick={() => setSelectedPokemon(mon)}
+                                        className={`flex rounded-md px-1 py-2 my-2 cursor-pointer border border-white ${getTypeGradient(
+                                            mon
+                                        )}`}
+                                    >
+                                        <td className="flex flex-col justify-between w-30 md:w-35 mr-2 text-base md:text-xl">
+                                            <span className="invertIgnore w-fit px-3 py-1 rounded-full bg-black/65 border border-white/65">
+                                                {mon.dex}
+                                            </span>
+                                            <ImageFallback
+                                                src={mon.getImage()}
+                                                alt={mon.name}
+                                                title={mon.name}
+                                                width={160}
+                                                height={160}
+                                                className="invertIgnore w-18 h-18 md:w-24 md:h-24 mx-auto"
+                                            />
+                                            <div className="invertIgnore text-center px-2 py-1 rounded-full bg-black/65 border border-white/65">
+                                                {mon.name}
+                                            </div>
+                                        </td>
+                                        <td className="invertIgnore flex flex-col justify-center gap-2 w-50 md:w-80 text-xs md:text-base">
+                                            <TypeBadge
+                                                key={mon.type1.id}
+                                                element={TypeBadgeElementEnum.CAPSULE_ROW}
+                                                types={[mon.type1, mon.type2]}
+                                            />
+                                            <div className="flex flex-wrap gap-2">
+                                                {mon.abilities.map((a, i) => (
+                                                    <AbilityCapsule key={i} ability={a} />
+                                                ))}
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {mon.tribes.map((t) => (
+                                                    <TribeCapsule key={t.id} tribe={t} />
+                                                ))}
+                                            </div>
+                                            <table className="border border-white/50">
+                                                <thead>
+                                                    <tr className="bg-gray-800 text-center">
+                                                        <th className="p-1">HP</th>
+                                                        <th>Atk</th>
+                                                        <th>Def</th>
+                                                        <th>SpA</th>
+                                                        <th>SpD</th>
+                                                        <th>Spe</th>
+                                                        <th>BST</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr className="bg-gray-700 text-center">
+                                                        <td>{mon.stats.hp}</td>
+                                                        <td>{mon.stats.attack}</td>
+                                                        <td>{mon.stats.defense}</td>
+                                                        <td>{mon.stats.spatk}</td>
+                                                        <td>{mon.stats.spdef}</td>
+                                                        <td>{mon.stats.speed}</td>
+                                                        <td>{mon.BST()}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <table className="mx-auto mt-2 divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-800">
+                                <tr>
+                                    <TableHeader>
+                                        <></>
+                                    </TableHeader>
+                                    <TableHeader>#</TableHeader>
+                                    <TableHeader>Name</TableHeader>
+                                    <TableHeader>Type(s)</TableHeader>
+                                    <TableHeader>Abilities</TableHeader>
+                                    <TableHeader>Tribes</TableHeader>
+                                    <TableHeader>HP</TableHeader>
+                                    <TableHeader>Atk</TableHeader>
+                                    <TableHeader>Def</TableHeader>
+                                    <TableHeader>SpA</TableHeader>
+                                    <TableHeader>SpD</TableHeader>
+                                    <TableHeader>Spe</TableHeader>
+                                    <TableHeader>BST</TableHeader>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                                {filteredPokemon.map((pokemon) => (
+                                    <tr
+                                        key={pokemon.id}
+                                        onClick={() => setSelectedPokemon(pokemon)}
+                                        className={`cursor-pointer ${getTypeGradient(pokemon)}`}
+                                    >
+                                        <TableCell>
+                                            <ImageFallback
+                                                src={pokemon.getImage()}
+                                                alt={pokemon.name}
+                                                title={pokemon.name}
+                                                width={160}
+                                                height={160}
+                                                className="rounded-full invertIgnore w-22 h-22"
+                                            />
+                                        </TableCell>
+                                        <TableCell>{pokemon.dex}</TableCell>
+                                        <TableCell>{pokemon.name}</TableCell>
+                                        <td className="invertIgnore ">
+                                            <TypeBadge
+                                                key={pokemon.type1.id}
+                                                element={TypeBadgeElementEnum.CAPSULE_STACK}
+                                                types={[pokemon.type1, pokemon.type2]}
+                                            />
+                                        </td>
+                                        <TableCell>
+                                            {pokemon.abilities.map((a) => (
+                                                <div key={a.id}>{a.name}</div>
+                                            ))}
+                                        </TableCell>
+                                        <TableCell>
+                                            {pokemon.tribes.map((t) => (
+                                                <div key={t.id}>{t.name}</div>
+                                            ))}
+                                        </TableCell>
+                                        <TableCell>{pokemon.stats.hp}</TableCell>
+                                        <TableCell>{pokemon.stats.attack}</TableCell>
+                                        <TableCell>{pokemon.stats.defense}</TableCell>
+                                        <TableCell>{pokemon.stats.spatk}</TableCell>
+                                        <TableCell>{pokemon.stats.spdef}</TableCell>
+                                        <TableCell>{pokemon.stats.speed}</TableCell>
+                                        <TableCell>{pokemon.BST()}</TableCell>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </TabContent>
                 <TabContent tab="Moves" activeTab={activeTab}>
                     <MoveTable
