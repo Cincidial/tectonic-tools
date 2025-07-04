@@ -48,25 +48,40 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
             <div className="flex flex-wrap justify-center gap-2 py-2">
                 <input
                     className="border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
-                    type="text"
+                    list="pokemonData"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Pokemon"
                 />
+                <datalist id="pokemonData">
+                    {Object.values(TectonicData.pokemon).map((p) => (
+                        <option key={p.id} value={p.name} />
+                    ))}
+                </datalist>
                 <input
                     className="border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
-                    type="text"
+                    list="abilitiesData"
                     value={ability}
                     onChange={(e) => setAbility(e.target.value)}
                     placeholder="Ability"
                 />
+                <datalist id="abilitiesData">
+                    {Object.values(TectonicData.abilities).map((a) => (
+                        <option key={a.id} value={a.name} />
+                    ))}
+                </datalist>
                 <input
                     className="border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
-                    type="text"
+                    list="movesData"
                     value={move}
                     onChange={(e) => setMove(e.target.value)}
                     placeholder="Move"
                 />
+                <datalist id="movesData">
+                    {Object.values(TectonicData.moves).map((n) => (
+                        <option key={n.id} value={n.name} />
+                    ))}
+                </datalist>
                 <input
                     className="border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
                     list="tribesData"
@@ -76,7 +91,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                 />
                 <datalist id="tribesData">
                     {Object.values(TectonicData.tribes).map((t) => (
-                        <option key={t.name} value={t.name} />
+                        <option key={t.id} value={t.name} />
                     ))}
                 </datalist>
                 <span className="flex gap-1">
