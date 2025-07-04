@@ -204,112 +204,115 @@ const EncounterTracker: NextPage = () => {
                 <meta name="description" content="Pokémon encounter tracker for the fangame Pokémon Tectonic" />
             </Head>
 
-            <PageHeader currentPage={PageType.Tracker} />
-            {selectedPlaythroughId ? (
-                <main className="min-h-screen flex flex-col space-y-3 p-3 bg-gray-900 text-white">
-                    <div className="flex justify-between space-x-5 w-full md:w-150 mx-auto pb-2">
-                        <button
-                            className="text-4xl hover:text-yellow-highlight cursor-pointer"
-                            title="Back"
-                            onClick={() => {
-                                setselectedPlaythroughId(undefined);
-                                setPlaythroughName("New Playthrough");
-                            }}
-                        >
-                            {"\u21A2"}
-                        </button>
-                        <input
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            type="text"
-                            placeholder="Playthrough Name"
-                            value={playthroughName}
-                            onChange={(e) => {
-                                setPlaythroughName(e.target.value);
-                                Playthrough.getPlayThrough(selectedPlaythroughId)?.setName(e.target.value);
-                            }}
-                        />
-                        <FilterOptionButton
-                            isSelected={showIncompleteOnly}
-                            title="Toggle view"
-                            onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
-                        >
-                            <span className="text-3xl">&#65311;</span>
-                        </FilterOptionButton>
-                        <button
-                            className="text-4xl hover:text-yellow-highlight cursor-pointer"
-                            title="Delete"
-                            onClick={() => {
-                                if (confirm("Delete playthrough?")) {
-                                    Playthrough.getPlayThrough(selectedPlaythroughId)?.delete();
+            <div className="min-h-screen bg-gray-900 text-white">
+                <PageHeader currentPage={PageType.Tracker} />
+
+                {selectedPlaythroughId ? (
+                    <main className="flex flex-col space-y-3 p-3">
+                        <div className="flex justify-between space-x-5 w-full md:w-150 mx-auto pb-2">
+                            <button
+                                className="text-4xl hover:text-yellow-highlight cursor-pointer"
+                                title="Back"
+                                onClick={() => {
                                     setselectedPlaythroughId(undefined);
-                                }
-                            }}
-                        >
-                            {"\u2715"}
-                        </button>
-                    </div>
-                    <div className="flex flex-col gap-2 w-full md:w-150 mx-auto ">
-                        <input
-                            className="w-full border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
-                            value={locationFilter}
-                            onChange={(e) => setLocationFilter(e.target.value)}
-                            placeholder="Location, Pokemon, or item"
-                        />
-                        {encounterDisplayData
-                            .filter((x) =>
-                                x.filter(
-                                    locationFilter.toLocaleLowerCase(),
-                                    showIncompleteOnly,
-                                    Playthrough.getPlayThrough(selectedPlaythroughId)!
-                                )
-                            )
-                            .map((e) => (
-                                <EncounterDisplay key={e.key} data={e} />
-                            ))}
-                    </div>
-                </main>
-            ) : (
-                <main className="min-h-screen p-3 bg-gray-900 text-white">
-                    <div className="text-3xl text-center">
-                        <Link className="hover:text-blue-400" href="../">
-                            Tectonic Tracker
-                        </Link>
-                    </div>
-                    <div className="flex w-fit mx-auto mt-2">
-                        <input
-                            className="px-4 py-2 mt-1.25 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            type="text"
-                            value={playthroughName}
-                            placeholder="New Playthrough"
-                            onChange={(e) => setPlaythroughName(e.target.value)}
-                        />
-                        <button
-                            className="text-5xl ml-2 hover:text-yellow-highlight"
-                            onClick={() => {
-                                setselectedPlaythroughId(Playthrough.addNewPlaythrough(playthroughName));
-                            }}
-                        >
-                            {"\u2295"}
-                        </button>
-                    </div>
-                    <hr className="my-3" />
-                    <div className="text-center text-2xl">Playthroughs</div>
-                    {Playthrough.getPlayThroughs().map((x, index) => (
-                        <div
-                            key={index}
-                            className="w-full md:w-150 text-center border rounded-2xl p-2 my-2 mx-auto hover:bg-yellow-highlight hover:text-black cursor-pointer"
-                            onClick={() => {
-                                const playthrough = Playthrough.getPlayThrough(x)!;
-                                setPlaythroughName(playthrough.getName() ?? playthroughName);
-                                setPickedMonMapWithEvos(playthrough.getPickedMonMapWithEvos());
-                                setselectedPlaythroughId(x);
-                            }}
-                        >
-                            {Playthrough.getPlayThrough(x)?.getName()}
+                                    setPlaythroughName("New Playthrough");
+                                }}
+                            >
+                                {"\u21A2"}
+                            </button>
+                            <input
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                type="text"
+                                placeholder="Playthrough Name"
+                                value={playthroughName}
+                                onChange={(e) => {
+                                    setPlaythroughName(e.target.value);
+                                    Playthrough.getPlayThrough(selectedPlaythroughId)?.setName(e.target.value);
+                                }}
+                            />
+                            <FilterOptionButton
+                                isSelected={showIncompleteOnly}
+                                title="Toggle view"
+                                onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
+                            >
+                                <span className="text-3xl">&#65311;</span>
+                            </FilterOptionButton>
+                            <button
+                                className="text-4xl hover:text-yellow-highlight cursor-pointer"
+                                title="Delete"
+                                onClick={() => {
+                                    if (confirm("Delete playthrough?")) {
+                                        Playthrough.getPlayThrough(selectedPlaythroughId)?.delete();
+                                        setselectedPlaythroughId(undefined);
+                                    }
+                                }}
+                            >
+                                {"\u2715"}
+                            </button>
                         </div>
-                    ))}
-                </main>
-            )}
+                        <div className="flex flex-col gap-2 w-full md:w-150 mx-auto ">
+                            <input
+                                className="w-full border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
+                                value={locationFilter}
+                                onChange={(e) => setLocationFilter(e.target.value)}
+                                placeholder="Location, Pokemon, or item"
+                            />
+                            {encounterDisplayData
+                                .filter((x) =>
+                                    x.filter(
+                                        locationFilter.toLocaleLowerCase(),
+                                        showIncompleteOnly,
+                                        Playthrough.getPlayThrough(selectedPlaythroughId)!
+                                    )
+                                )
+                                .map((e) => (
+                                    <EncounterDisplay key={e.key} data={e} />
+                                ))}
+                        </div>
+                    </main>
+                ) : (
+                    <main className="p-3">
+                        <div className="text-3xl text-center">
+                            <Link className="hover:text-blue-400" href="../">
+                                Tectonic Tracker
+                            </Link>
+                        </div>
+                        <div className="flex w-fit mx-auto mt-2">
+                            <input
+                                className="px-4 py-2 mt-1.25 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                type="text"
+                                value={playthroughName}
+                                placeholder="New Playthrough"
+                                onChange={(e) => setPlaythroughName(e.target.value)}
+                            />
+                            <button
+                                className="text-5xl ml-2 hover:text-yellow-highlight"
+                                onClick={() => {
+                                    setselectedPlaythroughId(Playthrough.addNewPlaythrough(playthroughName));
+                                }}
+                            >
+                                {"\u2295"}
+                            </button>
+                        </div>
+                        <hr className="my-3" />
+                        <div className="text-center text-2xl">Playthroughs</div>
+                        {Playthrough.getPlayThroughs().map((x, index) => (
+                            <div
+                                key={index}
+                                className="w-full md:w-150 text-center border rounded-2xl p-2 my-2 mx-auto hover:bg-yellow-highlight hover:text-black cursor-pointer"
+                                onClick={() => {
+                                    const playthrough = Playthrough.getPlayThrough(x)!;
+                                    setPlaythroughName(playthrough.getName() ?? playthroughName);
+                                    setPickedMonMapWithEvos(playthrough.getPickedMonMapWithEvos());
+                                    setselectedPlaythroughId(x);
+                                }}
+                            >
+                                {Playthrough.getPlayThrough(x)?.getName()}
+                            </div>
+                        ))}
+                    </main>
+                )}
+            </div>
         </Fragment>
     );
 };
