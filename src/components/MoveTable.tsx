@@ -50,6 +50,7 @@ export default function MoveTable({
 
     const [selectedCategory, setSelectedCategory] = useState<MoveCategory | undefined>(undefined);
     const [selectedType, setSelectedType] = useState<PokemonType | undefined>(undefined);
+    const [searchMove, setSearchMove] = useState<string>("");
 
     function getRowClass(i: number, hover: boolean = false) {
         return `${onMoveClick ? "cursor-pointer" : ""} ${hover ? "bg-blue-900" : i % 2 == 0 ? "" : "bg-gray-700"}`;
@@ -92,11 +93,20 @@ export default function MoveTable({
                         </FilterOptionButton>
                     ))}
             </div>
-            <table className="w-fit mx-auto">
+            <table className="w-full">
                 <thead className="sticky top-0 text-gray-900 dark:text-gray-200 bg-blue-200 dark:bg-blue-700">
                     <tr>
                         {showLevel && <TableHeader>Lvl</TableHeader>}
-                        <TableHeader>Name</TableHeader>
+                        <TableHeader>
+                            <input
+                                className="border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
+                                type="text"
+                                autoFocus={true}
+                                value={searchMove}
+                                onChange={(e) => setSearchMove(e.target.value)}
+                                placeholder="Move"
+                            />
+                        </TableHeader>
                         <TableHeader>Type</TableHeader>
                         <TableHeader>Cat</TableHeader>
                         <TableHeader>Pow</TableHeader>
@@ -111,8 +121,9 @@ export default function MoveTable({
                     {moves
                         .filter(
                             ([, m]) =>
-                                (selectedCategory === undefined || m.category === selectedCategory) &&
-                                (selectedType === undefined || m.type === selectedType)
+                                (!selectedCategory || m.category === selectedCategory) &&
+                                (!selectedType || m.type === selectedType) &&
+                                (!searchMove || m.name.toLowerCase().includes(searchMove.toLowerCase()))
                         )
                         .map(([level, m], index) => (
                             <Fragment key={index}>

@@ -311,11 +311,13 @@ const Home: NextPage = () => {
                     )}
                 </TabContent>
                 <TabContent tab="Moves" activeTab={activeTab}>
-                    <MoveTable
-                        moves={Object.values(TectonicData.moves).map((m) => [0, m])}
-                        showLevel={false}
-                        onMoveClick={handleMoveClick}
-                    />
+                    <div className="w-175 mx-auto">
+                        <MoveTable
+                            moves={Object.values(TectonicData.moves).map((m) => [0, m])}
+                            showLevel={false}
+                            onMoveClick={handleMoveClick}
+                        />
+                    </div>
                 </TabContent>
                 <TabContent tab="Abilities" activeTab={activeTab}>
                     <div>

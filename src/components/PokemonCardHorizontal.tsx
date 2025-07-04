@@ -277,7 +277,7 @@ export default function PokemonCardHorizontal({
                     </tr>
                     <tr className="bg-emerald-700">
                         <td
-                            className="bg-emerald-800 cursor-point"
+                            className="bg-emerald-800 cursor-pointer"
                             onClick={() => {
                                 partyMon.stylePoints = zeroStylePoints;
                                 onUpdate();
