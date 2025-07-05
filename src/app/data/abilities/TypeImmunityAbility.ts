@@ -30,6 +30,7 @@ const immunityAbilities: Record<string, string[]> = {
     WONDERGUARD: ["QMARKS"],
     CYNIC: ["DRAGON", "FAIRY", "GHOST"],
     RUGGED: ["FIGHTING", "ROCK"],
+    RESOLUTE: ["DARK", "BUG"],
 };
 
 export class TypeImmunityAbility extends MatchupModifyAbility {
