@@ -1,6 +1,7 @@
 "use client";
 
 import BasicButton from "@/components/BasicButton";
+import { getTypeColorClass } from "@/components/colours";
 import { MiniDexFilter } from "@/components/MiniDexFilter";
 import PageHeader, { PageType } from "@/components/PageHeader";
 import PokemonCardHorizontal from "@/components/PokemonCardHorizontal";
@@ -16,7 +17,7 @@ import { TectonicData } from "../data/tectonic/TectonicData";
 import { calcBestMoveMatchup, calcTypeMatchup } from "../data/typeChart";
 import { PartyPokemon } from "../data/types/PartyPokemon";
 import AtkTotalCell from "./components/AtkTotalCell";
-import DefTotalCell from "./components/DefTotalCell";
+import DefTotalCell, { CompareEnum } from "./components/DefTotalCell";
 import MatchupMonCell from "./components/MatchupMonCell";
 
 const TeamBuilder: NextPage = () => {
@@ -93,6 +94,8 @@ const TeamBuilder: NextPage = () => {
                         <BasicButton onClick={exportTeam}>Export</BasicButton>
                     </div>
                     <MiniDexFilter onMon={addPokemon} />
+
+                    <hr className="my-3 w-full text-blue-500/50" />
                     <div className="flex flex-wrap gap-2 mt-2 p-2">
                         {Object.keys(tribeCounts)
                             .filter((t) => tribeCounts[t] >= 1)
@@ -101,7 +104,6 @@ const TeamBuilder: NextPage = () => {
                                 <TribeCapsule key={t} tribe={TectonicData.tribes[t]} count={tribeCounts[t]} />
                             ))}
                     </div>
-
                     <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 mx-auto mt-2">
                         {party.map((x, index) => (
                             <PokemonCardHorizontal
@@ -113,99 +115,76 @@ const TeamBuilder: NextPage = () => {
                         ))}
                     </div>
 
-                    <h2 className="my-4 text-2xl font-bold text-gray-100">Defensive Matchups</h2>
-                    <table className="mx-auto divide-gray-700">
-                        <thead className="bg-gray-700">
-                            <tr>
-                                <th></th>
-                                {TectonicData.realTypes.map((type) => (
-                                    <TypeBadge
-                                        key={type.id}
-                                        types={[type]}
-                                        element={TypeBadgeElementEnum.TABLE_HEADER}
-                                    />
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="bg-gray-800 divide-y divide-gray-700">
-                            {party.map((c, index) => (
-                                <tr key={index}>
-                                    <MatchupMonCell c={c} useMoves={false} />
-                                    {TectonicData.realTypes.map((type) => (
-                                        <TypeChartCell
-                                            key={type.id}
-                                            mult={calcTypeMatchup(
-                                                { type: type },
-                                                { type1: c.types.type1, type2: c.types.type2, ability: c.ability }
-                                            )}
-                                        />
+                    <hr className="my-3 w-full text-blue-500/50" />
+                    <div className="flex flex-wrap justify-center gap-2">
+                        <div>
+                            <div className="text-center text-3xl text-white">Defensive Matchups</div>
+                            <table className="mx-auto divide-gray-700">
+                                <thead className="bg-gray-700">
+                                    <tr>
+                                        <th></th>
+                                        {party.map((c, i) => (
+                                            <MatchupMonCell key={i} c={c} useMoves={false} />
+                                        ))}
+                                        <th className="p-1 border border-gray-600">Weak</th>
+                                        <th className="p-1 border border-gray-600">Resist</th>
+                                        <th className="p-1 border border-gray-600">Immune</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-gray-800 divide-y divide-gray-700">
+                                    {TectonicData.realTypes.map((t) => (
+                                        <tr key={t.id} className={`${getTypeColorClass(t, " hover:bg")}`}>
+                                            <TypeBadge types={[t]} element={TypeBadgeElementEnum.TABLE_ROW} />
+                                            {party.map((c, i) => (
+                                                <TypeChartCell
+                                                    key={i}
+                                                    mult={calcTypeMatchup(
+                                                        { type: t },
+                                                        {
+                                                            type1: c.types.type1,
+                                                            type2: c.types.type2,
+                                                            ability: c.ability,
+                                                        }
+                                                    )}
+                                                />
+                                            ))}
+                                            <DefTotalCell cards={party} type={t} compare={CompareEnum.Weak} />
+                                            <DefTotalCell cards={party} type={t} compare={CompareEnum.Resist} />
+                                            <DefTotalCell cards={party} type={t} compare={CompareEnum.Immune} />
+                                        </tr>
                                     ))}
-                                </tr>
-                            ))}
-                            <tr>
-                                <td></td>
-                                {TectonicData.realTypes.map((type) => (
-                                    <TypeBadge key={type.id} types={[type]} element={TypeBadgeElementEnum.TABLE_ROW} />
-                                ))}
-                            </tr>
-                            <tr className="text-end text-xl text-gray-300 bg-gray-700">
-                                <td className="pr-2 border border-gray-600">Weaknesses</td>
-                                {TectonicData.realTypes.map((type) => (
-                                    <DefTotalCell key={type.id} cards={party} type={type} total={"weak"} />
-                                ))}
-                            </tr>
-                            <tr className="text-end text-xl text-gray-300 bg-gray-700">
-                                <td className="pr-2 border border-gray-600">Resistances</td>
-                                {TectonicData.realTypes.map((type) => (
-                                    <DefTotalCell key={type.id} cards={party} type={type} total={"strong"} />
-                                ))}
-                            </tr>
-                        </tbody>
-                    </table>
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <h2 className="my-4 text-2xl font-bold text-gray-100">Offensive Coverage</h2>
-                    <table className="mx-auto divide-gray-700">
-                        <thead className="bg-gray-700">
-                            <tr>
-                                <th></th>
-                                {TectonicData.realTypes.map((type) => (
-                                    <TypeBadge
-                                        key={type.id}
-                                        types={[type]}
-                                        element={TypeBadgeElementEnum.TABLE_HEADER}
-                                    />
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="bg-gray-800 divide-y divide-gray-700">
-                            {party.map((c, index) => (
-                                <tr key={index}>
-                                    <MatchupMonCell c={c} useMoves={true} />
-                                    {TectonicData.realTypes.map((type) => (
-                                        <TypeChartCell key={type.id} mult={calcBestMoveMatchup(c, { type1: type })} />
+                        <div>
+                            <div className="text-center text-3xl text-white">Offensive Coverage</div>
+                            <table className="mx-auto divide-gray-700">
+                                <thead className="bg-gray-700">
+                                    <tr>
+                                        <th></th>
+                                        {party.map((c, i) => (
+                                            <MatchupMonCell key={i} c={c} useMoves={true} />
+                                        ))}
+                                        <th className="p-1 border border-gray-600">Super</th>
+                                        <th className="p-1 border border-gray-600">Resist</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-gray-800 divide-y divide-gray-700">
+                                    {TectonicData.realTypes.map((t) => (
+                                        <tr key={t.id} className={`${getTypeColorClass(t, " hover:bg")}`}>
+                                            <TypeBadge types={[t]} element={TypeBadgeElementEnum.TABLE_ROW} />
+                                            {party.map((c, i) => (
+                                                <TypeChartCell key={i} mult={calcBestMoveMatchup(c, { type1: t })} />
+                                            ))}
+                                            <AtkTotalCell cards={party} type={t} total="se" />
+                                            <AtkTotalCell cards={party} type={t} total="nve" />
+                                        </tr>
                                     ))}
-                                </tr>
-                            ))}
-                            <tr>
-                                <td></td>
-                                {TectonicData.realTypes.map((type) => (
-                                    <TypeBadge key={type.id} types={[type]} element={TypeBadgeElementEnum.TABLE_ROW} />
-                                ))}
-                            </tr>
-                            <tr className="text-end text-xl text-gray-300 bg-gray-700">
-                                <td className="pr-2 border border-gray-600">Weak</td>
-                                {TectonicData.realTypes.map((type) => (
-                                    <AtkTotalCell key={type.id} cards={party} type={type} total={"se"} />
-                                ))}
-                            </tr>
-                            <tr className="text-end text-xl text-gray-300 bg-gray-700">
-                                <td className="pr-2 border border-gray-600">Resisted</td>
-                                {TectonicData.realTypes.map((type) => (
-                                    <AtkTotalCell key={type.id} cards={party} type={type} total={"nve"} />
-                                ))}
-                            </tr>
-                        </tbody>
-                    </table>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>

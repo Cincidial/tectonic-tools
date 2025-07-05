@@ -6,27 +6,26 @@ import Image from "next/image";
 
 export default function MatchupMonCell({ c, useMoves }: { c: PartyPokemon; useMoves: boolean }) {
     return (
-        <td>
-            <div className="flex p-1">
+        <th className={`p-1 border border-gray-600 ${useMoves ? "w-20" : ""}`}>
+            <div className="flex flex-col items-center">
                 <Image
-                    src={c.species.getImage(c.form)}
+                    src={c.species.getIcon(c.form)}
                     alt={c.species.getFormName(c.form) ?? c.species.name}
                     title={c.species.getFormName(c.form) ?? c.species.name}
-                    className="w-20 h-20"
-                    height="192"
-                    width="192"
+                    className="w-15 h-15"
+                    height="64"
+                    width="64"
                 />
-                {useMoves ? (
-                    <>
-                        <TypeBadge
-                            types={uniq(c.moves.filter((m) => m.isAttackingMove()).map((m) => m.getType(c, nullState)))}
-                            element={TypeBadgeElementEnum.ICONS}
-                        />
-                    </>
-                ) : (
-                    <TypeBadge types={[c.types.type1, c.types.type2]} element={TypeBadgeElementEnum.ICONS} />
-                )}
+                <TypeBadge
+                    types={
+                        useMoves
+                            ? uniq(c.moves.filter((m) => m.isAttackingMove()).map((m) => m.getType(c, nullState)))
+                            : [c.types.type1, c.types.type2]
+                    }
+                    element={TypeBadgeElementEnum.ICONS}
+                    widthHeight={20}
+                />
             </div>
-        </td>
+        </th>
     );
 }

@@ -34,9 +34,10 @@ export enum TypeBadgeElementEnum {
 interface TypeBadgeProps {
     types: (PokemonType | undefined)[];
     element: TypeBadgeElementEnum;
+    widthHeight?: number;
 }
 
-export default function TypeBadge({ types, element }: TypeBadgeProps) {
+export default function TypeBadge({ types, element, widthHeight = 30 }: TypeBadgeProps) {
     function getClasses(type: PokemonType) {
         return `h-fit text-white text-shadow-xs/100 text-s font-semibold cursor-default
             ${getTypeColorClass(type, "bg")}`;
@@ -51,8 +52,6 @@ export default function TypeBadge({ types, element }: TypeBadgeProps) {
     }
 
     function getIcon(type: PokemonType) {
-        const widthHeight = 30;
-
         switch (type.id) {
             case "BUG":
                 return <BugTypeIcon width={widthHeight} height={widthHeight} />;
@@ -142,9 +141,8 @@ export default function TypeBadge({ types, element }: TypeBadgeProps) {
                 </div>
             );
         case TypeBadgeElementEnum.ICONS:
-            const girdRows = defTypes.length > 1 ? 2 : 1;
             return (
-                <div className={`grid grid-rows-${girdRows} grid-cols-auto grid-flow-col space-x-1 space-y-1 my-auto`}>
+                <div className="flex gap-0.5">
                     {defTypes.map((type, index) => (
                         <div key={index} title={type.name}>
                             {getIcon(type)}

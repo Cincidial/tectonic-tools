@@ -78,6 +78,9 @@ function getTextForMult(mult: number): string {
     if (mult == 1.0) {
         return "";
     }
+    if (mult == 1.5) {
+        return "\u00B3\u2044\u2082";
+    }
 
     return mult.toString();
 }

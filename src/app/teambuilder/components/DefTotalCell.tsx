@@ -2,30 +2,38 @@ import { PokemonType } from "@/app/data/tectonic/PokemonType";
 import { calcTypeMatchup } from "@/app/data/typeChart";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 
-function compare(num: number, total: "weak" | "strong") {
-    if (total === "weak") {
-        return num > 1;
+export enum CompareEnum {
+    Weak,
+    Resist,
+    Immune,
+}
+
+function calcCompare(num: number, compare: CompareEnum): boolean {
+    switch (compare) {
+        case CompareEnum.Weak:
+            return num > 1;
+        case CompareEnum.Resist:
+            return num < 1 && num != 0;
+        case CompareEnum.Immune:
+            return num == 0;
     }
-    return num < 1;
 }
 
 export default function DefTotalCell({
     cards,
     type,
-    total,
+    compare,
 }: {
     cards: PartyPokemon[];
     type: PokemonType;
-    total: "weak" | "strong";
+    compare: CompareEnum;
 }): React.ReactNode {
     const num = cards.filter((c) =>
-        compare(
+        calcCompare(
             calcTypeMatchup({ type: type }, { type1: c.types.type1, type2: c.types.type2, ability: c.ability }),
-            total
+            compare
         )
     ).length;
 
-    return (
-        <td className={`border border-gray-600 text-lg text-center cursor-default font-bold`}>{num > 0 ? num : ""}</td>
-    );
+    return <td className="border border-gray-600 text-lg text-white text-center font-bold">{num > 0 ? num : ""}</td>;
 }

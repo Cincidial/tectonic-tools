@@ -82,10 +82,11 @@ body {
     --color-mutant-bg: #53374a;
     --color-qmarks: #444;
     --color-qmarks-bg: #222;
-    --color-hyper-effective: #2e8bcf;
-    --color-super-effective: #2e8b57;
-    --color-not-effective: #b04f4a;
-    --color-barely-effective: #e3649f;
+
+    --color-hyper-effective: #00c275;
+    --color-super-effective: #2dd690;
+    --color-not-effective: #ffe9d2;
+    --color-barely-effective: #fbb05f;
     --color-not-very-effective: #f7be81;
 }
 
