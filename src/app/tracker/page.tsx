@@ -3,6 +3,7 @@
 import FilterOptionButton from "@/components/FilterOptionButton";
 import ImageFallback from "@/components/ImageFallback";
 import PageHeader, { PageType } from "@/components/PageHeader";
+import PokemonModal from "@/components/PokemonModal";
 import { LoadedEncounterMap, LoadedEncounterTable } from "@/preload/loadedDataClasses";
 import { NextPage } from "next";
 import Head from "next/head";
@@ -113,6 +114,7 @@ const EncounterTracker: NextPage = () => {
     const [playthroughName, setPlaythroughName] = useState<string>("New Playthrough");
     const [locationFilter, setLocationFilter] = useState<string>("");
     const [pickedMonMapWithEvos, setPickedMonMapWithEvos] = useState<Record<string, Pokemon>>();
+    const [modalMon, setModalMon] = useState<Pokemon | null>(null);
 
     function EncounterDisplay({ data }: { data: EncounterDisplayData }): ReactNode {
         const flagMissing = Playthrough.getPlayThrough(selectedPlaythroughId)!.wasPickMissed(data.key);
@@ -173,6 +175,7 @@ const EncounterTracker: NextPage = () => {
                     alt={pokemon.name}
                     width={64}
                     height={64}
+                    title={pokemon.name}
                     onClick={() => {
                         const playthrough = Playthrough.getPlayThrough(selectedPlaythroughId)!;
                         if (playthrough.hasPick(encounterKey, eMonId)) {
@@ -182,7 +185,7 @@ const EncounterTracker: NextPage = () => {
                         }
                         setPickedMonMapWithEvos(playthrough.getPickedMonMapWithEvos());
                     }}
-                    title={pokemon.name}
+                    onContextMenu={() => setModalMon(pokemon)}
                 />
                 {!encounterData.isSpecialEncounter() && (
                     <div className="flex flex-wrap justify-center">
@@ -332,6 +335,8 @@ const EncounterTracker: NextPage = () => {
                     </main>
                 )}
             </div>
+
+            {modalMon && <PokemonModal pokemon={modalMon} handlePokemonClick={setModalMon} />}
         </Fragment>
     );
 };

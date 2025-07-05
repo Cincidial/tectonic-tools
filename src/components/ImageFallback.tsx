@@ -8,8 +8,9 @@ export default function ImageFallback({
     width,
     height,
     className,
-    onClick,
     title,
+    onClick,
+    onContextMenu,
 }: {
     alt: string;
     src: string;
@@ -18,6 +19,7 @@ export default function ImageFallback({
     className?: string;
     title?: string;
     onClick?: () => void;
+    onContextMenu?: () => void;
 }): ReactNode {
     const [isError, setError] = useState<boolean>(false);
 
@@ -33,6 +35,10 @@ export default function ImageFallback({
             height={height}
             className={className}
             onClick={onClick}
+            onContextMenu={(e) => {
+                onContextMenu?.();
+                e.preventDefault();
+            }}
         />
     );
 }
