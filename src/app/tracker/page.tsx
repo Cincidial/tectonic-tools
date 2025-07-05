@@ -44,7 +44,7 @@ class EncounterMap {
 
     filter(input: string, showIncompleteOnly: boolean, playthrough: Playthrough): boolean {
         const count = this.displayData.filter((x) => x.filter(input, showIncompleteOnly, playthrough)).length;
-        return showIncompleteOnly && input.length == 0 ? count == this.displayData.length : count > 0;
+        return count > 0;
     }
 }
 
