@@ -5,6 +5,7 @@ import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { JSX, useEffect, useState } from "react";
 import FilterOptionButton from "./FilterOptionButton";
 import ImageFallback from "./ImageFallback";
+import PokemonModal from "./PokemonModal";
 import TypeBadge, { TypeBadgeElementEnum } from "./TypeBadge";
 
 export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX.Element {
@@ -16,6 +17,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
     const [playthrough, setPlaythrough] = useState<number>(-1);
     const [type1, setType1] = useState<PokemonType | undefined>(undefined);
     const [type2, setType2] = useState<PokemonType | undefined>(undefined);
+    const [modalMon, setModalMon] = useState<Pokemon | null>(null);
 
     function filter(x: Pokemon, playthroughMonMap?: Record<string, Pokemon>): boolean {
         return (
@@ -159,12 +161,15 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                                 alt={mon.name}
                                 width={64}
                                 height={64}
-                                onClick={() => onMon(mon)}
                                 title={mon.name}
+                                onClick={() => onMon(mon)}
+                                onContextMenu={() => setModalMon(mon)}
                             />
                         ))}
                 </div>
             </div>
+
+            {modalMon && <PokemonModal pokemon={modalMon} handlePokemonClick={setModalMon} />}
         </div>
     );
 }
