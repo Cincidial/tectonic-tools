@@ -17,7 +17,7 @@ export class LocationPickData {
 }
 
 export class Playthrough {
-    private static localStorageKey = "EncounterTrackerLocalStorageKey_V1";
+    static localStorageKey = "EncounterTrackerLocalStorageKey_V1";
     private static localData: Playthrough[] = [];
 
     private key: number;

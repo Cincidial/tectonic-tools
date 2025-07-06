@@ -17,7 +17,7 @@ import {
 } from "./loadedDataClasses";
 import { parseEncounterFile, parseNewLineCommaFile, parseStandardFile, parseVersionFile } from "./tectonicFileParsers";
 
-const PUBLIC_VERSION_COMMIT = "6dd1d52a5376afa53fa9c9bfe85b9a7995ef2366";
+const PUBLIC_VERSION_COMMIT = "a05a31a98893d71f3374bfadd3f0f37e5e9e5e1c";
 
 async function dataRead(filePath: string) {
     const basePath = path.join(__dirname, "../../public/data/");
