@@ -156,7 +156,7 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                         .map((mon) => (
                             <ImageFallback
                                 key={mon.id}
-                                className="hover:bg-yellow-highlight"
+                                className="hover:bg-yellow-highlight cursor-pointer"
                                 src={mon.getIcon()}
                                 alt={mon.name}
                                 width={64}
