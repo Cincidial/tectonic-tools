@@ -1,6 +1,6 @@
-import Image from "next/image";
 import { ReactNode, useState } from "react";
 
+const IMG_GITHUB_ROOT = "https://raw.githubusercontent.com/AlphaKretin/tectonic-tools/refs/heads/main/public/";
 export const IMG_NOT_FOUND = "/Items/NOTFOUND.png";
 export default function ImageFallback({
     alt,
@@ -24,10 +24,10 @@ export default function ImageFallback({
     const [isError, setError] = useState<boolean>(false);
 
     return (
-        <Image
+        <img
             alt={alt}
             title={title}
-            src={isError ? IMG_NOT_FOUND : src}
+            src={isError ? `${IMG_GITHUB_ROOT}${IMG_NOT_FOUND}` : `${IMG_GITHUB_ROOT}${src}`}
             onError={() => {
                 setError(true);
             }}

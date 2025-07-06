@@ -3,8 +3,8 @@ import { PokemonType } from "@/app/data/tectonic/PokemonType";
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import FilterOptionButton from "@/components/FilterOptionButton";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
-import Image from "next/image";
 import { Fragment, ReactNode, useState } from "react";
+import ImageFallback from "./ImageFallback";
 
 function TableHeader({ children }: { children: ReactNode }) {
     return <th className="px-1 py-3 text-center text-sm font-bold text-gray-300">{children}</th>;
@@ -66,12 +66,12 @@ export default function MoveTable({
                         isSelected={selectedCategory === c}
                     >
                         <span>
-                            <Image
+                            <ImageFallback
                                 src={`/move_categories/${c}.png`}
                                 alt={c}
                                 title={c}
-                                height="60"
-                                width="51"
+                                height={60}
+                                width={51}
                                 className="inline w-8 h-8 mr-1"
                             />
                             {c}
@@ -151,12 +151,12 @@ export default function MoveTable({
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        <Image
+                                        <ImageFallback
                                             src={`/move_categories/${m.category}.png`}
                                             alt={m.category}
                                             title={m.category}
-                                            height="60"
-                                            width="51"
+                                            height={60}
+                                            width={51}
                                             className="w-8 h-8 mx-auto"
                                         />
                                     </TableCell>

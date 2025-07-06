@@ -10,7 +10,6 @@ import { Pokemon, StylePoints, zeroStylePoints } from "@/app/data/tectonic/Pokem
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { isNull, negativeMod, safeKeys } from "@/app/data/util";
-import Image from "next/image";
 import { useState } from "react";
 import { getTypeColorClass } from "./colours";
 import Dropdown from "./DropDown";
@@ -99,7 +98,7 @@ export default function PokemonCardHorizontal({
                     <tr>
                         <td className="cursor-pointer" onClick={showInfoModal}>
                             <div className="flex flex-col space-y-1 w-25 h-46">
-                                <Image
+                                <ImageFallback
                                     alt={partyMon.species.name}
                                     src={partyMon.species.getImage(partyMon.form)}
                                     width={160}

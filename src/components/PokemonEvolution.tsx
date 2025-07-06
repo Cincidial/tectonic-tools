@@ -2,7 +2,7 @@ import { Pokemon } from "@/app/data/tectonic/Pokemon";
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { NTreeNode } from "@/app/data/types/NTreeNode";
 import { PokemonEvolutionTerms } from "@/preload/loadedDataClasses";
-import Image from "next/image";
+import ImageFallback from "./ImageFallback";
 
 interface PokemonEvolutionProps {
     node: NTreeNode<PokemonEvolutionTerms>;
@@ -109,11 +109,11 @@ const PokemonEvolution: React.FC<PokemonEvolutionProps> = ({ node, onClick }) =>
                     {evoDisplay.itemImg == null ? (
                         <></>
                     ) : (
-                        <Image
+                        <ImageFallback
                             src={TectonicData.items[evoDisplay.itemImg].image}
                             alt={evoDisplay.itemImg}
-                            height="48"
-                            width="48"
+                            width={48}
+                            height={48}
                             className="size-9 mr-1 inline"
                         />
                     )}
@@ -124,11 +124,11 @@ const PokemonEvolution: React.FC<PokemonEvolutionProps> = ({ node, onClick }) =>
                 className="text-center hover:bg-blue-50 dark:hover:bg-blue-900 cursor-pointer"
                 onClick={() => onClick(TectonicData.pokemon[node.getData().pokemon])}
             >
-                <Image
+                <ImageFallback
                     src={TectonicData.pokemon[node.getData().pokemon].getImage()}
                     alt={node.getData().pokemon}
-                    height="160"
-                    width="160"
+                    width={160}
+                    height={160}
                     className="w-24 h-24"
                 />
                 <span>{TectonicData.pokemon[node.getData().pokemon].name}</span>

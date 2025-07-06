@@ -359,7 +359,7 @@ const Home: NextPage = () => {
                     </table>
                 </TabContent>
                 <TabContent tab="Items" activeTab={activeTab}>
-                    <div className="overflow-x-auto mx-auto">
+                    <div className="overflow-x-auto">
                         <table>
                             <thead className="bg-gray-800">
                                 <tr>

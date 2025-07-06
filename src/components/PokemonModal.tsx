@@ -11,7 +11,6 @@ import ImageFallback from "@/components/ImageFallback";
 import LeftRightCycleButtons from "@/components/LeftRightCycleButtons";
 import TribeCapsule from "@/components/TribeCapsule";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import EncounterDisplay from "./EncounterDisplay";
 import MoveTable from "./MoveTable";
@@ -173,11 +172,11 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                                 <span>Change Form</span>
                                             </LeftRightCycleButtons>
                                         )}
-                                        <Image
+                                        <ImageFallback
                                             src={currentPokemon.getImage(currentForm)}
                                             alt={currentPokemon.name}
-                                            height="160"
-                                            width="160"
+                                            width={160}
+                                            height={160}
                                             className="min-w-40 max-w-40 h-40"
                                         />
                                         <TypeBadge
