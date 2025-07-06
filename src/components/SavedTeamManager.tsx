@@ -7,7 +7,7 @@ import { Pokemon } from "@/app/data/tectonic/Pokemon";
 import { PokemonType } from "@/app/data/tectonic/PokemonType";
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useCallback, useEffect, useState } from "react";
 import BasicButton from "./BasicButton";
 
 const teamManagementLocalStorageKey = "TeamManagementLocalStorageKey_V1";
@@ -172,18 +172,19 @@ export default function SavedTeamManager({
         setSaveTeamName("");
     }
 
+    const importTeamCallback = useCallback(importTeam, [onLoad]);
     useEffect(() => {
         if (typeof window !== "undefined") {
             const code = new URLSearchParams(window.location.search).get("team") ?? "";
 
             setTeamCode(code);
-            importTeam(code, false);
+            importTeamCallback(code, false);
         }
 
         legacyLoadOfSavedTeams();
         performSavedLegacyTeamMigrations();
         setSavedTeamCodes(getSavedTeamCodes());
-    }, []);
+    }, [importTeamCallback]);
 
     return (
         <div className="flex gap-20">
