@@ -32,7 +32,7 @@ function legacyLoadOfSavedTeams() {
 
     // Legacy handling for saved team codes not saved under the grouped local storage key
     const migrations: Record<string, string> = {};
-    for (var key in localStorage) {
+    for (const key in localStorage) {
         if (key != Playthrough.localStorageKey) {
             // Everything that is not a playthrough is a saved JSON team - move it to the migrations key for further processing
             const jsonTeam = localStorage.getItem(key);
