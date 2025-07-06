@@ -1,6 +1,8 @@
 import { ReactNode, useState } from "react";
 
-const IMG_GITHUB_ROOT = "https://raw.githubusercontent.com/AlphaKretin/tectonic-tools/refs/heads/main/public/";
+// Keep adding fallbacks till we can serve everyone for free?
+const IMG_CDN_ROOT = "https://tectonictools.sirv.com/Images/public/";
+const IMG_GITHUB_FALLBACK = "https://raw.githubusercontent.com/AlphaKretin/tectonic-tools/refs/heads/main/public/";
 export const IMG_NOT_FOUND = "/Items/NOTFOUND.png";
 export default function ImageFallback({
     alt,
@@ -21,15 +23,26 @@ export default function ImageFallback({
     onClick?: () => void;
     onContextMenu?: () => void;
 }): ReactNode {
+    const [isCDNErrorTryGithub, setIsCDNErrorTryGithub] = useState<boolean>(false);
     const [isError, setError] = useState<boolean>(false);
 
     return (
         <img
             alt={alt}
             title={title}
-            src={isError ? `${IMG_GITHUB_ROOT}${IMG_NOT_FOUND}` : `${IMG_GITHUB_ROOT}${src}`}
+            src={
+                isCDNErrorTryGithub
+                    ? `${IMG_GITHUB_FALLBACK}${src}`
+                    : isError
+                    ? `${IMG_CDN_ROOT}${IMG_NOT_FOUND}`
+                    : `${IMG_CDN_ROOT}${src}`
+            }
             onError={() => {
-                setError(true);
+                if (!isCDNErrorTryGithub) {
+                    setIsCDNErrorTryGithub(true);
+                } else {
+                    setError(true);
+                }
             }}
             width={width}
             height={height}
