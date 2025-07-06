@@ -73,17 +73,6 @@ export function styleFromStat(stat: Stat): keyof StylePoints {
     return stat;
 }
 
-export interface SavedPartyPokemon {
-    pokemon: keyof typeof TectonicData.pokemon;
-    moves: Array<keyof typeof TectonicData.moves>;
-    ability: keyof typeof TectonicData.abilities;
-    items: Array<keyof typeof TectonicData.items>;
-    itemType?: keyof typeof TectonicData.types;
-    form: number;
-    level: number;
-    sp: number[];
-}
-
 function encodeChunk(version: VersionMap, view: DataView<ArrayBuffer>, byteOffset: number, data: PartyPokemon): number {
     const heldItems = version.indices.item;
     function getMonMoveShiftValue(dataIndex: number, shift: number, mask: number): number {
