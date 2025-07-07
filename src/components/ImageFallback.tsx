@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ReactNode, useState } from "react";
 
 // Keep adding fallbacks till we can serve everyone for free?
@@ -26,7 +27,29 @@ export default function ImageFallback({
     const [isCDNErrorTryGithub, setIsCDNErrorTryGithub] = useState<boolean>(false);
     const [isError, setError] = useState<boolean>(false);
 
-    return (
+    // Non prod builds should force use Image so we don't use up CDN limits
+    return process.env.NODE_ENV !== "production" ? (
+        <Image
+            alt={alt}
+            title={title}
+            src={isError ? IMG_NOT_FOUND : src}
+            onError={() => {
+                if (!isCDNErrorTryGithub) {
+                    setIsCDNErrorTryGithub(true);
+                } else {
+                    setError(true);
+                }
+            }}
+            width={width}
+            height={height}
+            className={className}
+            onClick={onClick}
+            onContextMenu={(e) => {
+                onContextMenu?.();
+                e.preventDefault();
+            }}
+        />
+    ) : (
         <img
             alt={alt}
             title={title}

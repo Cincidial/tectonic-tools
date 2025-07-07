@@ -17,4 +17,4 @@ If you contribute new/changes to images they'll need to be uploaded to the CDN (
 Images should also be added to the repo for safe keeping
 Note that Sirv has been configured for a 30 day local browser cache time. So if an image gets updated it may be delayed for users unless they force a refresh.
 
--   This applies to you for local dev as well, force refreshing locally will consume our free tier limit
+-   Local dev should always use the localhost nextjs server, unless you use a production version locally
