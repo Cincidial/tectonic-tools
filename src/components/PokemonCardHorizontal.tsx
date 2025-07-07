@@ -16,6 +16,7 @@ import Dropdown from "./DropDown";
 import ImageFallback from "./ImageFallback";
 import LeftRightCycleButtons from "./LeftRightCycleButtons";
 import PokemonModal from "./PokemonModal";
+import CloseXButton from "./svg_icons/CloseXButton";
 import TribeCapsule from "./TribeCapsule";
 import TypeBadge, { TypeBadgeElementEnum } from "./TypeBadge";
 
@@ -85,12 +86,7 @@ export default function PokemonCardHorizontal({
                         <TribeCapsule key={t.id} tribe={t} />
                     ))}
                 </div>
-                <span
-                    className="inline text-3xl cursor-pointer text-end -mt-3 mr-0.5 text-white hover:text-yellow-highlight"
-                    onClick={onRemove}
-                >
-                    &#9932;
-                </span>
+                <CloseXButton className="-mt-3 -mr-1" onClick={onRemove} />
             </div>
 
             <table className="table-fixed mt-1">

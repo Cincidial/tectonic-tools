@@ -67,8 +67,8 @@ export default function EncounterDisplay({ pokemon }: { pokemon: Pokemon }) {
         }
     });
 
-    const thClass = "border py-2 bg-white dark:bg-gray-700";
-    const tbClass = "border py-2 bg-white dark:bg-violet-400/40";
+    const thClass = "border py-2 bg-gray-700";
+    const tbClass = "border py-2";
 
     return (
         encounters.length > 0 && (
