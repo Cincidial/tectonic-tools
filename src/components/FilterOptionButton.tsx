@@ -16,7 +16,7 @@ export default function FilterOptionButton({
     return (
         <span
             className={`${padding} w-fit h-fit text-xl text-center inline-block rounded hover:bg-yellow-highlight hover:text-black hover:cursor-pointer ${
-                isSelected ? "bg-yellow-highlight text-black" : "bg-gray-500"
+                isSelected ? "bg-yellow-highlight text-black" : "bg-gray-500 text-white"
             }`}
             title={title}
             onClick={onClick}

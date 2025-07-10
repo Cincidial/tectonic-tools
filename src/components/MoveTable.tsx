@@ -7,12 +7,12 @@ import { Fragment, ReactNode, useState } from "react";
 import ImageFallback from "./ImageFallback";
 
 function TableHeader({ children }: { children: ReactNode }) {
-    return <th className="px-1 py-3 text-center text-sm font-bold text-gray-300">{children}</th>;
+    return <th className="px-1 py-3 text-center text-white text-sm font-bold">{children}</th>;
 }
 
 function TableCell({ span, padding = "px-1", children }: { span?: number; padding?: string; children: ReactNode }) {
     return (
-        <td className={`${padding} text-center text-sm text-gray-200 whitespace-break-spaces`} colSpan={span}>
+        <td className={`${padding} text-center text-sm text-white whitespace-break-spaces`} colSpan={span}>
             {children}
         </td>
     );
@@ -94,7 +94,7 @@ export default function MoveTable({
                     ))}
             </div>
             <table className="w-full">
-                <thead className="sticky top-0 text-gray-900 dark:text-gray-200 bg-blue-200 dark:bg-blue-700">
+                <thead className="sticky top-0 bg-blue-700">
                     <tr>
                         {showLevel && <TableHeader>Lvl</TableHeader>}
                         <TableHeader>

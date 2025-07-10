@@ -188,6 +188,7 @@ function pbCalcAbilityDamageMultipliers(
 
     // User or user ally ability effects that alter damage
     multipliers.base_damage_multiplier *= user.ability.movePowerMultiplier(move);
+    multipliers.attack_multiplier *= user.ability.attackMultiplier(move, user, battleState);
     // user.eachAlly((b: any) => {
     //     b.eachAbilityShouldApply(aiCheck, (ability: any) => {
     //         BattleHandlers.triggerDamageCalcUserAllyAbility(

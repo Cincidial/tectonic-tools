@@ -4,6 +4,7 @@ import FilterOptionButton from "@/components/FilterOptionButton";
 import ImageFallback from "@/components/ImageFallback";
 import PageHeader, { PageType } from "@/components/PageHeader";
 import PokemonModal from "@/components/PokemonModal";
+import CloseXButton from "@/components/svg_icons/CloseXButton";
 import { LoadedEncounterMap, LoadedEncounterTable } from "@/preload/loadedDataClasses";
 import { NextPage } from "next";
 import Head from "next/head";
@@ -251,20 +252,17 @@ const EncounterTracker: NextPage = () => {
                                 title="Toggle view"
                                 onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
                             >
-                                <span className="text-3xl">&#65311;</span>
+                                <span className="text-3xl p-1">?</span>
                             </FilterOptionButton>
-                            <button
-                                className="text-4xl hover:text-yellow-highlight cursor-pointer"
-                                title="Delete"
+                            <CloseXButton
+                                svgClassName="w-10 h-10"
                                 onClick={() => {
                                     if (confirm("Delete playthrough?")) {
                                         Playthrough.getPlayThrough(selectedPlaythroughId)?.delete();
                                         setselectedPlaythroughId(undefined);
                                     }
                                 }}
-                            >
-                                {"\u2715"}
-                            </button>
+                            />
                         </div>
                         <div className="flex flex-col gap-2 w-full md:w-150 mx-auto ">
                             <input

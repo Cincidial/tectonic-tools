@@ -1,5 +1,7 @@
 import { MoveData } from "@/app/damagecalc/components/MoveCard";
 import { LoadedAbility } from "@/preload/loadedDataClasses";
+import { BattleState } from "../battleState";
+import { PartyPokemon } from "../types/PartyPokemon";
 
 export class Ability {
     id: string = "";
@@ -22,6 +24,11 @@ export class Ability {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public movePowerMultiplier(move: MoveData): number {
+        return 1;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public attackMultiplier(move: MoveData, user: PartyPokemon, battleState: BattleState): number {
         return 1;
     }
 

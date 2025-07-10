@@ -121,7 +121,7 @@ const PokemonEvolution: React.FC<PokemonEvolutionProps> = ({ node, onClick }) =>
                 </div>
             )}
             <div
-                className="text-center hover:bg-blue-50 dark:hover:bg-blue-900 cursor-pointer"
+                className="text-center hover:bg-blue-900 cursor-pointer"
                 onClick={() => onClick(TectonicData.pokemon[node.getData().pokemon])}
             >
                 <ImageFallback

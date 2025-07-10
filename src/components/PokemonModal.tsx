@@ -6,9 +6,9 @@ import { calcTypeMatchup } from "@/app/data/typeChart";
 import { negativeMod } from "@/app/data/util";
 import AbilityCapsule from "@/components/AbilityCapsule";
 import BasicButton from "@/components/BasicButton";
-import CloseXButton from "@/components/CloseXButton";
 import ImageFallback from "@/components/ImageFallback";
 import LeftRightCycleButtons from "@/components/LeftRightCycleButtons";
+import CloseXButton from "@/components/svg_icons/CloseXButton";
 import TribeCapsule from "@/components/TribeCapsule";
 import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import { useEffect, useRef, useState } from "react";
@@ -119,13 +119,13 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
             <div
                 ref={modalRef}
                 onClick={(e) => e.stopPropagation()}
-                className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[75vh] min-h-[75vh] overflow-y-auto transform transition-transform duration-300 ${
+                className={`bg-gray-800 text-white rounded-lg shadow-xl max-w-2xl w-full max-h-[75vh] min-h-[75vh] overflow-y-auto transform transition-transform duration-300 ${
                     isVisible ? "scale-100" : "scale-95"
                 }`}
             >
                 <div className="px-4 py-2.5">
                     <div className="flex justify-between">
-                        <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+                        <h3 className="text-2xl font-bold">
                             {currentPokemon.dex}: {currentPokemon.name}{" "}
                             {currentPokemon.getFormName(currentForm) &&
                                 "(" + currentPokemon.getFormName(currentForm) + ") "}
@@ -135,15 +135,15 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex justify-center space-x-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex justify-center gap-4 border-b border-gray-400">
                         {tabs.map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => handleTabChange(tab)}
                                 className={`px-4 py-2 text-sm font-medium ${
                                     activeTab === tab
-                                        ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400"
-                                        : "text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
+                                        ? "border-b-2 text-white border-white"
+                                        : "text-gray-400 hover:text-white"
                                 }`}
                             >
                                 {tab}
@@ -213,15 +213,13 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                         </tbody>
                                     </table>
                                 </div>
-                                <p className="text-gray-600 dark:text-gray-300">
+                                <p>
                                     {`${currentPokemon.getPokedex(currentForm)} ${currentPokemon.name} weighs ${
                                         currentPokemon.weight
                                     }kg and is ${currentPokemon.height}m tall.`}
                                 </p>
                                 <hr className="my-3" />
-                                <h1 className="font-semibold text-2xl text-center text-gray-800 dark:text-gray-100">
-                                    Abilties
-                                </h1>
+                                <h1 className="font-semibold text-2xl text-center">Abilties</h1>
                                 <table className="border-spacing-y-2 border-separate w-full">
                                     <tbody>
                                         {currentPokemon.getAbilities(currentForm).map((a) => (
@@ -230,15 +228,13 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                                     <AbilityCapsule ability={a} />
                                                 </td>
                                                 <td>
-                                                    <p className="text-gray-600 dark:text-gray-300">{a.description}</p>
+                                                    <p>{a.description}</p>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
-                                <h1 className="font-semibold text-2xl text-center mt-2 text-gray-800 dark:text-gray-100">
-                                    Tribes
-                                </h1>
+                                <h1 className="font-semibold text-2xl text-center mt-2">Tribes</h1>
                                 <table className="border-spacing-y-2 border-separate w-full">
                                     <tbody>
                                         {currentPokemon.tribes.map((t) => (
@@ -247,7 +243,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                                     <TribeCapsule tribe={t} />
                                                 </td>
                                                 <td>
-                                                    <p className="text-gray-600 dark:text-gray-300">{t.description}</p>
+                                                    <p>{t.description}</p>
                                                 </td>
                                             </tr>
                                         ))}
@@ -267,9 +263,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                             {selectedDefAbility.name}
                                         </BasicButton>
                                     )}
-                                    <h1 className="font-semibold text-2xl my-auto text-gray-800 dark:text-gray-100">
-                                        Defensive Matchups
-                                    </h1>
+                                    <h1 className="font-semibold text-2xl my-auto">Defensive Matchups</h1>
                                 </div>
                                 <table className="my-2">
                                     <thead>
@@ -307,9 +301,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                             {selectedStabAbility.name}
                                         </BasicButton>
                                     )}
-                                    <h1 className="font-semibold text-2xl my-auto text-gray-800 dark:text-gray-100">
-                                        STAB Matchups
-                                    </h1>
+                                    <h1 className="font-semibold text-2xl my-auto">STAB Matchups</h1>
                                 </div>
                                 <table className="my-2">
                                     <thead>
@@ -339,12 +331,10 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                             </div>
                         </TabContent>
                         <TabContent tab="Evolutions & Locations" activeTab={activeTab}>
-                            <h1 className="font-semibold text-2xl text-center mb-2 text-gray-800 dark:text-gray-100">
-                                Evolutions
-                            </h1>
+                            <h1 className="font-semibold text-2xl text-center mb-2">Evolutions</h1>
                             <div className="mt-2 text-center">
                                 {currentPokemon.evolutionTree.isLeaf() ? (
-                                    <p className="text-gray-600 dark:text-gray-300">Does not evolve</p>
+                                    <p>Does not evolve</p>
                                 ) : (
                                     <div className="w-fit mx-auto">
                                         {currentPokemon.evolutionTree.asBranches().map((branch, index) => (
@@ -370,25 +360,21 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                 )}
                             </div>
                             <hr className="my-3" />
-                            <h1 className="font-semibold text-2xl text-center mb-2 text-gray-800 dark:text-gray-100">
-                                Locations
-                            </h1>
+                            <h1 className="font-semibold text-2xl text-center mb-2">Locations</h1>
                             <EncounterDisplay pokemon={currentPokemon} />
-                            <h1 className="font-semibold mt-3 text-2xl text-center mb-2 text-gray-800 dark:text-gray-100">
-                                Wild Held Items
-                            </h1>
+                            <h1 className="font-semibold mt-3 text-2xl text-center mb-2">Wild Held Items</h1>
                             <table className="table-fixed w-full text-center">
                                 <thead>
-                                    <tr>
-                                        <th className={"border w-25 py-2 bg-white dark:bg-gray-700"}>Item</th>
-                                        <th className={"border w-20 py-2 bg-white dark:bg-gray-700"}>Chance</th>
-                                        <th className={"border py-2 bg-white dark:bg-gray-700"}>Description</th>
+                                    <tr className="bg-gray-700">
+                                        <th className={"border w-25 py-2"}>Item</th>
+                                        <th className={"border w-20 py-2"}>Chance</th>
+                                        <th className={"border py-2"}>Description</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {currentPokemon.items.map(([i, chance], index) => (
                                         <tr key={index}>
-                                            <td className={"border p-2 bg-white dark:bg-violet-400/40 font-semibold"}>
+                                            <td className={"border p-2 font-semibold"}>
                                                 <div>
                                                     <span className="flex justify-center">
                                                         <ImageFallback
@@ -401,10 +387,8 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                                     {i.name}
                                                 </div>
                                             </td>
-                                            <td className={"border bg-white dark:bg-violet-400/40"}>{`${chance}%`}</td>
-                                            <td className={"border px-2 bg-white dark:bg-violet-400/40"}>
-                                                {i.description}
-                                            </td>
+                                            <td className={"border"}>{`${chance}%`}</td>
+                                            <td className={"border px-2"}>{i.description}</td>
                                         </tr>
                                     ))}
                                 </tbody>

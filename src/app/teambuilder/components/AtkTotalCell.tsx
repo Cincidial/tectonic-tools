@@ -23,6 +23,8 @@ export default function AtkTotalCell({
     }).length;
 
     return (
-        <td className={`border border-gray-600 text-lg text-center cursor-default font-bold`}>{num > 0 ? num : ""}</td>
+        <td className={`border border-gray-600 text-lg text-white text-center cursor-default font-bold`}>
+            {num > 0 ? num : ""}
+        </td>
     );
 }

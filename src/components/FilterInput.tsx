@@ -23,7 +23,7 @@ export function FilterInput({ currentFilter, filters, onAddFilter, removeFilter,
     };
 
     return (
-        <div className="w-full md:w-200 mx-auto bg-gray-800 rounded-lg p-2 mb-4">
+        <div className="w-full md:w-200 mx-auto text-white bg-gray-800 rounded-lg p-2 mb-4">
             <div className="flex flex-wrap justify-center items-center gap-2 mb-2">
                 <select
                     className="border rounded p-2"

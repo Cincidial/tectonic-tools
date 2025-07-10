@@ -75,7 +75,7 @@ const TeamBuilder: NextPage = () => {
                         <div>
                             <div className="text-center text-3xl text-white">Defensive Matchups</div>
                             <table className="mx-auto divide-gray-700">
-                                <thead className="bg-gray-700">
+                                <thead className="bg-gray-700 text-white">
                                     <tr>
                                         <th></th>
                                         {party.map((c, i) => (
@@ -115,7 +115,7 @@ const TeamBuilder: NextPage = () => {
                         <div>
                             <div className="text-center text-3xl text-white">Offensive Coverage</div>
                             <table className="mx-auto divide-gray-700">
-                                <thead className="bg-gray-700">
+                                <thead className="bg-gray-700 text-white">
                                     <tr>
                                         <th></th>
                                         {party.map((c, i) => (

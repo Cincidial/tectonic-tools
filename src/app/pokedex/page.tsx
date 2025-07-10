@@ -169,7 +169,7 @@ const Home: NextPage = () => {
                         </FilterOptionButton>
                     </div>
                     {pokedexAsCards ? (
-                        <table className="table-fixed mx-auto">
+                        <table className="table-fixed mx-auto text-white">
                             <tbody>
                                 {filteredPokemon.map((mon) => (
                                     <tr
@@ -242,7 +242,7 @@ const Home: NextPage = () => {
                         </table>
                     ) : (
                         <table className="mx-auto mt-2 divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-800">
+                            <thead className="bg-gray-800">
                                 <tr>
                                     <TableHeader>
                                         <></>
@@ -261,7 +261,7 @@ const Home: NextPage = () => {
                                     <TableHeader>BST</TableHeader>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody className="divide-y divide-gray-200">
                                 {filteredPokemon.map((pokemon) => (
                                     <tr
                                         key={pokemon.id}
@@ -359,8 +359,8 @@ const Home: NextPage = () => {
                     </table>
                 </TabContent>
                 <TabContent tab="Items" activeTab={activeTab}>
-                    <div className="overflow-x-auto mx-auto">
-                        <table>
+                    <div className="overflow-x-auto">
+                        <table className="mx-auto">
                             <thead className="bg-gray-800">
                                 <tr>
                                     <TableHeader>
@@ -402,7 +402,7 @@ const Home: NextPage = () => {
                                             }`}
                                         >
                                             <td>
-                                                <div className="flex flex-col justify-center items-center gap-2 text-center">
+                                                <div className="flex flex-col justify-center items-center gap-2 text-center text-white">
                                                     <ImageFallback
                                                         src={i.item.image}
                                                         alt={i.item.name}
