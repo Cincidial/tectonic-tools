@@ -1,6 +1,7 @@
 "use client";
 
 import BasicButton from "@/components/BasicButton";
+import Checkbox from "@/components/Checkbox";
 import Column from "@/components/Column";
 import ColumnHeader from "@/components/ColumnHeader";
 import FilterOptionButton from "@/components/FilterOptionButton";
@@ -13,10 +14,13 @@ import SavedTeamManager from "@/components/SavedTeamManager";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useState } from "react";
+import { nullSideState, SideState } from "../data/battleState";
+import { WeatherCondition, weatherConditions } from "../data/conditions";
 import { Pokemon } from "../data/tectonic/Pokemon";
 import { TectonicData } from "../data/tectonic/TectonicData";
 import { Trainer } from "../data/tectonic/Trainer";
 import { PartyPokemon } from "../data/types/PartyPokemon";
+import SideStateUI from "./components/SideStateUI";
 
 const PokemonDamageCalculator: NextPage = () => {
     const [showTeamLoad, setShowTeamLoad] = useState<boolean>(true);
@@ -29,10 +33,17 @@ const PokemonDamageCalculator: NextPage = () => {
     const [mon, setMon] = useState<PartyPokemon | null>(null);
     const [trainerMon, setTrainerMon] = useState<PartyPokemon | null>(null);
     const [modalMon, setModalMon] = useState<Pokemon | null>(null);
+    const [weather, setWeather] = useState<WeatherCondition>("None");
+    const [gravity, setGravity] = useState<boolean>(false);
+    const [multiBattle, setMultiBattle] = useState<boolean>(false);
 
     const matchingTrainers = Object.values(TectonicData.trainers)
         .filter((x) => x.displayName().toLowerCase().includes(trainerText.toLowerCase()))
         .sort((a, b) => a.displayName().localeCompare(b.displayName()));
+
+    var playerSideState: SideState = nullSideState;
+    var opponentSideState: SideState = nullSideState;
+    function calcMovesDmg() {}
 
     return (
         <div className="min-h-screen bg-gray-900 pb-10">
@@ -47,24 +58,74 @@ const PokemonDamageCalculator: NextPage = () => {
 
             <main className="container mx-auto mt-2">
                 <Column>
-                    <ColumnHeader colour="text-purple-400">Field</ColumnHeader>
+                    <ColumnHeader colour="text-purple-400">Battle State</ColumnHeader>
+                    <div className="flex items-center gap-2">
+                        <select
+                            className="px-4 py-2 rounded-md bg-gray-700 border border-gray-600"
+                            value={weather}
+                            onChange={(e) => {
+                                setWeather(e.target.value as WeatherCondition);
+                                calcMovesDmg();
+                            }}
+                        >
+                            <option value="None">Select Weather</option>
+                            {weatherConditions.map((w) => (
+                                <option key={w} value={w}>
+                                    {w}
+                                </option>
+                            ))}
+                        </select>
+                        <Checkbox
+                            checked={gravity}
+                            onChange={() => {
+                                setGravity(!gravity);
+                                calcMovesDmg();
+                            }}
+                        >
+                            Gravity
+                        </Checkbox>
+                        <Checkbox
+                            checked={multiBattle}
+                            onChange={() => {
+                                setMultiBattle(!multiBattle);
+                                calcMovesDmg();
+                            }}
+                        >
+                            Multi Battle
+                        </Checkbox>
+                    </div>
                 </Column>
                 <div className="flex justify-center">
                     <Column>
                         <ColumnHeader colour="text-blue-400">Your Side</ColumnHeader>
+                        <SideStateUI
+                            onUpdate={(state) => {
+                                playerSideState = state;
+                                calcMovesDmg();
+                            }}
+                        />
 
                         {mon != null && (
                             <PokemonCardHorizontal
                                 partyMon={mon}
                                 onUpdate={() => {
-                                    setMon(null);
-                                    setMon(mon);
-                                    setLoadedParty([...loadedParty]);
+                                    const newMon = new PartyPokemon(mon);
+                                    const oldIndex = loadedParty.findIndex((x) => x == mon);
+                                    const newLoadedParty = [...loadedParty];
+                                    if (oldIndex == -1 && newLoadedParty.length < 6) {
+                                        newLoadedParty.push(newMon);
+                                    } else {
+                                        newLoadedParty[oldIndex] = newMon;
+                                    }
+
+                                    setMon(newMon);
+                                    setLoadedParty(newLoadedParty);
                                 }}
                                 onRemove={() => {
                                     setLoadedParty(loadedParty.filter((r) => r != mon));
                                     setMon(null);
                                 }}
+                                showBattleConfig={true}
                             />
                         )}
                         {mon != null && loadedParty.find((x) => x == mon) == undefined && loadedParty.length < 6 && (
@@ -83,9 +144,7 @@ const PokemonDamageCalculator: NextPage = () => {
                                 {loadedParty.map((x) => (
                                     <ImageFallback
                                         key={x.species.id}
-                                        className={`hover:bg-yellow-highlight cursor-pointer ${
-                                            mon == x ? "bg-yellow-highlight" : ""
-                                        }`}
+                                        className="hover:bg-yellow-highlight cursor-pointer"
                                         src={x.species.getIcon()}
                                         alt={x.species.name}
                                         width={64}
@@ -127,17 +186,23 @@ const PokemonDamageCalculator: NextPage = () => {
 
                     <Column>
                         <ColumnHeader colour="text-red-400">Opponent Side</ColumnHeader>
+                        <SideStateUI
+                            onUpdate={(state) => {
+                                opponentSideState = state;
+                                calcMovesDmg();
+                            }}
+                        />
 
                         {trainerMon != null && (
                             <PokemonCardHorizontal
                                 partyMon={trainerMon}
                                 onUpdate={() => {
-                                    setTrainerMon(null);
-                                    setTrainerMon(trainerMon);
+                                    setTrainerMon(new PartyPokemon(trainerMon));
                                 }}
                                 onRemove={() => {
                                     setTrainerMon(null);
                                 }}
+                                showBattleConfig={true}
                             />
                         )}
                         <div className="w-fit h-fit overflow-auto mx-auto">
@@ -171,10 +236,11 @@ const PokemonDamageCalculator: NextPage = () => {
                                                     species: x.pokemon,
                                                     level: x.level,
                                                     stylePoints: x.sp,
-                                                    moves: x.moves,
-                                                    items: x.items,
+                                                    moves: [...x.moves],
+                                                    items: [...x.items],
                                                     itemType: x.itemType,
                                                     ability: x.ability,
+                                                    nickname: x.nickname,
                                                 })
                                             )
                                         }
