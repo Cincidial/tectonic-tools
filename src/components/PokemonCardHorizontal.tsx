@@ -10,7 +10,7 @@ import { Pokemon, Stats, StylePoints, zeroStylePoints } from "@/app/data/tectoni
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { isNull, negativeMod, safeKeys } from "@/app/data/util";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { getTypeColorClass } from "./colours";
 import Dropdown from "./DropDown";
 import ImageFallback from "./ImageFallback";
@@ -44,6 +44,11 @@ export default function PokemonCardHorizontal({
     const [moveIndex, setMoveIndex] = useState<number | null>(null);
     const [stylePreset, setStylePreset] = useState<string>("");
 
+    const getStylePresetCallback = useCallback(getStylePresetFromPartyMonSP, [partyMon]);
+    useEffect(() => {
+        setStylePreset(getStylePresetCallback());
+    }, [partyMon, getStylePresetCallback]);
+
     function showInfoModal() {
         setMoveIndex(null);
         setModalMon(partyMon.species);
@@ -67,25 +72,32 @@ export default function PokemonCardHorizontal({
             [styleFromStat(k)]: e.target.value == "" ? 0 : parseInt(e.target.value),
         };
 
-        let foundPreset = false;
-        for (const preset in stylePointPresets) {
-            if (JSON.stringify(stylePointPresets[preset]) == JSON.stringify(partyMon.stylePoints)) {
-                setStylePreset(preset);
-
-                foundPreset = true;
-                break;
-            }
-        }
-
-        if (!foundPreset) {
-            setStylePreset("Custom");
-        }
-
+        setStylePreset(getStylePresetFromPartyMonSP());
         onUpdate();
     }
 
     function spDiffFromTotal(sp: StylePoints): number {
         return STYLE_POINT_CAP - Object.values(sp).reduce((total, x) => total + x, 0);
+    }
+
+    function getStylePresetFromPartyMonSP(): string {
+        for (const preset in stylePointPresets) {
+            const p = stylePointPresets[preset];
+            const m = partyMon.stylePoints;
+
+            // Do not use JSON stringify as since this is an interface it can be in a different order
+            if (
+                p.hp == m.hp &&
+                p.attacks == m.attacks &&
+                p.speed == m.speed &&
+                p.defense == m.defense &&
+                p.spdef == m.spdef
+            ) {
+                return preset;
+            }
+        }
+
+        return "Custom";
     }
 
     return (
