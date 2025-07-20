@@ -41,6 +41,7 @@ body {
 
 @theme {
     --color-yellow-highlight: #ffd166;
+    --color-value-out-of-range: #fb2c36;
 
     --color-fire: #e4613e;
     --color-fire-bg: #8a211c;
