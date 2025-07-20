@@ -6,26 +6,19 @@ import TypeBadge, { TypeBadgeElementEnum } from "@/components/TypeBadge";
 import { Fragment, ReactNode, useState } from "react";
 import ImageFallback from "./ImageFallback";
 
-function TableHeader({ children }: { children: ReactNode }) {
-    return <th className="px-1 py-3 text-center text-white text-sm font-bold">{children}</th>;
-}
+type SortDelegate = (a: [number, Move], b: [number, Move]) => number;
 
-function TableCell({ span, padding = "px-1", children }: { span?: number; padding?: string; children: ReactNode }) {
-    return (
-        <td className={`${padding} text-center text-sm text-white whitespace-break-spaces`} colSpan={span}>
-            {children}
-        </td>
-    );
-}
-
-function MoveTargetCell({ move, position, children }: { move: Move; position: boolean[][]; children: ReactNode }) {
-    let useBg = false;
-    move.getTargetPositions().forEach((a, i) => a.forEach((v, j) => (useBg ||= v && position[i][j])));
-
-    return (
-        <td className={`border px-2 py-0.5 text-xs text-black ${useBg ? "bg-blue-300" : "bg-white/50"}`}>{children}</td>
-    );
-}
+const displayableMoveFlags = new Set<string>();
+displayableMoveFlags.add("Sound");
+displayableMoveFlags.add("Punch");
+displayableMoveFlags.add("Dance");
+displayableMoveFlags.add("Blade");
+displayableMoveFlags.add("Biting");
+displayableMoveFlags.add("Bite");
+displayableMoveFlags.add("Kicking");
+displayableMoveFlags.add("Pulse");
+displayableMoveFlags.add("Wind");
+displayableMoveFlags.add("Foretold");
 
 export default function MoveTable({
     moves,
@@ -36,21 +29,49 @@ export default function MoveTable({
     showLevel: boolean;
     onMoveClick?: (m: Move) => void;
 }) {
-    const displayableMoveFlags = new Set<string>();
-    displayableMoveFlags.add("Sound");
-    displayableMoveFlags.add("Punch");
-    displayableMoveFlags.add("Dance");
-    displayableMoveFlags.add("Blade");
-    displayableMoveFlags.add("Biting");
-    displayableMoveFlags.add("Bite");
-    displayableMoveFlags.add("Kicking");
-    displayableMoveFlags.add("Pulse");
-    displayableMoveFlags.add("Wind");
-    displayableMoveFlags.add("Foretold");
-
     const [selectedCategory, setSelectedCategory] = useState<MoveCategory | undefined>(undefined);
     const [selectedType, setSelectedType] = useState<PokemonType | undefined>(undefined);
     const [searchMove, setSearchMove] = useState<string>("");
+    const [sort, setSort] = useState<{ func: SortDelegate | undefined; asc: boolean; th: string }>({
+        func: undefined,
+        asc: true,
+        th: "",
+    });
+
+    function TableHeader({ sortFunc, children }: { sortFunc?: SortDelegate | undefined; children: ReactNode }) {
+        const th = children!.toString();
+        const isUsingThisSort = sort.th == th;
+
+        return (
+            <th
+                className={`px-1 py-3 text-center text-sm text-white font-bold cursor-pointer ${
+                    sortFunc ? "hover:text-yellow-highlight" : ""
+                } ${isUsingThisSort ? (sort.asc ? "overline" : "underline") : ""}`}
+                onClick={() => setSort({ func: sortFunc, asc: isUsingThisSort ? !sort.asc : true, th: th })}
+            >
+                {children}
+            </th>
+        );
+    }
+
+    function TableCell({ span, padding = "px-1", children }: { span?: number; padding?: string; children: ReactNode }) {
+        return (
+            <td className={`${padding} text-center text-sm text-white whitespace-break-spaces`} colSpan={span}>
+                {children}
+            </td>
+        );
+    }
+
+    function MoveTargetCell({ move, position, children }: { move: Move; position: boolean[][]; children: ReactNode }) {
+        let useBg = false;
+        move.getTargetPositions().forEach((a, i) => a.forEach((v, j) => (useBg ||= v && position[i][j])));
+
+        return (
+            <td className={`border px-2 py-0.5 text-xs text-black ${useBg ? "bg-blue-300" : "bg-white/50"}`}>
+                {children}
+            </td>
+        );
+    }
 
     function getRowClass(i: number, hover: boolean = false) {
         return `${onMoveClick ? "cursor-pointer" : ""} ${hover ? "bg-blue-900" : i % 2 == 0 ? "" : "bg-gray-700"}`;
@@ -96,7 +117,7 @@ export default function MoveTable({
             <table className="w-full">
                 <thead className="sticky top-0 bg-blue-700">
                     <tr>
-                        {showLevel && <TableHeader>Lvl</TableHeader>}
+                        {showLevel && <TableHeader sortFunc={(a, b) => a[0] - b[0]}>Lvl</TableHeader>}
                         <TableHeader>
                             <input
                                 className="border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
@@ -107,14 +128,23 @@ export default function MoveTable({
                                 placeholder="Move"
                             />
                         </TableHeader>
-                        <TableHeader>Type</TableHeader>
-                        <TableHeader>Cat</TableHeader>
-                        <TableHeader>Pow</TableHeader>
-                        <TableHeader>Acc</TableHeader>
-                        <TableHeader>PP</TableHeader>
-                        <TableHeader>Prio</TableHeader>
-                        <TableHeader>Flags</TableHeader>
-                        <TableHeader>Target</TableHeader>
+                        <TableHeader sortFunc={(a, b) => a[1].type.id.localeCompare(b[1].type.id)}>Type</TableHeader>
+                        <TableHeader sortFunc={(a, b) => a[1].category.localeCompare(b[1].category)}>Cat</TableHeader>
+                        <TableHeader sortFunc={(a, b) => a[1].bp - b[1].bp}>Pow</TableHeader>
+                        <TableHeader sortFunc={(a, b) => a[1].accuracy - b[1].accuracy}>Acc</TableHeader>
+                        <TableHeader sortFunc={(a, b) => a[1].pp - b[1].pp}>PP</TableHeader>
+                        <TableHeader sortFunc={(a, b) => (a[1].priority ?? 0) - (b[1].priority ?? 0)}>Prio</TableHeader>
+                        <TableHeader
+                            sortFunc={(a, b) =>
+                                a[1].flags
+                                    .filter((x) => displayableMoveFlags.has(x))
+                                    .join(",")
+                                    .localeCompare(b[1].flags.filter((x) => displayableMoveFlags.has(x)).join(","))
+                            }
+                        >
+                            Flags
+                        </TableHeader>
+                        <TableHeader sortFunc={(a, b) => a[1].target.localeCompare(b[1].target)}>Target</TableHeader>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,6 +155,9 @@ export default function MoveTable({
                                 (!selectedType || m.type === selectedType) &&
                                 (!searchMove || m.name.toLowerCase().includes(searchMove.toLowerCase()))
                         )
+                        .sort((a, b) => {
+                            return sort.func ? sort.func(sort.asc ? a : b, sort.asc ? b : a) : 0;
+                        })
                         .map(([level, m], index) => (
                             <Fragment key={index}>
                                 <tr
