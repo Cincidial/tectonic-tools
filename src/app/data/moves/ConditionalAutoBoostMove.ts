@@ -29,7 +29,7 @@ const moveConditions: Record<string, ConditionFunction> = {
     // but the status-curing part isn't relevant to a single turn of damage calculation
     SmellingSalts: punishStatus("Numb"),
     WakeUpSlap: punishStatus("Sleep"),
-    DoubleDamageGravity: (_: PartyPokemon, __: PartyPokemon, battleState: BattleState) => battleState.bools.Gravity,
+    DoubleDamageGravity: (_: PartyPokemon, __: PartyPokemon, battleState: BattleState) => battleState.gravity,
     DamageBoostEclipse50Percent: (_: PartyPokemon, __: PartyPokemon, battleState: BattleState) =>
         battleState.weather === "Eclipse" || battleState.weather === "Ring Eclipse",
     Bully: (_: PartyPokemon, target: PartyPokemon) => Object.values(target.statSteps).some((s) => s !== 0),

@@ -225,7 +225,7 @@ export default function PokemonCardHorizontal({
                                         return (
                                             <div
                                                 key={i}
-                                                className={`flex flex-col justify-center items-center h-10 cursor-pointer hover:bg-gray-500 ${getTypeColorClass(
+                                                className={`flex flex-col justify-center items-center h-10 cursor-pointer hover:bg-gray-500 border border-white/35 ${getTypeColorClass(
                                                     m.getType(partyMon, nullBattleState),
                                                     "bg",
                                                     "bg"
@@ -243,7 +243,7 @@ export default function PokemonCardHorizontal({
                                                             element={TypeBadgeElementEnum.ICONS}
                                                         />
                                                         <ImageFallback
-                                                            src={`/move_categories/${m.category}.png`}
+                                                            src={m.getCategoryImgSrc()}
                                                             alt={m.category}
                                                             title={m.category}
                                                             height={60}

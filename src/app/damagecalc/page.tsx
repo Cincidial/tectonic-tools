@@ -13,13 +13,14 @@ import PokemonModal from "@/components/PokemonModal";
 import SavedTeamManager from "@/components/SavedTeamManager";
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { nullSideState, SideState } from "../data/battleState";
 import { WeatherCondition, weatherConditions } from "../data/conditions";
 import { Pokemon } from "../data/tectonic/Pokemon";
 import { TectonicData } from "../data/tectonic/TectonicData";
 import { Trainer } from "../data/tectonic/Trainer";
 import { PartyPokemon } from "../data/types/PartyPokemon";
+import MoveCard, { MoveCardProps } from "./components/MoveCard";
 import SideStateUI from "./components/SideStateUI";
 
 const PokemonDamageCalculator: NextPage = () => {
@@ -36,14 +37,61 @@ const PokemonDamageCalculator: NextPage = () => {
     const [weather, setWeather] = useState<WeatherCondition>("None");
     const [gravity, setGravity] = useState<boolean>(false);
     const [multiBattle, setMultiBattle] = useState<boolean>(false);
+    const [playerSideState, setPlayerSideState] = useState<SideState>(nullSideState);
+    const [opponentSideState, setOpponentSideState] = useState<SideState>(nullSideState);
+    const [playerSideCalc, setPlayerSideCalc] = useState<MoveCardProps[]>([]);
+    const [opponentSideCalc, setOpponentSideCalc] = useState<MoveCardProps[]>([]);
 
     const matchingTrainers = Object.values(TectonicData.trainers)
         .filter((x) => x.displayName().toLowerCase().includes(trainerText.toLowerCase()))
         .sort((a, b) => a.displayName().localeCompare(b.displayName()));
 
-    var playerSideState: SideState = nullSideState;
-    var opponentSideState: SideState = nullSideState;
-    function calcMovesDmg() {}
+    function calcMovesDmg() {
+        const playerAtkBattleState = {
+            multiBattle: multiBattle,
+            gravity: gravity,
+            weather: weather,
+            sideState: opponentSideState,
+        };
+        const opponentAtkBattleState = {
+            multiBattle: multiBattle,
+            gravity: gravity,
+            weather: weather,
+            sideState: playerSideState,
+        };
+
+        if (!mon || !trainerMon) {
+            setPlayerSideCalc([]);
+        } else {
+            setPlayerSideCalc(
+                mon.moves
+                    .filter((x) => x.isAttackingMove())
+                    .map((x) => {
+                        return { move: x, user: mon, target: trainerMon, battleState: playerAtkBattleState };
+                    })
+            );
+            setOpponentSideCalc(
+                trainerMon.moves
+                    .filter((x) => x.isAttackingMove())
+                    .map((x) => {
+                        return { move: x, user: trainerMon, target: mon, battleState: opponentAtkBattleState };
+                    })
+            );
+        }
+    }
+    const callMovesDmgCallback = useCallback(calcMovesDmg, [
+        mon,
+        trainerMon,
+        weather,
+        gravity,
+        playerSideState,
+        opponentSideState,
+        multiBattle,
+    ]);
+
+    useEffect(() => {
+        callMovesDmgCallback();
+    }, [mon, trainerMon, weather, gravity, playerSideState, opponentSideState, multiBattle, callMovesDmgCallback]);
 
     return (
         <div className="min-h-screen bg-gray-900 pb-10">
@@ -63,10 +111,7 @@ const PokemonDamageCalculator: NextPage = () => {
                         <select
                             className="px-4 py-2 rounded-md bg-gray-700 border border-gray-600"
                             value={weather}
-                            onChange={(e) => {
-                                setWeather(e.target.value as WeatherCondition);
-                                calcMovesDmg();
-                            }}
+                            onChange={(e) => setWeather(e.target.value as WeatherCondition)}
                         >
                             <option value="None">Select Weather</option>
                             {weatherConditions.map((w) => (
@@ -75,22 +120,10 @@ const PokemonDamageCalculator: NextPage = () => {
                                 </option>
                             ))}
                         </select>
-                        <Checkbox
-                            checked={gravity}
-                            onChange={() => {
-                                setGravity(!gravity);
-                                calcMovesDmg();
-                            }}
-                        >
+                        <Checkbox checked={gravity} onChange={() => setGravity(!gravity)}>
                             Gravity
                         </Checkbox>
-                        <Checkbox
-                            checked={multiBattle}
-                            onChange={() => {
-                                setMultiBattle(!multiBattle);
-                                calcMovesDmg();
-                            }}
-                        >
+                        <Checkbox checked={multiBattle} onChange={() => setMultiBattle(!multiBattle)}>
                             Multi Battle
                         </Checkbox>
                     </div>
@@ -98,35 +131,35 @@ const PokemonDamageCalculator: NextPage = () => {
                 <div className="flex justify-center">
                     <Column>
                         <ColumnHeader colour="text-blue-400">Your Side</ColumnHeader>
-                        <SideStateUI
-                            onUpdate={(state) => {
-                                playerSideState = state;
-                                calcMovesDmg();
-                            }}
-                        />
+                        <SideStateUI onUpdate={setPlayerSideState} />
 
                         {mon != null && (
-                            <PokemonCardHorizontal
-                                partyMon={mon}
-                                onUpdate={() => {
-                                    const newMon = new PartyPokemon(mon);
-                                    const oldIndex = loadedParty.findIndex((x) => x == mon);
-                                    const newLoadedParty = [...loadedParty];
-                                    if (oldIndex == -1 && newLoadedParty.length < 6) {
-                                        newLoadedParty.push(newMon);
-                                    } else {
-                                        newLoadedParty[oldIndex] = newMon;
-                                    }
+                            <Fragment>
+                                {playerSideCalc.map((x, i) => (
+                                    <MoveCard key={i} {...x} />
+                                ))}
+                                <PokemonCardHorizontal
+                                    partyMon={mon}
+                                    onUpdate={() => {
+                                        const newMon = new PartyPokemon(mon);
+                                        const oldIndex = loadedParty.findIndex((x) => x == mon);
+                                        const newLoadedParty = [...loadedParty];
+                                        if (oldIndex == -1 && newLoadedParty.length < 6) {
+                                            newLoadedParty.push(newMon);
+                                        } else {
+                                            newLoadedParty[oldIndex] = newMon;
+                                        }
 
-                                    setMon(newMon);
-                                    setLoadedParty(newLoadedParty);
-                                }}
-                                onRemove={() => {
-                                    setLoadedParty(loadedParty.filter((r) => r != mon));
-                                    setMon(null);
-                                }}
-                                showBattleConfig={true}
-                            />
+                                        setMon(newMon);
+                                        setLoadedParty(newLoadedParty);
+                                    }}
+                                    onRemove={() => {
+                                        setLoadedParty(loadedParty.filter((r) => r != mon));
+                                        setMon(null);
+                                    }}
+                                    showBattleConfig={true}
+                                />
+                            </Fragment>
                         )}
                         {mon != null && loadedParty.find((x) => x == mon) == undefined && loadedParty.length < 6 && (
                             <BasicButton
@@ -186,24 +219,24 @@ const PokemonDamageCalculator: NextPage = () => {
 
                     <Column>
                         <ColumnHeader colour="text-red-400">Opponent Side</ColumnHeader>
-                        <SideStateUI
-                            onUpdate={(state) => {
-                                opponentSideState = state;
-                                calcMovesDmg();
-                            }}
-                        />
+                        <SideStateUI onUpdate={setOpponentSideState} />
 
                         {trainerMon != null && (
-                            <PokemonCardHorizontal
-                                partyMon={trainerMon}
-                                onUpdate={() => {
-                                    setTrainerMon(new PartyPokemon(trainerMon));
-                                }}
-                                onRemove={() => {
-                                    setTrainerMon(null);
-                                }}
-                                showBattleConfig={true}
-                            />
+                            <Fragment>
+                                {opponentSideCalc.map((x, i) => (
+                                    <MoveCard key={i} {...x} />
+                                ))}
+                                <PokemonCardHorizontal
+                                    partyMon={trainerMon}
+                                    onUpdate={() => {
+                                        setTrainerMon(new PartyPokemon(trainerMon));
+                                    }}
+                                    onRemove={() => {
+                                        setTrainerMon(null);
+                                    }}
+                                    showBattleConfig={true}
+                                />
+                            </Fragment>
                         )}
                         <div className="w-fit h-fit overflow-auto mx-auto">
                             <div className="flex flex-wrap items-center mx-auto">

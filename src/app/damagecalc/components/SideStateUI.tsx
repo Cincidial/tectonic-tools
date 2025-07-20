@@ -1,45 +1,31 @@
-import { SideState } from "@/app/data/battleState";
+import { nullSideState, SideState } from "@/app/data/battleState";
 import Checkbox from "@/components/Checkbox";
 import { ReactNode, useState } from "react";
 
-export default function SideStateUI({ onUpdate }: { onUpdate: (sideState: SideState) => void }): ReactNode {
-    const [reflect, setReflect] = useState<boolean>(false);
-    const [lightScreen, setLightScreen] = useState<boolean>(false);
-    const [auroraVeil, setAuroraVeil] = useState<boolean>(false);
+const sideStateNameMap: Record<keyof SideState, string> = {
+    reflect: "Reflect",
+    lightScreen: "Light Screen",
+    auroraVeil: "Aurora Veil",
+};
 
-    function callOnUpdate(): void {
-        onUpdate({ reflect: reflect, lightScreen: lightScreen, auroraVeil: auroraVeil });
-    }
+export default function SideStateUI({ onUpdate }: { onUpdate: (sideState: SideState) => void }): ReactNode {
+    const [sideState, setSideState] = useState<SideState>(nullSideState);
 
     return (
-        <div className="flex gap-2 mb-2">
-            <Checkbox
-                checked={reflect}
-                onChange={() => {
-                    setReflect(!reflect);
-                    callOnUpdate();
-                }}
-            >
-                Reflect
-            </Checkbox>
-            <Checkbox
-                checked={lightScreen}
-                onChange={() => {
-                    setLightScreen(!lightScreen);
-                    callOnUpdate();
-                }}
-            >
-                Light Screen
-            </Checkbox>
-            <Checkbox
-                checked={auroraVeil}
-                onChange={() => {
-                    setAuroraVeil(!auroraVeil);
-                    callOnUpdate();
-                }}
-            >
-                Aurora Veil
-            </Checkbox>
+        <div className="flex gap-2 mb-4">
+            {(Object.keys(sideState) as Array<keyof SideState>).map((k) => (
+                <Checkbox
+                    key={k}
+                    checked={sideState[k]}
+                    onChange={() => {
+                        const newState = { ...sideState, [k]: !sideState[k] };
+                        setSideState(newState);
+                        onUpdate(newState);
+                    }}
+                >
+                    {sideStateNameMap[k]}
+                </Checkbox>
+            ))}
         </div>
     );
 }

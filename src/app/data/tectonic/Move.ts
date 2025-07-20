@@ -193,5 +193,9 @@ export class Move {
         return 1.5;
     }
 
+    public getCategoryImgSrc(): string {
+        return `/move_categories/${this.category}.png`;
+    }
+
     static moveCodes: string[] = [];
 }

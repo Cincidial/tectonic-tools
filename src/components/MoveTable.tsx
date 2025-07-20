@@ -185,7 +185,7 @@ export default function MoveTable({
                                     </TableCell>
                                     <TableCell>
                                         <ImageFallback
-                                            src={`/move_categories/${m.category}.png`}
+                                            src={m.getCategoryImgSrc()}
                                             alt={m.category}
                                             title={m.category}
                                             height={60}
