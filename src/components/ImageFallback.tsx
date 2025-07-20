@@ -51,8 +51,8 @@ export default function ImageFallback({
     }
 
     function getImageSourceString(): string {
-        var root = "";
-        var img = src;
+        let root = "";
+        let img = src;
 
         switch (sourceState) {
             case ImageSourceState.Vercel:
