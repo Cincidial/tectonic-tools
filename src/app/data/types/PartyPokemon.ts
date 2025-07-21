@@ -35,7 +35,7 @@ export class PartyPokemon {
         this.items = data?.items || Array(2).fill(Item.NULL);
         this.itemType = data?.itemType || TectonicData.types["NORMAL"];
         this.form = data?.form || Pokemon.NULL.formId;
-        this.level = data?.level || MAX_LEVEL;
+        this.level = data?.level == 0 ? 0 : data?.level || MAX_LEVEL;
         this.stylePoints = data?.stylePoints || defaultStylePoints;
         this.nickname = data?.nickname;
         this.statSteps = data?.statSteps || blankStats;
