@@ -14,6 +14,7 @@ import SavedTeamManager from "@/components/SavedTeamManager";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { Fragment, useCallback, useEffect, useState } from "react";
+import { CancelWeatherAbility } from "../data/abilities/CancelWeatherAbility";
 import { BattleState, nullSideState, SideState } from "../data/battleState";
 import { WeatherCondition, weatherConditions } from "../data/conditions";
 import { Pokemon } from "../data/tectonic/Pokemon";
@@ -47,10 +48,13 @@ const PokemonDamageCalculator: NextPage = () => {
         .sort((a, b) => a.displayName().localeCompare(b.displayName()));
 
     function getBattleState(sideState: SideState): BattleState {
+        const cancelWeather =
+            playerMon?.ability instanceof CancelWeatherAbility || opponentMon?.ability instanceof CancelWeatherAbility;
+
         return {
             multiBattle: multiBattle,
             gravity: gravity,
-            weather: weather,
+            weather: cancelWeather ? "None" : weather,
             sideState,
         };
     }
@@ -161,6 +165,11 @@ const PokemonDamageCalculator: NextPage = () => {
                                     showBattleConfig={true}
                                 />
                                 {opponentMon &&
+                                    playerMon.getStats(undefined, undefined).speed >
+                                        opponentMon.getStats(undefined, undefined).speed && (
+                                        <div className="text-2xl text-white">Moves First</div>
+                                    )}
+                                {opponentMon &&
                                     playerMoveData
                                         .map((x) => {
                                             return {
@@ -255,6 +264,11 @@ const PokemonDamageCalculator: NextPage = () => {
                                     }}
                                     showBattleConfig={true}
                                 />
+                                {playerMon &&
+                                    opponentMon.getStats(undefined, undefined).speed >
+                                        playerMon.getStats(undefined, undefined).speed && (
+                                        <div className="text-2xl text-white">Moves First</div>
+                                    )}
                                 {playerMon &&
                                     opponentMoveData
                                         .map((x) => {

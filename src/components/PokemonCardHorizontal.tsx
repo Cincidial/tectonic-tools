@@ -345,7 +345,7 @@ export default function PokemonCardHorizontal({
                             }`}
                         >
                             <select
-                                className="w-23 mr-1"
+                                className="w-23 mr-1 text-center"
                                 value={stylePreset}
                                 onChange={(e) => {
                                     const preset = e.target.value;

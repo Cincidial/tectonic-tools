@@ -8,7 +8,7 @@ interface TypeChartCellProps {
     mult?: number;
 }
 
-function getColourClassForMult(mult: number): string {
+export function getColourClassForMult(mult: number, neutralColor?: string): string {
     if (mult > 2) {
         return "bg-hyper-effective";
     }
@@ -25,10 +25,10 @@ function getColourClassForMult(mult: number): string {
         return "bg-not-very-effective";
     }
     // if neutrally effective, no special colour
-    return "";
+    return neutralColor ?? "";
 }
 
-function getTextColourForMult(mult: number): string {
+export function getTextColourForMult(mult: number): string {
     if (mult !== 1) {
         return "text-black";
     }
