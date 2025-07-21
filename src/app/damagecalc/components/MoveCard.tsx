@@ -25,7 +25,6 @@ export default function MoveCard(props: MoveCardProps): ReactNode {
     const [crit, setCrit] = useState<boolean>(props.target.volatileStatusEffects.Jinx || props.moveData.criticalHit);
     let result = calculateDamage(props.moveData, props.user, props.target, props.battleState);
 
-    console.log(props.moveData.criticalHit);
     useEffect(() => {
         setCrit(props.target.volatileStatusEffects.Jinx || props.moveData.criticalHit);
     }, [props]);
