@@ -13,7 +13,7 @@ import PokemonModal from "@/components/PokemonModal";
 import SavedTeamManager from "@/components/SavedTeamManager";
 import type { NextPage } from "next";
 import Head from "next/head";
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { CancelWeatherAbility } from "../data/abilities/CancelWeatherAbility";
 import { BattleState, nullSideState, SideState } from "../data/battleState";
 import { WeatherCondition, weatherConditions } from "../data/conditions";
@@ -59,7 +59,7 @@ const PokemonDamageCalculator: NextPage = () => {
         };
     }
 
-    function calcMovesDmg() {
+    useEffect(() => {
         function genMoveDataWithCarryOver(mon: PartyPokemon | null, moveData: MoveData[]): MoveData[] {
             return mon
                 ? mon.moves
@@ -77,12 +77,7 @@ const PokemonDamageCalculator: NextPage = () => {
 
         setPlayerMoveData(genMoveDataWithCarryOver(playerMon, playerMoveData));
         setOpponentMoveData(genMoveDataWithCarryOver(opponentMon, opponentMoveData));
-    }
-    const callMovesDmgCallback = useCallback(calcMovesDmg, [playerMon, opponentMon, playerMoveData, opponentMoveData]);
-
-    useEffect(() => {
-        callMovesDmgCallback();
-    }, [playerMon, opponentMon, playerMoveData, opponentMoveData, callMovesDmgCallback]);
+    }, [playerMon, opponentMon]); // eslint-disable-line react-hooks/exhaustive-deps -- We specifically don't want MoveData as a dep as that is an infinite loop.
 
     return (
         <div className="min-h-screen bg-gray-900 pb-10">
