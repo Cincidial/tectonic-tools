@@ -12,7 +12,7 @@ export default function SideStateUI({ onUpdate }: { onUpdate: (sideState: SideSt
     const [sideState, setSideState] = useState<SideState>(nullSideState);
 
     return (
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-1">
             {(Object.keys(sideState) as Array<keyof SideState>).map((k) => (
                 <Checkbox
                     key={k}

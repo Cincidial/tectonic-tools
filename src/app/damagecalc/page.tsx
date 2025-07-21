@@ -14,13 +14,13 @@ import SavedTeamManager from "@/components/SavedTeamManager";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { nullSideState, SideState } from "../data/battleState";
+import { BattleState, nullSideState, SideState } from "../data/battleState";
 import { WeatherCondition, weatherConditions } from "../data/conditions";
 import { Pokemon } from "../data/tectonic/Pokemon";
 import { TectonicData } from "../data/tectonic/TectonicData";
 import { Trainer } from "../data/tectonic/Trainer";
 import { PartyPokemon } from "../data/types/PartyPokemon";
-import MoveCard, { MoveCardProps } from "./components/MoveCard";
+import MoveCard, { MoveData } from "./components/MoveCard";
 import SideStateUI from "./components/SideStateUI";
 
 const PokemonDamageCalculator: NextPage = () => {
@@ -31,57 +31,52 @@ const PokemonDamageCalculator: NextPage = () => {
     const [loadedParty, setLoadedParty] = useState<PartyPokemon[]>([]);
     const [trainerText, setTrainerText] = useState<string>("");
     const [trainer, setTrainer] = useState<Trainer>(Trainer.NULL);
-    const [mon, setMon] = useState<PartyPokemon | null>(null);
-    const [trainerMon, setTrainerMon] = useState<PartyPokemon | null>(null);
+    const [playerMon, setPlayerMon] = useState<PartyPokemon | null>(null);
+    const [opponentMon, setOpponentMon] = useState<PartyPokemon | null>(null);
     const [modalMon, setModalMon] = useState<Pokemon | null>(null);
     const [weather, setWeather] = useState<WeatherCondition>("None");
     const [gravity, setGravity] = useState<boolean>(false);
     const [multiBattle, setMultiBattle] = useState<boolean>(false);
     const [playerSideState, setPlayerSideState] = useState<SideState>(nullSideState);
     const [opponentSideState, setOpponentSideState] = useState<SideState>(nullSideState);
-    const [playerSideCalc, setPlayerSideCalc] = useState<MoveCardProps[]>([]);
-    const [opponentSideCalc, setOpponentSideCalc] = useState<MoveCardProps[]>([]);
+    const [playerMoveData, setPlayerMoveData] = useState<MoveData[]>([]);
+    const [opponentMoveData, setOpponentMoveData] = useState<MoveData[]>([]);
 
     const matchingTrainers = Object.values(TectonicData.trainers)
         .filter((x) => x.displayName().toLowerCase().includes(trainerText.toLowerCase()))
         .sort((a, b) => a.displayName().localeCompare(b.displayName()));
 
-    function calcMovesDmg() {
-        const playerAtkBattleState = {
+    function getBattleState(sideState: SideState): BattleState {
+        return {
             multiBattle: multiBattle,
             gravity: gravity,
             weather: weather,
-            sideState: opponentSideState,
+            sideState,
         };
-        const opponentAtkBattleState = {
-            multiBattle: multiBattle,
-            gravity: gravity,
-            weather: weather,
-            sideState: playerSideState,
-        };
+    }
 
-        if (!mon || !trainerMon) {
-            setPlayerSideCalc([]);
-        } else {
-            setPlayerSideCalc(
-                mon.moves
-                    .filter((x) => x.isAttackingMove())
-                    .map((x) => {
-                        return { move: x, user: mon, target: trainerMon, battleState: playerAtkBattleState };
-                    })
-            );
-            setOpponentSideCalc(
-                trainerMon.moves
-                    .filter((x) => x.isAttackingMove())
-                    .map((x) => {
-                        return { move: x, user: trainerMon, target: mon, battleState: opponentAtkBattleState };
-                    })
-            );
+    function calcMovesDmg() {
+        function genMoveDataWithCarryOver(mon: PartyPokemon | null, moveData: MoveData[]): MoveData[] {
+            return mon
+                ? mon.moves
+                      .filter((x) => x.isAttackingMove())
+                      .map((x) => {
+                          const oldMoveData = moveData.find((old) => old.move.id == x.id);
+                          return {
+                              move: x,
+                              customVar: oldMoveData?.customVar,
+                              criticalHit: oldMoveData?.criticalHit ?? false,
+                          };
+                      })
+                : [];
         }
+
+        setPlayerMoveData(genMoveDataWithCarryOver(playerMon, playerMoveData));
+        setOpponentMoveData(genMoveDataWithCarryOver(opponentMon, opponentMoveData));
     }
     const callMovesDmgCallback = useCallback(calcMovesDmg, [
-        mon,
-        trainerMon,
+        playerMon,
+        opponentMon,
         weather,
         gravity,
         playerSideState,
@@ -91,7 +86,16 @@ const PokemonDamageCalculator: NextPage = () => {
 
     useEffect(() => {
         callMovesDmgCallback();
-    }, [mon, trainerMon, weather, gravity, playerSideState, opponentSideState, multiBattle, callMovesDmgCallback]);
+    }, [
+        playerMon,
+        opponentMon,
+        weather,
+        gravity,
+        playerSideState,
+        opponentSideState,
+        multiBattle,
+        callMovesDmgCallback,
+    ]);
 
     return (
         <div className="min-h-screen bg-gray-900 pb-10">
@@ -133,16 +137,13 @@ const PokemonDamageCalculator: NextPage = () => {
                         <ColumnHeader colour="text-blue-400">Your Side</ColumnHeader>
                         <SideStateUI onUpdate={setPlayerSideState} />
 
-                        {mon != null && (
+                        {playerMon != null && (
                             <Fragment>
-                                {playerSideCalc.map((x, i) => (
-                                    <MoveCard key={i} {...x} />
-                                ))}
                                 <PokemonCardHorizontal
-                                    partyMon={mon}
+                                    partyMon={playerMon}
                                     onUpdate={() => {
-                                        const newMon = new PartyPokemon(mon);
-                                        const oldIndex = loadedParty.findIndex((x) => x == mon);
+                                        const newMon = new PartyPokemon(playerMon);
+                                        const oldIndex = loadedParty.findIndex((x) => x == playerMon);
                                         const newLoadedParty = [...loadedParty];
                                         if (oldIndex == -1 && newLoadedParty.length < 6) {
                                             newLoadedParty.push(newMon);
@@ -150,28 +151,41 @@ const PokemonDamageCalculator: NextPage = () => {
                                             newLoadedParty[oldIndex] = newMon;
                                         }
 
-                                        setMon(newMon);
+                                        setPlayerMon(newMon);
                                         setLoadedParty(newLoadedParty);
                                     }}
                                     onRemove={() => {
-                                        setLoadedParty(loadedParty.filter((r) => r != mon));
-                                        setMon(null);
+                                        setLoadedParty(loadedParty.filter((r) => r != playerMon));
+                                        setPlayerMon(null);
                                     }}
                                     showBattleConfig={true}
                                 />
+                                {opponentMon &&
+                                    playerMoveData
+                                        .map((x) => {
+                                            return {
+                                                moveData: x,
+                                                user: playerMon,
+                                                target: opponentMon,
+                                                battleState: getBattleState(opponentSideState),
+                                            };
+                                        })
+                                        .map((x, i) => <MoveCard key={i} {...x} />)}
                             </Fragment>
                         )}
-                        {mon != null && loadedParty.find((x) => x == mon) == undefined && loadedParty.length < 6 && (
-                            <BasicButton
-                                onClick={() => {
-                                    if (loadedParty.length < 6) {
-                                        setLoadedParty([...loadedParty, mon]);
-                                    }
-                                }}
-                            >
-                                Add To Team
-                            </BasicButton>
-                        )}
+                        {playerMon != null &&
+                            loadedParty.find((x) => x == playerMon) == undefined &&
+                            loadedParty.length < 6 && (
+                                <BasicButton
+                                    onClick={() => {
+                                        if (loadedParty.length < 6) {
+                                            setLoadedParty([...loadedParty, playerMon]);
+                                        }
+                                    }}
+                                >
+                                    Add To Team
+                                </BasicButton>
+                            )}
                         <div className="w-fit h-fit overflow-auto mx-auto">
                             <div className="flex flex-wrap items-center mx-auto">
                                 {loadedParty.map((x) => (
@@ -183,7 +197,7 @@ const PokemonDamageCalculator: NextPage = () => {
                                         width={64}
                                         height={64}
                                         title={x.species.name}
-                                        onClick={() => setMon(x)}
+                                        onClick={() => setPlayerMon(x)}
                                         onContextMenu={() => setModalMon(x.species)}
                                     />
                                 ))}
@@ -212,30 +226,46 @@ const PokemonDamageCalculator: NextPage = () => {
                             </FilterOptionButton>
                         </div>
                         {showTeamSearch && (
-                            <MiniDexFilter onMon={(mon) => setMon(new PartyPokemon({ species: mon }))} />
+                            <MiniDexFilter onMon={(mon) => setPlayerMon(new PartyPokemon({ species: mon }))} />
                         )}
-                        {showTeamLoad && <SavedTeamManager onLoad={setLoadedParty} exportMons={loadedParty} />}
+                        {showTeamLoad && (
+                            <SavedTeamManager
+                                onLoad={(party) => {
+                                    setLoadedParty(party);
+                                    setPlayerMon(null);
+                                }}
+                                exportMons={loadedParty}
+                            />
+                        )}
                     </Column>
 
                     <Column>
                         <ColumnHeader colour="text-red-400">Opponent Side</ColumnHeader>
                         <SideStateUI onUpdate={setOpponentSideState} />
 
-                        {trainerMon != null && (
+                        {opponentMon != null && (
                             <Fragment>
-                                {opponentSideCalc.map((x, i) => (
-                                    <MoveCard key={i} {...x} />
-                                ))}
                                 <PokemonCardHorizontal
-                                    partyMon={trainerMon}
+                                    partyMon={opponentMon}
                                     onUpdate={() => {
-                                        setTrainerMon(new PartyPokemon(trainerMon));
+                                        setOpponentMon(new PartyPokemon(opponentMon));
                                     }}
                                     onRemove={() => {
-                                        setTrainerMon(null);
+                                        setOpponentMon(null);
                                     }}
                                     showBattleConfig={true}
                                 />
+                                {playerMon &&
+                                    opponentMoveData
+                                        .map((x) => {
+                                            return {
+                                                moveData: x,
+                                                user: opponentMon,
+                                                target: playerMon,
+                                                battleState: getBattleState(playerSideState),
+                                            };
+                                        })
+                                        .map((x, i) => <MoveCard key={i} {...x} />)}
                             </Fragment>
                         )}
                         <div className="w-fit h-fit overflow-auto mx-auto">
@@ -264,7 +294,7 @@ const PokemonDamageCalculator: NextPage = () => {
                                         height={64}
                                         title={x.nickname ?? x.pokemon.name}
                                         onClick={() =>
-                                            setTrainerMon(
+                                            setOpponentMon(
                                                 new PartyPokemon({
                                                     species: x.pokemon,
                                                     level: x.level,
@@ -308,23 +338,20 @@ const PokemonDamageCalculator: NextPage = () => {
                             <div className="flex flex-col items-center mt-2 text-white">
                                 <input
                                     className="h-fit border rounded px-2 py-1 bg-gray-700 border-gray-600"
-                                    list="trainersData"
                                     value={trainerText}
                                     onChange={(e) => setTrainerText(e.target.value)}
                                     placeholder="In game trainer"
                                 />
-                                <datalist id="trainersData">
-                                    {Object.values(TectonicData.trainers).map((t) => (
-                                        <option key={t.id}>{t.displayName()}</option>
-                                    ))}
-                                </datalist>
                                 <div className="h-72 overflow-auto mx-auto mt-2">
                                     <div className="flex flex-wrap mx-auto">
                                         {matchingTrainers.map((x) => (
                                             <div
                                                 key={x.id}
                                                 className="flex flex-col items-center w-24"
-                                                onClick={() => setTrainer(x)}
+                                                onClick={() => {
+                                                    setTrainer(x);
+                                                    setOpponentMon(null);
+                                                }}
                                             >
                                                 <ImageFallback
                                                     src={x.getImageSrc()}
@@ -344,7 +371,7 @@ const PokemonDamageCalculator: NextPage = () => {
                             </div>
                         )}
                         {showOpponentSearch && (
-                            <MiniDexFilter onMon={(mon) => setTrainerMon(new PartyPokemon({ species: mon }))} />
+                            <MiniDexFilter onMon={(mon) => setOpponentMon(new PartyPokemon({ species: mon }))} />
                         )}
                     </Column>
                 </div>

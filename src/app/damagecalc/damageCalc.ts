@@ -466,7 +466,7 @@ function pbCalcProtectionsDamageMultipliers(
 ): DamageMultipliers {
     // Aurora Veil, Reflect, Light Screen
     // TODO: Abilities that ignore screens?
-    if (!move.move.ignoresScreens() && !move.criticalHit /* && !user.ignoreScreens(checkingForAI)*/) {
+    if (!move.move.ignoresScreens() && !doesMoveCrit(move, target) /* && !user.ignoreScreens(checkingForAI)*/) {
         if (
             battleState.sideState.auroraVeil ||
             (battleState.sideState.reflect && move.move.getDamageCategory(move, user, target) === "Physical") ||
@@ -750,7 +750,7 @@ function calcDamageMultipliers(
     // multipliers.base_damage_multiplier *= Math.max(0, 1.0 - target.dmgResist);
 
     // Critical hits
-    if (move.criticalHit) {
+    if (doesMoveCrit(move, target)) {
         // TODO: Implement moves with increased critical hit damage
         multipliers.final_damage_multiplier *= move.move.getCriticalMultiplier();
     }
@@ -788,4 +788,8 @@ function flatDamageReductions(finalCalculatedDamage: number): number {
     // }
 
     return finalCalculatedDamage;
+}
+
+function doesMoveCrit(moveData: MoveData, target: PartyPokemon) {
+    return moveData.criticalHit || target.volatileStatusEffects.Jinx;
 }
