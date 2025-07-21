@@ -25,7 +25,7 @@ export interface MoveCardProps {
 
 export default function MoveCard(props: MoveCardProps): ReactNode {
     const [crit, setCrit] = useState<boolean>(props.target.volatileStatusEffects.Jinx || props.moveData.criticalHit);
-    const [customInput, setCustomInput] = useState<any>(props.moveData.customVar);
+    const [customInput, setCustomInput] = useState<unknown>(props.moveData.customVar);
 
     const result = calculateDamage(props.moveData, props.user, props.target, props.battleState);
     useEffect(() => {

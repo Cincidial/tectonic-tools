@@ -78,28 +78,11 @@ const PokemonDamageCalculator: NextPage = () => {
         setPlayerMoveData(genMoveDataWithCarryOver(playerMon, playerMoveData));
         setOpponentMoveData(genMoveDataWithCarryOver(opponentMon, opponentMoveData));
     }
-    const callMovesDmgCallback = useCallback(calcMovesDmg, [
-        playerMon,
-        opponentMon,
-        weather,
-        gravity,
-        playerSideState,
-        opponentSideState,
-        multiBattle,
-    ]);
+    const callMovesDmgCallback = useCallback(calcMovesDmg, [playerMon, opponentMon, playerMoveData, opponentMoveData]);
 
     useEffect(() => {
         callMovesDmgCallback();
-    }, [
-        playerMon,
-        opponentMon,
-        weather,
-        gravity,
-        playerSideState,
-        opponentSideState,
-        multiBattle,
-        callMovesDmgCallback,
-    ]);
+    }, [playerMon, opponentMon, playerMoveData, opponentMoveData, callMovesDmgCallback]);
 
     return (
         <div className="min-h-screen bg-gray-900 pb-10">
