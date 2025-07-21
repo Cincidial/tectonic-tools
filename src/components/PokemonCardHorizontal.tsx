@@ -16,11 +16,11 @@ import {
 } from "@/app/data/teamExport";
 import { Item } from "@/app/data/tectonic/Item";
 import { Move } from "@/app/data/tectonic/Move";
-import { blankStats, Pokemon, Stat, StylePoints, zeroStylePoints } from "@/app/data/tectonic/Pokemon";
+import { blankStats, Pokemon, Stat, Stats, StylePoints, zeroStylePoints } from "@/app/data/tectonic/Pokemon";
 import { TectonicData } from "@/app/data/tectonic/TectonicData";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { isNull, negativeMod, safeKeys } from "@/app/data/util";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import Checkbox from "./Checkbox";
 import { getTypeColorClass } from "./colours";
 import Dropdown from "./DropDown";
@@ -30,6 +30,17 @@ import PokemonModal from "./PokemonModal";
 import CloseXButton from "./svg_icons/CloseXButton";
 import TribeCapsule from "./TribeCapsule";
 import TypeBadge, { TypeBadgeElementEnum } from "./TypeBadge";
+
+const stylePointPresets: Record<string, StylePoints> = {
+    Custom: zeroStylePoints,
+    Flat: { hp: 10, attacks: 10, speed: 10, defense: 10, spdef: 10 },
+    "Fast Atk": { hp: 10, attacks: 20, speed: 20, defense: 0, spdef: 0 },
+    "Bulk Atk": { hp: 20, attacks: 20, speed: 10, defense: 0, spdef: 0 },
+    "Phys Tank": { hp: 10, attacks: 20, speed: 0, defense: 20, spdef: 0 },
+    "Sp Tank": { hp: 10, attacks: 20, speed: 0, defense: 0, spdef: 20 },
+    "Phys Wall": { hp: 20, attacks: 0, speed: 0, defense: 20, spdef: 10 },
+    "Sp Wall": { hp: 20, attacks: 0, speed: 0, defense: 10, spdef: 20 },
+};
 
 export default function PokemonCardHorizontal({
     partyMon,
@@ -44,12 +55,18 @@ export default function PokemonCardHorizontal({
 }) {
     const [modalMon, setModalMon] = useState<Pokemon | null>(null);
     const [moveIndex, setMoveIndex] = useState<number | null>(null);
+    const [stylePreset, setStylePreset] = useState<string>("");
     const [statusEffect, setStatusEffect] = useState<StatusEffect>(partyMon.statusEffect ?? "None");
 
     useEffect(() => {
         // For some reason the status dropdown just refuses to update when changing mons unless it's wrapped in state and a useEffect
         setStatusEffect(partyMon.statusEffect ?? "None");
     }, [partyMon]);
+
+    const getStylePresetCallback = useCallback(getStylePresetFromPartyMonSP, [partyMon]);
+    useEffect(() => {
+        setStylePreset(getStylePresetCallback());
+    }, [partyMon, getStylePresetCallback]);
 
     function showInfoModal() {
         setMoveIndex(null);
@@ -68,16 +85,38 @@ export default function PokemonCardHorizontal({
         setModalMon(null);
     }
 
-    function spSum(sp: StylePoints): number {
-        return Object.values(sp).reduce((total, x) => total + x, 0);
+    function onSpUpdate(k: keyof Stats, e: ChangeEvent<HTMLInputElement>) {
+        partyMon.stylePoints = {
+            ...partyMon.stylePoints,
+            [styleFromStat(k)]: e.target.value == "" ? 0 : parseInt(e.target.value),
+        };
+
+        setStylePreset(getStylePresetFromPartyMonSP());
+        onUpdate();
     }
 
-    function updateSP(stat: keyof StylePoints, value: number) {
-        const newSP = { ...partyMon.stylePoints, [stat]: value };
-        if (spSum(newSP) <= STYLE_POINT_CAP && value >= MIN_SP && value <= MAX_SP) {
-            partyMon.stylePoints = newSP;
-            onUpdate();
+    function spDiffFromTotal(sp: StylePoints): number {
+        return STYLE_POINT_CAP - Object.values(sp).reduce((total, x) => total + x, 0);
+    }
+
+    function getStylePresetFromPartyMonSP(): string {
+        for (const preset in stylePointPresets) {
+            const p = stylePointPresets[preset];
+            const m = partyMon.stylePoints;
+
+            // Do not use JSON stringify as since this is an interface it can be in a different order
+            if (
+                p.hp == m.hp &&
+                p.attacks == m.attacks &&
+                p.speed == m.speed &&
+                p.defense == m.defense &&
+                p.spdef == m.spdef
+            ) {
+                return preset;
+            }
         }
+
+        return "Custom";
     }
 
     function updateStatSteps(stat: Stat, value: number) {
@@ -263,56 +302,89 @@ export default function PokemonCardHorizontal({
                 </tbody>
             </table>
 
-            <table className="w-full text-center text-white">
+            <table className="table-fixed text-center text-white">
                 <thead>
                     <tr className="bg-blue-900">
                         <th>Lvl</th>
                         <th>HP</th>
                         <th>Atk</th>
-                        <th>Sp. Atk</th>
-                        <th>Speed</th>
+                        <th>Sp.A</th>
+                        <th>Spe</th>
                         <th>Def</th>
-                        <th>Sp. Def</th>
+                        <th>Sp.D</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr className="bg-gray-900">
-                        <td>
+                        <td
+                            className={`${
+                                partyMon.level > MAX_LEVEL || partyMon.level < MIN_LEVEL
+                                    ? "text-value-out-of-range"
+                                    : ""
+                            }`}
+                        >
                             <input
-                                type="number"
-                                min={MIN_LEVEL}
-                                max={MAX_LEVEL}
+                                className="w-36 text-center"
                                 value={partyMon.level}
                                 onChange={(e) => {
-                                    const value = parseInt(e.target.value);
-                                    partyMon.level = value >= MIN_LEVEL && value <= MAX_LEVEL ? value : partyMon.level;
+                                    partyMon.level = e.target.value == "" ? 0 : parseInt(e.target.value);
                                     onUpdate();
                                 }}
                             />
                         </td>
                         {safeKeys(partyMon.getBaseStats()).map((k) => (
-                            <td key={k}>{partyMon.getStats()[k]}</td>
+                            <td key={k} className="text-center">
+                                {partyMon.getStats()[k]}
+                            </td>
                         ))}
                     </tr>
                     <tr className="bg-emerald-700">
                         <td
-                            className="bg-emerald-800 cursor-pointer"
-                            onClick={() => {
-                                partyMon.stylePoints = zeroStylePoints;
-                                onUpdate();
-                            }}
+                            className={`bg-emerald-800 cursor-pointer ${
+                                spDiffFromTotal(partyMon.stylePoints) < 0 ? "text-value-out-of-range" : ""
+                            }`}
                         >
-                            SP {STYLE_POINT_CAP - spSum(partyMon.stylePoints)}
+                            <select
+                                className="w-23 mr-1"
+                                value={stylePreset}
+                                onChange={(e) => {
+                                    const preset = e.target.value;
+                                    setStylePreset(preset);
+
+                                    partyMon.stylePoints = {
+                                        ...stylePointPresets[preset],
+                                    };
+                                    onUpdate();
+                                }}
+                            >
+                                {Object.keys(stylePointPresets).map((x) => (
+                                    <option key={x} value={x}>
+                                        {x}
+                                    </option>
+                                ))}
+                            </select>
+                            <span
+                                className="pr-1"
+                                onClick={() => {
+                                    setStylePreset("Custom");
+                                    partyMon.stylePoints = zeroStylePoints;
+                                    onUpdate();
+                                }}
+                            >
+                                SP {spDiffFromTotal(partyMon.stylePoints)}
+                            </span>
                         </td>
                         {safeKeys(partyMon.getBaseStats()).map((k) => (
                             <td key={k}>
                                 <input
-                                    type="number"
-                                    className="text-center"
-                                    min={MIN_SP}
-                                    max={MAX_SP}
+                                    className={`w-13 text-center ${
+                                        partyMon.stylePoints[styleFromStat(k)] < MIN_SP ||
+                                        partyMon.stylePoints[styleFromStat(k)] > MAX_SP
+                                            ? "text-value-out-of-range"
+                                            : ""
+                                    }`}
                                     value={partyMon.stylePoints[styleFromStat(k)]}
-                                    onChange={(e) => updateSP(styleFromStat(k), parseInt(e.target.value))}
+                                    onChange={(e) => onSpUpdate(k, e)}
                                 />
                             </td>
                         ))}

@@ -2,9 +2,17 @@ import Image from "next/image";
 import { ReactNode, useState } from "react";
 
 // Keep adding fallbacks till we can serve everyone for free?
-const IMG_CDN_ROOT = "https://tectonictools.sirv.com/Images/public/";
-const IMG_GITHUB_FALLBACK = "https://raw.githubusercontent.com/AlphaKretin/tectonic-tools/refs/heads/main/public/";
+const IMG_SIRV_ROOT = "https://tectonictools.sirv.com/Images/public";
+const IMG_GITHUB_FALLBACK = "https://raw.githubusercontent.com/AlphaKretin/tectonic-tools/refs/heads/main/public";
 export const IMG_NOT_FOUND = "/Items/NOTFOUND.png";
+
+enum ImageSourceState {
+    Vercel,
+    Sirv,
+    Github,
+    Error,
+}
+
 export default function ImageFallback({
     alt,
     src,
@@ -24,57 +32,89 @@ export default function ImageFallback({
     onClick?: () => void;
     onContextMenu?: () => void;
 }): ReactNode {
-    const [isCDNErrorTryGithub, setIsCDNErrorTryGithub] = useState<boolean>(false);
-    const [isError, setError] = useState<boolean>(false);
+    const [sourceState, setSourceState] = useState<ImageSourceState>(ImageSourceState.Vercel);
+
+    function toNextSourceState() {
+        switch (sourceState) {
+            case ImageSourceState.Vercel:
+                setSourceState(ImageSourceState.Sirv);
+                return;
+            case ImageSourceState.Sirv:
+                setSourceState(ImageSourceState.Github);
+                return;
+            case ImageSourceState.Github:
+                setSourceState(ImageSourceState.Error);
+                return;
+            case ImageSourceState.Error:
+                return;
+        }
+    }
+
+    function getImageSourceString(): string {
+        let root = "";
+        let img = src;
+
+        switch (sourceState) {
+            case ImageSourceState.Vercel:
+                break;
+            case ImageSourceState.Sirv:
+                root = IMG_SIRV_ROOT;
+                break;
+            case ImageSourceState.Github:
+                root = IMG_GITHUB_FALLBACK;
+                break;
+            case ImageSourceState.Error:
+                root = IMG_GITHUB_FALLBACK;
+                img = IMG_NOT_FOUND;
+                break;
+        }
+
+        return root + img;
+    }
+
+    function getNextJsImage(): ReactNode {
+        return (
+            <Image
+                alt={alt}
+                title={title}
+                src={getImageSourceString()}
+                onError={() => toNextSourceState()}
+                width={width}
+                height={height}
+                className={className}
+                onClick={onClick}
+                onContextMenu={(e) => {
+                    onContextMenu?.();
+                    e.preventDefault();
+                }}
+            />
+        );
+    }
+
+    function getHtmlImage() {
+        return (
+            <img
+                alt={alt}
+                title={title}
+                loading="lazy"
+                src={getImageSourceString()}
+                onError={() => toNextSourceState()}
+                width={width}
+                height={height}
+                className={className}
+                onClick={onClick}
+                onContextMenu={(e) => {
+                    onContextMenu?.();
+                    e.preventDefault();
+                }}
+            />
+        );
+    }
 
     // Non prod builds should force use Image so we don't use up CDN limits
-    return process.env.NODE_ENV !== "production" ? (
-        <Image
-            alt={alt}
-            title={title}
-            src={isError ? IMG_NOT_FOUND : src}
-            onError={() => {
-                if (!isCDNErrorTryGithub) {
-                    setIsCDNErrorTryGithub(true);
-                } else {
-                    setError(true);
-                }
-            }}
-            width={width}
-            height={height}
-            className={className}
-            onClick={onClick}
-            onContextMenu={(e) => {
-                onContextMenu?.();
-                e.preventDefault();
-            }}
-        />
-    ) : (
-        <img
-            alt={alt}
-            title={title}
-            src={
-                isCDNErrorTryGithub
-                    ? `${IMG_GITHUB_FALLBACK}${src}`
-                    : isError
-                    ? `${IMG_CDN_ROOT}${IMG_NOT_FOUND}`
-                    : `${IMG_CDN_ROOT}${src}`
-            }
-            onError={() => {
-                if (!isCDNErrorTryGithub) {
-                    setIsCDNErrorTryGithub(true);
-                } else {
-                    setError(true);
-                }
-            }}
-            width={width}
-            height={height}
-            className={className}
-            onClick={onClick}
-            onContextMenu={(e) => {
-                onContextMenu?.();
-                e.preventDefault();
-            }}
-        />
-    );
+    if (process.env.NODE_ENV !== "production") {
+        return getNextJsImage();
+    }
+
+    return sourceState == ImageSourceState.Vercel ? getNextJsImage() : getHtmlImage();
 }

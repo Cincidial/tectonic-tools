@@ -14,7 +14,7 @@ Live at https://tectonic.alphakretin.com
 ## Contributor
 
 If you contribute new/changes to images they'll need to be uploaded to the CDN (Sirv) to be available.
-Images should also be added to the repo for safe keeping
+Images should also be added to the repo as well both for safe keeping and since it's for both local dev and a backup for serving
 Note that Sirv has been configured for a 30 day local browser cache time. So if an image gets updated it may be delayed for users unless they force a refresh.
 
 -   Local dev should always use the localhost nextjs server, unless you use a production version locally
