@@ -25,7 +25,7 @@ export class PartyPokemon {
     stylePoints: StylePoints;
     nickname: string | undefined = undefined;
     statSteps: Stats;
-    statusEffect?: StatusEffect;
+    statusEffect: StatusEffect;
     volatileStatusEffects: Record<VolatileStatusEffect, boolean>;
 
     constructor(data?: Partial<PartyPokemon>) {
@@ -39,7 +39,7 @@ export class PartyPokemon {
         this.stylePoints = data?.stylePoints || defaultStylePoints;
         this.nickname = data?.nickname;
         this.statSteps = data?.statSteps || blankStats;
-        this.statusEffect = data?.statusEffect;
+        this.statusEffect = data?.statusEffect ?? "None";
         this.volatileStatusEffects =
             data?.volatileStatusEffects ||
             (Object.fromEntries(volatileStatusEffects.map((e) => [e, false])) as Record<VolatileStatusEffect, boolean>);
