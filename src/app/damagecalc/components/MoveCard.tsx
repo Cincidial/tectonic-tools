@@ -120,16 +120,9 @@ export default function MoveCard(props: MoveCardProps): ReactNode {
                             element={TypeBadgeElementEnum.ICONS}
                         />
                         <ImageFallback
-                            src={
-                                props.moveData.move.category == "Adaptive"
-                                    ? Move.getMoveCategoryImgSrc(
-                                          props.user.getStats(props.moveData, "player").attack >
-                                              props.user.getStats(props.moveData, "player").spatk
-                                              ? "Physical"
-                                              : "Special"
-                                      )
-                                    : props.moveData.move.getCategoryImgSrc()
-                            }
+                            src={Move.getMoveCategoryImgSrc(
+                                props.moveData.move.getDamageCategory(props.moveData, props.user, props.target)
+                            )}
                             alt={props.moveData.move.category}
                             title={props.moveData.move.category}
                             height={60}

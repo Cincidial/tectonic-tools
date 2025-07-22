@@ -17,7 +17,7 @@ const moveConditions: Record<string, ConditionFunction> = {
     InertiaShock: (user: PartyPokemon, target: PartyPokemon) => user.getStats().speed > target.getStats().speed,
     RemovesTargetItemDamageBoost50Percent: (_: PartyPokemon, target: PartyPokemon) =>
         target.items.filter((i) => !isNull(i)).length > 0,
-    DoubleDamageTargetStatused: (_: PartyPokemon, target: PartyPokemon) => target.statusEffect !== "None", // Does Hex interact with Volatile SEs?
+    DoubleDamageTargetStatused: (_: PartyPokemon, target: PartyPokemon) => (target.statusEffect ?? "None") !== "None", // Does Hex interact with Volatile SEs?
     ImpurityBlaze: (_: PartyPokemon, target: PartyPokemon) => target.statusEffect !== "None",
     DoubleDamageAgainstBurned: punishStatus("Burn"),
     DoubleDamageAgainstPoisoned: punishStatus("Poison"),

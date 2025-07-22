@@ -24,7 +24,7 @@ export function getColourClassForMult(mult: number, neutralColor?: string): stri
     if (mult < 1) {
         return "bg-not-very-effective";
     }
-    // if neutrally effective, no special colour
+
     return neutralColor ?? "";
 }
 

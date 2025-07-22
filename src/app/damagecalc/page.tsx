@@ -24,6 +24,17 @@ import { PartyPokemon } from "../data/types/PartyPokemon";
 import MoveCard, { MoveData } from "./components/MoveCard";
 import SideStateUI from "./components/SideStateUI";
 
+enum SpeedOrderEnum {
+    NoDisplay,
+    Player,
+    Opponent,
+    Tie,
+}
+
+const sortedTrainers = Object.values(TectonicData.trainers).sort(
+    (a, b) => Math.max(...a.pokemon.map((x) => x.level)) - Math.max(...b.pokemon.map((x) => x.level))
+);
+
 const PokemonDamageCalculator: NextPage = () => {
     const [showTeamLoad, setShowTeamLoad] = useState<boolean>(true);
     const [showTrainerLoad, setShowTrainerLoad] = useState<boolean>(true);
@@ -43,9 +54,20 @@ const PokemonDamageCalculator: NextPage = () => {
     const [playerMoveData, setPlayerMoveData] = useState<MoveData[]>([]);
     const [opponentMoveData, setOpponentMoveData] = useState<MoveData[]>([]);
 
-    const matchingTrainers = Object.values(TectonicData.trainers)
-        .filter((x) => x.displayName().toLowerCase().includes(trainerText.toLowerCase()))
-        .sort((a, b) => a.displayName().localeCompare(b.displayName()));
+    const playerSpeed = playerMon?.getStats(undefined, undefined).speed;
+    const oppSpeed = opponentMon?.getStats(undefined, undefined).speed;
+    const speedOrder =
+        !playerSpeed || !oppSpeed
+            ? SpeedOrderEnum.NoDisplay
+            : playerSpeed == oppSpeed
+            ? SpeedOrderEnum.Tie
+            : playerSpeed > oppSpeed
+            ? SpeedOrderEnum.Player
+            : SpeedOrderEnum.Opponent;
+
+    const matchingTrainers = sortedTrainers.filter((x) =>
+        x.displayName().toLowerCase().includes(trainerText.toLowerCase())
+    );
 
     function getBattleState(sideState: SideState): BattleState {
         const cancelWeather =
@@ -142,11 +164,13 @@ const PokemonDamageCalculator: NextPage = () => {
                                     }}
                                     showBattleConfig={true}
                                 />
-                                {opponentMon &&
-                                    playerMon.getStats(undefined, undefined).speed >
-                                        opponentMon.getStats(undefined, undefined).speed && (
-                                        <div className="text-2xl text-white">Moves First</div>
-                                    )}
+                                {speedOrder != SpeedOrderEnum.NoDisplay && (
+                                    <div className="text-2xl text-white text-shadow-sm/50 font-bold px-2 rounded-xl bg-blue-500">
+                                        {speedOrder == SpeedOrderEnum.Tie
+                                            ? "Speed Tie"
+                                            : `Moves ${speedOrder == SpeedOrderEnum.Player ? "First" : "Last"}`}
+                                    </div>
+                                )}
                                 {opponentMon &&
                                     playerMoveData
                                         .map((x) => {
@@ -242,11 +266,13 @@ const PokemonDamageCalculator: NextPage = () => {
                                     }}
                                     showBattleConfig={true}
                                 />
-                                {playerMon &&
-                                    opponentMon.getStats(undefined, undefined).speed >
-                                        playerMon.getStats(undefined, undefined).speed && (
-                                        <div className="text-2xl text-white">Moves First</div>
-                                    )}
+                                {speedOrder != SpeedOrderEnum.NoDisplay && (
+                                    <div className="text-2xl text-white text-shadow-sm/50 font-bold px-2 rounded-xl bg-blue-500">
+                                        {speedOrder == SpeedOrderEnum.Tie
+                                            ? "Speed Tie"
+                                            : `Moves ${speedOrder == SpeedOrderEnum.Opponent ? "First" : "Last"}`}
+                                    </div>
+                                )}
                                 {playerMon &&
                                     opponentMoveData
                                         .map((x) => {
