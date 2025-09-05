@@ -33,8 +33,15 @@ export default function ImageFallback({
     onContextMenu?: () => void;
 }): ReactNode {
     const [sourceState, setSourceState] = useState<ImageSourceState>(ImageSourceState.Vercel);
+    const isDev = process.env.NODE_ENV !== "production";
 
     function toNextSourceState() {
+        // On dev return immediately while staying in the error state
+        if (isDev) {
+            setSourceState(ImageSourceState.Error);
+            return;
+        }
+
         switch (sourceState) {
             case ImageSourceState.Vercel:
                 setSourceState(ImageSourceState.Sirv);
@@ -53,6 +60,10 @@ export default function ImageFallback({
     function getImageSourceString(): string {
         let root = "";
         let img = src;
+
+        if (isDev && sourceState == ImageSourceState.Error) {
+            return IMG_NOT_FOUND;
+        }
 
         switch (sourceState) {
             case ImageSourceState.Vercel:
@@ -111,8 +122,8 @@ export default function ImageFallback({
         );
     }
 
-    // Non prod builds should force use Image so we don't use up CDN limits
-    if (process.env.NODE_ENV !== "production") {
+    // Dev builds should force use Image so we don't use up CDN limits
+    if (isDev) {
         return getNextJsImage();
     }
 
