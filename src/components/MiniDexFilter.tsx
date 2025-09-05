@@ -8,6 +8,12 @@ import ImageFallback from "./ImageFallback";
 import PokemonModal from "./PokemonModal";
 import TypeBadge, { TypeBadgeElementEnum } from "./TypeBadge";
 
+enum EvolutionStageEnum {
+    Any = "Any Evo",
+    First = "First Evo",
+    Final = "Final Evo",
+}
+
 export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX.Element {
     const [loaded, setLoaded] = useState<boolean>(false);
     const [name, setName] = useState<string>("");
@@ -18,10 +24,14 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
     const [type1, setType1] = useState<PokemonType | undefined>(undefined);
     const [type2, setType2] = useState<PokemonType | undefined>(undefined);
     const [modalMon, setModalMon] = useState<Pokemon | null>(null);
+    const [evoStage, setEvoStage] = useState<EvolutionStageEnum>(EvolutionStageEnum.Any);
 
     function filter(x: Pokemon, playthroughMonMap?: Record<string, Pokemon>): boolean {
         return (
             ((name.length <= 1 || x.name.toLowerCase().includes(name.toLowerCase())) &&
+                (evoStage == EvolutionStageEnum.Any ||
+                    (evoStage == EvolutionStageEnum.First && x.getEvoNode().isRoot()) ||
+                    (evoStage == EvolutionStageEnum.Final && x.getEvoNode().isLeaf())) &&
                 (ability.length <= 2 ||
                     x.abilities.find(
                         (a) =>
@@ -60,6 +70,17 @@ export function MiniDexFilter({ onMon }: { onMon: (mon: Pokemon) => void }): JSX
                         <option key={p.id} value={p.name} />
                     ))}
                 </datalist>
+                <select
+                    className="px-4 py-2 rounded-md bg-gray-700 border border-gray-600"
+                    value={evoStage?.valueOf()}
+                    onChange={(e) => setEvoStage(e.target.value as EvolutionStageEnum)}
+                >
+                    {Object.values(EvolutionStageEnum).map((x) => (
+                        <option key={x} value={x}>
+                            {x}
+                        </option>
+                    ))}
+                </select>
                 <input
                     className="border rounded px-2 py-1 bg-gray-700 text-white border-gray-600"
                     list="abilitiesData"
