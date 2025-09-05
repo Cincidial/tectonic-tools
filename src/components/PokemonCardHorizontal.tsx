@@ -230,7 +230,7 @@ export default function PokemonCardHorizontal({
                                                                 onUpdate();
                                                             }}
                                                         >
-                                                            {Object.values(TectonicData.types).map((t) => (
+                                                            {Object.values(TectonicData.realTypes).map((t) => (
                                                                 <option key={t.id} value={t.id}>
                                                                     {t.name}
                                                                 </option>
