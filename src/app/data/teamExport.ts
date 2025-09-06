@@ -79,7 +79,7 @@ function encodeChunk(version: VersionMap, view: DataView<ArrayBuffer>, byteOffse
         const monMoves = version.indices.move[data.species.id];
 
         let index = -1;
-        if (monMoves && monMoves[data.moves[dataIndex].id] != undefined) {
+        if (monMoves && monMoves[data.moves[dataIndex].id] !== undefined) {
             index = monMoves[data.moves[dataIndex].id];
         }
 
