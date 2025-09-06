@@ -2,7 +2,7 @@ import { LoadedAbility } from "@/preload/loadedDataClasses";
 import { Ability } from "../tectonic/Ability";
 
 const stabBoostAbilities: Record<string, number> = {
-    ADAPTED: 3 / 4,
+    ADAPTED: 4 / 3,
     ULTRAADAPTED: 3 / 2,
 };
 
