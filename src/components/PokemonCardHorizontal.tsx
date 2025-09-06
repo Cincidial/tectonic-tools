@@ -334,7 +334,7 @@ export default function PokemonCardHorizontal({
                         </td>
                         {safeKeys(partyMon.getBaseStats()).map((k) => (
                             <td key={k} className="text-center">
-                                {partyMon.getStats()[k]}
+                                {Math.round(partyMon.getStats()[k])}
                             </td>
                         ))}
                     </tr>
