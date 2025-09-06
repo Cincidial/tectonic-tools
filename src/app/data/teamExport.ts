@@ -79,7 +79,7 @@ function encodeChunk(version: VersionMap, view: DataView<ArrayBuffer>, byteOffse
         const monMoves = version.indices.move[data.species.id];
 
         let index = -1;
-        if (monMoves && monMoves[data.moves[dataIndex].id]) {
+        if (monMoves && monMoves[data.moves[dataIndex].id] != undefined) {
             index = monMoves[data.moves[dataIndex].id];
         }
 
@@ -226,6 +226,7 @@ const decodeChunk = (
     } else {
         mon.ability = abilities[pokemonAbilityIndex];
     }
+
     mon.moves[0] = TectonicData.moves[version.keys.move[loadedMon.id][pokemonMove1Index]] || Move.NULL;
     mon.moves[1] = TectonicData.moves[version.keys.move[loadedMon.id][pokemonMove2Index]] || Move.NULL;
     mon.moves[2] = TectonicData.moves[version.keys.move[loadedMon.id][pokemonMove3Index]] || Move.NULL;
