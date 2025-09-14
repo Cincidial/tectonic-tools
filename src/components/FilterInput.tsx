@@ -26,7 +26,7 @@ export function FilterInput({ currentFilter, filters, onAddFilter, removeFilter,
         <div className="w-full md:w-200 mx-auto text-white bg-gray-800 rounded-lg p-2 mb-4">
             <div className="flex flex-wrap justify-center items-center gap-2 mb-2">
                 <select
-                    className="border rounded p-2"
+                    className="border rounded p-2 bg-gray-700 text-white border-gray-600"
                     value={currentFilter.label}
                     onChange={(e) => {
                         const selected = AVAILABLE_FILTERS.find((f) => f.label === e.target.value);
@@ -42,7 +42,7 @@ export function FilterInput({ currentFilter, filters, onAddFilter, removeFilter,
 
                 {currentFilter.inputMethod === "select" ? (
                     <select
-                        className="border rounded p-2"
+                        className="border rounded p-2 bg-gray-700 text-white border-gray-600"
                         value={localValue}
                         onChange={(e) => setLocalValue(e.target.value)}
                     >
