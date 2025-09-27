@@ -78,7 +78,7 @@ class EncounterDisplayData {
     constructor(map: LoadedEncounterMap, table: LoadedEncounterTable) {
         this.key = `${map.key} - ${table.type}`;
         this.map = map;
-        this.tableDisplayName = tableDisplayNameMap[table.type];
+        this.tableDisplayName = tableDisplayNameMap[table.type] ?? "Unknown Table Type";
         this.minLevel = 10000;
         this.maxLevel = -1;
         this.levelCap = table.levelCap;
