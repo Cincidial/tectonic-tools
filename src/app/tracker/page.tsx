@@ -31,6 +31,7 @@ const tableDisplayNameMap: Record<string, string> = {
     Cloud: "Dark Clouds",
     ActiveWater: "Deep Water",
     FishingContest: "Surfing",
+    WaterGrass: "Water Grass",
 };
 
 class EncounterMap {
@@ -78,6 +79,7 @@ class EncounterDisplayData {
         this.key = `${map.key} - ${table.type}`;
         this.map = map;
         this.tableDisplayName = tableDisplayNameMap[table.type];
+        if (this.tableDisplayName == undefined) console.log(table.type);
         this.minLevel = 10000;
         this.maxLevel = -1;
         this.levelCap = table.levelCap;
