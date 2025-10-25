@@ -27,7 +27,7 @@ export interface PokemonModalProps {
 
 const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector, handlePokemonClick }) => {
     const tabs = moveSelector
-        ? ["Level Moves", "Tutor Moves"]
+        ? ["Level Moves", "Tutor Moves", "All Moves"]
         : (["Info", "Evolutions & Locations", "Level Moves", "Tutor Moves"] as const);
     type PokemonTabName = (typeof tabs)[number];
 
@@ -409,6 +409,18 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                         <TabContent tab="Tutor Moves" activeTab={activeTab}>
                             <MoveTable
                                 moves={currentPokemon.lineMoves.concat(currentPokemon.tutorMoves).map((x) => [0, x])}
+                                showLevel={false}
+                                onMoveClick={(m) => {
+                                    if (moveSelector) {
+                                        moveSelector(m);
+                                        handleClose();
+                                    }
+                                }}
+                            />
+                        </TabContent>
+                        <TabContent tab="All Moves" activeTab={activeTab}>
+                            <MoveTable
+                                moves={Object.values(TectonicData.moves).map((x) => [0, x])}
                                 showLevel={false}
                                 onMoveClick={(m) => {
                                     if (moveSelector) {
