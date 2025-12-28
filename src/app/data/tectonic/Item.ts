@@ -16,10 +16,14 @@ export class Item {
     image: string = "";
 
     get isHeldItem() {
+        if (TectonicData.version.includes("-dev")) {
+            return this.pocket >= 9 && this.pocket <= 13;
+        }
         return this.pocket == 5;
     }
 
     get isTM() {
+        // probably also needs updating for dev
         return this.pocket == 4;
     }
 
@@ -57,7 +61,7 @@ export class Item {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         battleState: BattleState,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        typeEffectMult: number
+        typeEffectMult: number,
     ): DamageMultipliers {
         return multipliers;
     }
@@ -74,7 +78,7 @@ export class Item {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         battleState: BattleState,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        typeEffectMult: number
+        typeEffectMult: number,
     ): DamageMultipliers {
         return multipliers;
     }

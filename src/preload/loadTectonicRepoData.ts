@@ -84,7 +84,7 @@ function propgatePokemonData(version: string, loadData: Record<string, LoadedPok
 
         if (version.startsWith("3.2")) {
             const nodeWithMoves = evoNode.findBySelfAndParents(
-                (x) => loadData[x.getData().pokemon].lineMoves.length > 0
+                (x) => loadData[x.getData().pokemon].lineMoves.length > 0,
             );
             if (nodeWithMoves) {
                 loadMon.lineMoves = loadData[nodeWithMoves.getData().pokemon].lineMoves;
@@ -118,7 +118,7 @@ function propagateTrainerData(trainers: Record<string, LoadedTrainer>): void {
                     updatedPokemon.push(pokemon);
                 } else {
                     const newPokemon = { ...extendedTrainer.pokemon[extendedPokemonIndex] };
-                    if(pokemon.abilityIndex) {
+                    if (pokemon.abilityIndex) {
                         newPokemon.abilityIndex = pokemon.abilityIndex;
                     }
                     if (pokemon.itemType) {
@@ -193,7 +193,7 @@ async function loadData(dev: boolean = false): Promise<void> {
     const version: string = await handleFiles(
         ["Plugins/_Settings/GameSettings.rb"],
         (f: string[]) => parseVersionFile(f[0]),
-        dev
+        dev,
     );
     const loadedData: LoadedDataJson = {
         version: version,
@@ -214,35 +214,35 @@ async function loadData(dev: boolean = false): Promise<void> {
         await handleFiles(
             ["PBS/types.txt"],
             (f: string[]) => (loadedData.types = parseStandardFile(version, LoadedType, LoadedType.populateMap, f)),
-            dev
+            dev,
         ),
         await handleFiles(
             ["PBS/tribes.txt"],
             (f: string[]) =>
                 (loadedData.tribes = parseNewLineCommaFile(version, LoadedTribe, LoadedTribe.populateMap, f[0])),
-            dev
+            dev,
         ),
         await handleFiles(
             ["PBS/abilities.txt", "PBS/abilities_new.txt"],
             (f: string[]) =>
                 (loadedData.abilities = parseStandardFile(version, LoadedAbility, LoadedAbility.populateMap, f)),
-            dev
+            dev,
         ),
         await handleFiles(
             ["PBS/moves.txt", "PBS/moves_new.txt", "PBS/moves_primeval.txt"],
             (f: string[]) => (loadedData.moves = parseStandardFile(version, LoadedMove, LoadedMove.populateMap, f)),
-            dev
+            dev,
         ),
         await handleFiles(
             ["PBS/items.txt", "PBS/items_machine.txt"],
             (f: string[]) => (loadedData.items = parseStandardFile(version, LoadedItem, LoadedItem.populateMap, f)),
-            dev
+            dev,
         ),
         await handleFiles(
             ["PBS/pokemon.txt"],
             (f: string[]) =>
                 (loadedData.pokemon = parseStandardFile(version, LoadedPokemon, LoadedPokemon.populateMap, f)),
-            dev
+            dev,
         ),
         await handleFiles(
             ["PBS/pokemonforms.txt"],
@@ -257,7 +257,7 @@ async function loadData(dev: boolean = false): Promise<void> {
 
                 return (loadedData.forms = loadedForms);
             },
-            dev
+            dev,
         ),
         await handleFiles(
             ["PBS/trainertypes.txt"],
@@ -266,15 +266,15 @@ async function loadData(dev: boolean = false): Promise<void> {
                     version,
                     LoadedTrainerType,
                     LoadedTrainerType.populateMap,
-                    f
+                    f,
                 )),
-            dev
+            dev,
         ),
         await handleFiles(
             ["PBS/trainers.txt"],
             (f: string[]) =>
                 (loadedData.trainers = parseStandardFile(version, LoadedTrainer, LoadedTrainer.populateMap, f)),
-            dev
+            dev,
         ),
         await handleFiles(
             ["PBS/encounters.txt"],
@@ -287,7 +287,7 @@ async function loadData(dev: boolean = false): Promise<void> {
 
                 return (loadedData.encounters = record);
             },
-            dev
+            dev,
         ),
     ]);
 
@@ -302,7 +302,12 @@ async function loadData(dev: boolean = false): Promise<void> {
 
     const keys = {
         pokemon: ["", ...Object.keys(loadedData.pokemon)],
-        item: Object.keys(loadedData.items).filter((k) => loadedData.items[k].pocket === 5),
+        item: Object.keys(loadedData.items).filter((k) => {
+            if (dev) {
+                return loadedData.items[k].pocket >= 9 && loadedData.items[k].pocket <= 13;
+            }
+            return loadedData.items[k].pocket === 5;
+        }),
         type: Object.keys(loadedData.types),
         move: Object.fromEntries(Object.values(loadedData.pokemon).map((p) => [p.key, LoadedPokemon.getAllMoves(p)])),
     };
@@ -310,7 +315,7 @@ async function loadData(dev: boolean = false): Promise<void> {
         item: Object.fromEntries(keys.item.map((id, i) => [id, i])),
         type: Object.fromEntries(Object.keys(loadedData.types).map((id, i) => [id, i])),
         move: Object.fromEntries(
-            Object.keys(keys.move).map((k) => [k, Object.fromEntries(keys.move[k].map((m, index) => [m, index]))])
+            Object.keys(keys.move).map((k) => [k, Object.fromEntries(keys.move[k].map((m, index) => [m, index]))]),
         ),
     };
 
