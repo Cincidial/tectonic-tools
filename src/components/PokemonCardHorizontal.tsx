@@ -459,6 +459,7 @@ export default function PokemonCardHorizontal({
                     pokemon={modalMon}
                     moveSelector={moveIndex != null ? onMoveSelected : null}
                     handlePokemonClick={setModalMon}
+                    initialForm={partyMon.form}
                 />
             )}
         </div>
