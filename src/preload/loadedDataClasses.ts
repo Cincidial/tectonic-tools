@@ -13,7 +13,7 @@ export abstract class LoadedData<SubClass extends LoadedData<SubClass>> {
         version: string,
         self: T,
         populateMap: Record<string, (version: string, self: T, value: string) => void>,
-        pairs: KVPair[]
+        pairs: KVPair[],
     ): T {
         pairs.forEach((pair) => {
             if (pair.key in populateMap) {
@@ -214,6 +214,7 @@ export class LoadedPokemon extends LoadedData<LoadedPokemon> {
     wildItems: LoadedWildHeldItem[] = [];
     kind: string = "";
     pokedex: string = "";
+    flags: string[] = [];
     evolutions: PokemonEvolutionTerms[] = [];
     evolutionTree?: NTreeNode<PokemonEvolutionTerms>; // Requires post-load propagation
     evolutionTreeArray?: NTreeArrayNode<PokemonEvolutionTerms>[]; // Pre-write
@@ -261,6 +262,7 @@ export class LoadedPokemon extends LoadedData<LoadedPokemon> {
             self.wildItems.push(new LoadedWildHeldItem(value, LoadedPokemon.WILD_ITEM_CHANCE_RARE));
         this.populateMap["Kind"] = (_, self, value) => (self.kind = value);
         this.populateMap["Pokedex"] = (_, self, value) => (self.pokedex = value);
+        this.populateMap["Flags"] = (_, self, value) => (self.flags = value.split(","));
         this.populateMap["Evolutions"] = (_, self, value) => {
             const evoSplit = value.split(",");
             for (let i = 0; i < evoSplit.length; i += 3) {

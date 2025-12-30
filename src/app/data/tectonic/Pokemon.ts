@@ -56,7 +56,7 @@ export const zeroStylePoints: StylePoints = {
 function getterFactory<T extends keyof Pokemon, R>(
     mon: Pokemon,
     key: T,
-    isNull: (value: R) => boolean
+    isNull: (value: R) => boolean,
 ): (form: number) => R {
     return function (form: number = 0): R {
         if (
@@ -95,6 +95,7 @@ export class Pokemon {
     forms: Pokemon[] = [];
     items: [Item, number][] = [];
     uniqueItems: Item[] = [];
+    flags: string[] = [];
     evolutionTree: NTreeNode<PokemonEvolutionTerms> = null!;
 
     static NULL: Pokemon = null!;
@@ -127,6 +128,7 @@ export class Pokemon {
         this.pokedex = loaded.pokedex;
         this.items = loaded.wildItems.map((i) => [TectonicData.items[i.item], i.chance]);
         this.uniqueItems = uniq(this.items.map((x) => x[0]));
+        this.flags = loaded.flags;
         this.evolutionTree = NTreeArrayNode.buildTree(loaded.evolutionTreeArray!);
     }
 
