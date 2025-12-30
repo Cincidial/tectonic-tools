@@ -165,9 +165,21 @@ export class Pokemon {
         this.forms = this.forms.concat(forms);
     }
 
+    get tutorableMoves(): Move[] {
+        const moveList = [];
+        if (this.flags.includes("TutorAny")) {
+            moveList.push(...TectonicData.nonSignatureMoves);
+        } else {
+            moveList.push(...this.lineMoves);
+            moveList.push(...this.tutorMoves);
+        }
+        return uniq(moveList);
+    }
+
     public allMoves(currentForm: number = 0): Move[] {
-        const flatLevelMoves = this.getLevelMoves(currentForm).map((m) => m[1]);
-        return uniq(flatLevelMoves.concat(this.lineMoves, this.tutorMoves));
+        const moveList = this.getLevelMoves(currentForm).map((m) => m[1]);
+        moveList.push(...this.tutorableMoves);
+        return uniq(moveList);
     }
 
     public hasType(type: PokemonType): boolean {

@@ -37,7 +37,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
     const [currentPokemon, setCurrentPokemon] = useState(mon);
     const [selectedDefAbility, setSelectedDefAbility] = useState<Ability>(currentPokemon?.abilities[0] ?? Ability.NULL);
     const [selectedStabAbility, setSelectedStabAbility] = useState<Ability>(
-        currentPokemon?.abilities[0] ?? Ability.NULL
+        currentPokemon?.abilities[0] ?? Ability.NULL,
     );
     const [activeTab, setActiveTab] = useState<PokemonTabName>(moveSelector ? "Level Moves" : "Info");
     const [currentForm, setCurrentForm] = useState<number>(initialForm ?? 0);
@@ -92,15 +92,15 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                     type1: currentPokemon.getType1(currentForm),
                     type2: currentPokemon.getType2(currentForm),
                     ability: a,
-                }
+                },
             );
 
             stabMatchupCalcs[a.id][t.id] = Math.max(
                 calcTypeMatchup({ type: currentPokemon.getType1(currentForm), ability: a }, { type1: t }),
                 calcTypeMatchup(
                     { type: currentPokemon.getType2(currentForm) || currentPokemon.getType1(currentForm), ability: a },
-                    { type1: t }
-                )
+                    { type1: t },
+                ),
             );
 
             defMatchupDifferentForAbilities ||=
@@ -163,7 +163,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                                 buttonsVisible={true}
                                                 onPrevClick={() =>
                                                     setCurrentForm(
-                                                        negativeMod(currentForm - 1, currentPokemon.forms.length)
+                                                        negativeMod(currentForm - 1, currentPokemon.forms.length),
                                                     )
                                                 }
                                                 onNextClick={() =>
@@ -257,7 +257,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                             onClick={() =>
                                                 setSelectedDefAbility(
                                                     currentPokemon.abilities.find((a) => a != selectedDefAbility) ??
-                                                        selectedDefAbility
+                                                        selectedDefAbility,
                                                 )
                                             }
                                         >
@@ -295,7 +295,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                                             onClick={() =>
                                                 setSelectedStabAbility(
                                                     currentPokemon.abilities.find((a) => a != selectedStabAbility) ??
-                                                        selectedStabAbility
+                                                        selectedStabAbility,
                                                 )
                                             }
                                         >
@@ -409,7 +409,7 @@ const PokemonModal: React.FC<PokemonModalProps> = ({ pokemon: mon, moveSelector,
                         </TabContent>
                         <TabContent tab="Tutor Moves" activeTab={activeTab}>
                             <MoveTable
-                                moves={currentPokemon.lineMoves.concat(currentPokemon.tutorMoves).map((x) => [0, x])}
+                                moves={currentPokemon.tutorableMoves.map((x) => [0, x])}
                                 showLevel={false}
                                 onMoveClick={(m) => {
                                     if (moveSelector) {

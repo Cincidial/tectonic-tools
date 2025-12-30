@@ -148,6 +148,7 @@ type TectonicDataType = {
     tribes: Record<string, Tribe>;
     abilities: Record<string, Ability>;
     moves: Record<string, Move>;
+    nonSignatureMoves: Move[];
     items: Record<string, Item>;
     heldItems: Array<Item>;
     pokemon: Record<string, Pokemon>;
@@ -172,6 +173,7 @@ export const TectonicData: TectonicDataType = {
     typeChart: data.typeChart,
     abilities: {},
     moves: {},
+    nonSignatureMoves: [],
     items: {},
     heldItems: [],
     pokemon: {},
@@ -195,6 +197,8 @@ TectonicData.moves = fromLoadedMapped(data.moves, (x) => {
     return subclass ? new subclass(x) : new Move(x);
 });
 Move.NULL = new Move();
+// this is a hefty filter potentially used a few times so may as well cache it
+TectonicData.nonSignatureMoves = Object.values(TectonicData.moves).filter((m) => !m.isSignature);
 
 TectonicData.items = fromLoadedMapped(data.items, (x) => {
     const subclass = itemSubclasses.find((sc) => sc.itemIds.includes(x.key));
@@ -212,9 +216,8 @@ Trainer.NULL = new Trainer();
 
 // Start of post-load population
 Object.entries(TectonicData.forms).forEach(([k, v]) => TectonicData.pokemon[k].addForms([Pokemon.NULL, ...v]));
-if(TectonicData.version.includes("-dev")) {
-    TectonicData.heldItems = Object.values(TectonicData.items).filter((x) =>(x.pocket >= 9 && x.pocket <= 13));
-}
-else { 
-TectonicData.heldItems = Object.values(TectonicData.items).filter((x) => x.pocket == 5);
+if (TectonicData.version.includes("-dev")) {
+    TectonicData.heldItems = Object.values(TectonicData.items).filter((x) => x.pocket >= 9 && x.pocket <= 13);
+} else {
+    TectonicData.heldItems = Object.values(TectonicData.items).filter((x) => x.pocket == 5);
 }
