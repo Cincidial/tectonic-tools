@@ -279,8 +279,10 @@ export class LoadedPokemon extends LoadedData<LoadedPokemon> {
         self.formId = parseInt(terms[1]);
     }
 
-    static getAllMoves(self: LoadedPokemon) {
+    static getAllMoves(self: LoadedPokemon, stapleMoves: string[]): string[] {
         let moves: Array<string | undefined> = [];
+        // on dev, we push staple moves first if appropriate. outside of dev, no moves will be staple so this is fine
+        moves = moves.concat(stapleMoves);
         // in Tectonic, we first push egg moves here, but that is a leftover from Pokemon Essentials defaults I think
 
         // TODO: Double check how this worked before the removal of tutormoves. Currently assuming.

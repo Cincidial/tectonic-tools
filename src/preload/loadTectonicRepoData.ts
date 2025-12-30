@@ -141,7 +141,7 @@ function propagateTrainerData(trainers: Record<string, LoadedTrainer>): void {
     }
 }
 
-function propagateSignatures(data: LoadedDataJson) {
+function propagateSignatures(data: LoadedDataJson, stapleMoves: string[]): void {
     const abilityCounts = Object.fromEntries(Object.keys(data.abilities).map((k) => [k, 0]));
     const moveCounts = Object.fromEntries(Object.keys(data.moves).map((k) => [k, 0]));
 
@@ -150,7 +150,7 @@ function propagateSignatures(data: LoadedDataJson) {
         .filter((x) => x.evolutionTree!.findDepthFirst((e) => e.getData().pokemon == x.key)?.isLeaf())
         .forEach((x) => {
             x.abilities.forEach((a) => abilityCounts[a]++);
-            LoadedPokemon.getAllMoves(x).forEach((m) => moveCounts[m]++);
+            LoadedPokemon.getAllMoves(x, stapleMoves).forEach((m) => moveCounts[m]++);
         });
 
     Object.entries(abilityCounts).forEach(([k, v]) => (data.abilities[k].isSignature = v <= 1));
@@ -291,11 +291,16 @@ async function loadData(dev: boolean = false): Promise<void> {
         ),
     ]);
 
+    // caching a filter we need for getAllMoves
+    const stapleMoves = Object.values(loadedData.moves)
+        .filter((m) => m.flags.includes("Staple"))
+        .map((m) => m.key);
+
     // Data propogation
     loadedData.typeChart = buildTypeChart(loadedData.types);
     propgatePokemonData(version, loadedData.pokemon);
     propagateTrainerData(loadedData.trainers);
-    propagateSignatures(loadedData);
+    propagateSignatures(loadedData, stapleMoves);
 
     // Pre-write setup
     setupPokemonDataForWrite(loadedData.pokemon);
@@ -309,7 +314,9 @@ async function loadData(dev: boolean = false): Promise<void> {
             return loadedData.items[k].pocket === 5;
         }),
         type: Object.keys(loadedData.types),
-        move: Object.fromEntries(Object.values(loadedData.pokemon).map((p) => [p.key, LoadedPokemon.getAllMoves(p)])),
+        move: Object.fromEntries(
+            Object.values(loadedData.pokemon).map((p) => [p.key, LoadedPokemon.getAllMoves(p, stapleMoves)]),
+        ),
     };
     const indices = {
         item: Object.fromEntries(keys.item.map((id, i) => [id, i])),
