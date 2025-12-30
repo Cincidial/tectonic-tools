@@ -168,8 +168,11 @@ export class Pokemon {
     get tutorableMoves(): Move[] {
         const moveList = [];
         if (this.flags.includes("TutorAny")) {
-            moveList.push(...TectonicData.nonSignatureMoves);
+            moveList.push(...TectonicData.moveFilterCaches.nonSignatureMoves);
         } else {
+            if (!this.flags.includes("NoStaples")) {
+                moveList.push(...TectonicData.moveFilterCaches.stapleMoves);
+            }
             moveList.push(...this.lineMoves);
             moveList.push(...this.tutorMoves);
         }

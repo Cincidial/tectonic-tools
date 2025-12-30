@@ -148,7 +148,7 @@ type TectonicDataType = {
     tribes: Record<string, Tribe>;
     abilities: Record<string, Ability>;
     moves: Record<string, Move>;
-    nonSignatureMoves: Move[];
+    moveFilterCaches: Record<string, Move[]>;
     items: Record<string, Item>;
     heldItems: Array<Item>;
     pokemon: Record<string, Pokemon>;
@@ -173,7 +173,7 @@ export const TectonicData: TectonicDataType = {
     typeChart: data.typeChart,
     abilities: {},
     moves: {},
-    nonSignatureMoves: [],
+    moveFilterCaches: {},
     items: {},
     heldItems: [],
     pokemon: {},
@@ -197,8 +197,9 @@ TectonicData.moves = fromLoadedMapped(data.moves, (x) => {
     return subclass ? new subclass(x) : new Move(x);
 });
 Move.NULL = new Move();
-// this is a hefty filter potentially used a few times so may as well cache it
-TectonicData.nonSignatureMoves = Object.values(TectonicData.moves).filter((m) => !m.isSignature);
+// these are some hefty filters potentially used a few times so may as well cache 'em
+TectonicData.moveFilterCaches.nonSignatureMoves = Object.values(TectonicData.moves).filter((m) => !m.isSignature);
+TectonicData.moveFilterCaches.stapleMoves = Object.values(TectonicData.moves).filter((m) => m.flags.includes("Staple"));
 
 TectonicData.items = fromLoadedMapped(data.items, (x) => {
     const subclass = itemSubclasses.find((sc) => sc.itemIds.includes(x.key));
