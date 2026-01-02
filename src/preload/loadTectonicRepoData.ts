@@ -93,7 +93,9 @@ function propgatePokemonData(version: string, loadData: Record<string, LoadedPok
             // Propogate moves when not the first evolution
             const prevo = loadData[evoNode.getParent()!.getData().pokemon];
             loadMon.lineMoves = prevo.lineMoves.concat(loadMon.lineMoves);
-            loadMon.levelMoves = uniq(loadMon.levelMoves.concat(prevo.levelMoves)).sort((a, b) => a.level - b.level);
+            // Filter out evolution-only moves (level 0) when propagating from pre-evolution
+            const prevoLevelMoves = prevo.levelMoves.filter((m) => m.level > 0);
+            loadMon.levelMoves = uniq(loadMon.levelMoves.concat(prevoLevelMoves)).sort((a, b) => a.level - b.level);
         }
     });
 }
