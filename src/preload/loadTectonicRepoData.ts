@@ -54,7 +54,11 @@ async function handleFiles<T>(paths: string[], processor: (files: string[]) => T
     return processor(files);
 }
 
-function propgatePokemonData(version: string, loadData: Record<string, LoadedPokemon>): void {
+function propgatePokemonData(
+    version: string,
+    loadData: Record<string, LoadedPokemon>,
+    formData: Record<string, LoadedPokemon[]>,
+): void {
     // Propagate data not requiring the evo tree to be built
     Object.values(loadData).forEach((loadMon, index) => {
         function buildEvoTree(curNode: NTreeNode<PokemonEvolutionTerms>, cur: LoadedPokemon) {
@@ -69,6 +73,31 @@ function propgatePokemonData(version: string, loadData: Record<string, LoadedPok
 
         loadMon.evolutionTree = new NTreeNode(new PokemonEvolutionTerms(loadMon.key, "", ""));
         buildEvoTree(loadMon.evolutionTree, loadMon);
+    });
+
+    // Helper function to get the appropriate pre-evolution Pokemon or form
+    function getPrevoForInheritance(currentMon: LoadedPokemon, prevoSpecies: string): LoadedPokemon {
+        // If the current Pokemon is a form, try to find the corresponding form in the pre-evolution
+        if (currentMon.formId > 0 && prevoSpecies in formData) {
+            const prevoForms = formData[prevoSpecies];
+            // Look for a matching formId in the pre-evolution's forms
+            const matchingForm = prevoForms.find((f) => f.formId === currentMon.formId);
+            // Only use the matching form if it has its own learnset (non-empty levelMoves)
+            if (matchingForm && matchingForm.levelMoves.length > 0) {
+                return matchingForm;
+            }
+        }
+        // Otherwise, use the base form
+        return loadData[prevoSpecies];
+    }
+
+    // Store original moves before propagation for forms to use
+    const originalMoves = new Map<string, { levelMoves: LoadedPokemonLevelMove[]; lineMoves: string[] }>();
+    Object.entries(loadData).forEach(([key, mon]) => {
+        originalMoves.set(key, {
+            levelMoves: [...mon.levelMoves],
+            lineMoves: [...mon.lineMoves],
+        });
     });
 
     // Propagate data requiring the evolution tree
@@ -92,7 +121,8 @@ function propgatePokemonData(version: string, loadData: Record<string, LoadedPok
             }
         } else if (!evoNode.isRoot()) {
             // Propogate moves when not the first evolution
-            const prevo = loadData[evoNode.getParent()!.getData().pokemon];
+            const prevoSpecies = evoNode.getParent()!.getData().pokemon;
+            const prevo = getPrevoForInheritance(loadMon, prevoSpecies);
             loadMon.lineMoves = prevo.lineMoves.concat(loadMon.lineMoves);
             // Convert evolution-only moves (level 0) to level 1 when propagating from pre-evolution
             const prevoLevelMoves = prevo.levelMoves.map((m) =>
@@ -100,6 +130,54 @@ function propgatePokemonData(version: string, loadData: Record<string, LoadedPok
             );
             loadMon.levelMoves = uniq(loadMon.levelMoves.concat(prevoLevelMoves)).sort((a, b) => a.level - b.level);
         }
+    });
+
+    // Propagate data for forms
+    Object.entries(formData).forEach(([speciesKey, forms]) => {
+        const baseSpecies = loadData[speciesKey];
+        if (!baseSpecies || !baseSpecies.evolutionTree) return;
+
+        forms.forEach((formMon) => {
+            // Share the evolution tree with the base species
+            formMon.evolutionTree = baseSpecies.evolutionTree;
+            formMon.dexNum = baseSpecies.dexNum;
+
+            if (!formMon.evolutionTree) return;
+            const evoNode = formMon.evolutionTree.findDepthFirst((x) => x.getData().pokemon == formMon.key);
+            if (!evoNode) return;
+
+            // Propagate tribes
+            const nodeWithTribes = evoNode.findBySelfAndParents(
+                (x) => loadData[x.getData().pokemon].tribes.length > 0,
+            );
+            if (nodeWithTribes) {
+                const tribes: string[] = [];
+                nodeWithTribes.callSelfAndParents((x) => tribes.push(...loadData[x.getData().pokemon].tribes));
+                formMon.tribes = [...new Set(tribes)];
+            }
+
+            // Propagate moves from pre-evolution
+            if (!evoNode.isRoot()) {
+                const prevoSpecies = evoNode.getParent()!.getData().pokemon;
+                const prevo = getPrevoForInheritance(formMon, prevoSpecies);
+
+                // Use ORIGINAL moves from base species (before it inherited from its pre-evolution)
+                const originalBaseMoves = originalMoves.get(speciesKey);
+                if (!originalBaseMoves) return;
+
+                const baseMoves = originalBaseMoves.levelMoves;
+                const baseLineMoves = originalBaseMoves.lineMoves;
+
+                // Combine: original base moves + pre-evolution form moves + form-specific moves
+                formMon.lineMoves = baseLineMoves.concat(prevo.lineMoves).concat(formMon.lineMoves);
+                const prevoLevelMoves = prevo.levelMoves.map((m) =>
+                    m.level === 0 ? new LoadedPokemonLevelMove(1, m.move) : m,
+                );
+                formMon.levelMoves = uniq(baseMoves.concat(prevoLevelMoves).concat(formMon.levelMoves)).sort(
+                    (a, b) => a.level - b.level,
+                );
+            }
+        });
     });
 }
 
@@ -186,10 +264,21 @@ function buildTypeChart(types: Record<string, LoadedType>): number[][] {
     return typeChart;
 }
 
-function setupPokemonDataForWrite(loadData: Record<string, LoadedPokemon>) {
+function setupPokemonDataForWrite(
+    loadData: Record<string, LoadedPokemon>,
+    formData: Record<string, LoadedPokemon[]>,
+) {
     Object.values(loadData).forEach((loadMon) => {
         loadMon.evolutionTreeArray = loadMon.evolutionTree?.toArray();
         loadMon.evolutionTree = undefined;
+    });
+
+    // Also process forms
+    Object.values(formData).forEach((forms) => {
+        forms.forEach((formMon) => {
+            formMon.evolutionTreeArray = formMon.evolutionTree?.toArray();
+            formMon.evolutionTree = undefined;
+        });
     });
 }
 
@@ -303,12 +392,12 @@ async function loadData(dev: boolean = false): Promise<void> {
 
     // Data propogation
     loadedData.typeChart = buildTypeChart(loadedData.types);
-    propgatePokemonData(version, loadedData.pokemon);
+    propgatePokemonData(version, loadedData.pokemon, loadedData.forms);
     propagateTrainerData(loadedData.trainers);
     propagateSignatures(loadedData, stapleMoves);
 
     // Pre-write setup
-    setupPokemonDataForWrite(loadedData.pokemon);
+    setupPokemonDataForWrite(loadedData.pokemon, loadedData.forms);
 
     const keys = {
         pokemon: ["", ...Object.keys(loadedData.pokemon)],
@@ -331,10 +420,13 @@ async function loadData(dev: boolean = false): Promise<void> {
         ),
     };
 
+    // Write loadedData first
+    await dataWrite("loadedData.json", loadedData);
+
     // Write versions seperately as the file is maintained in the repo
     const versions = await dataRead("versions.json");
     versions[version] = { indices, keys };
-    await Promise.all([dataWrite("loadedData.json", loadedData), dataWrite("versions.json", versions)]);
+    await dataWrite("versions.json", versions);
 }
 
 loadData(process.argv[2] === "dev").catch((e) => console.error(e));
