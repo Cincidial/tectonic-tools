@@ -9,6 +9,7 @@ import {
     LoadedItem,
     LoadedMove,
     LoadedPokemon,
+    LoadedPokemonLevelMove,
     LoadedTrainer,
     LoadedTrainerType,
     LoadedTribe,
@@ -93,8 +94,10 @@ function propgatePokemonData(version: string, loadData: Record<string, LoadedPok
             // Propogate moves when not the first evolution
             const prevo = loadData[evoNode.getParent()!.getData().pokemon];
             loadMon.lineMoves = prevo.lineMoves.concat(loadMon.lineMoves);
-            // Filter out evolution-only moves (level 0) when propagating from pre-evolution
-            const prevoLevelMoves = prevo.levelMoves.filter((m) => m.level > 0);
+            // Convert evolution-only moves (level 0) to level 1 when propagating from pre-evolution
+            const prevoLevelMoves = prevo.levelMoves.map((m) =>
+                m.level === 0 ? new LoadedPokemonLevelMove(1, m.move) : m,
+            );
             loadMon.levelMoves = uniq(loadMon.levelMoves.concat(prevoLevelMoves)).sort((a, b) => a.level - b.level);
         }
     });
