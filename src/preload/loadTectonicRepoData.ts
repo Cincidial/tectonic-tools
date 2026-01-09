@@ -38,8 +38,8 @@ async function dataWrite<T>(filePath: string, contents: Record<string, T> | numb
 
 async function handleFiles<T>(paths: string[], processor: (files: string[]) => T, dev: boolean): Promise<T> {
     const baseUrl = dev
-        ? "https://raw.githubusercontent.com/xeuorux/Pokemon-Tectonic/refs/heads/development/"
-        : `https://raw.githubusercontent.com/xeuorux/Pokemon-Tectonic/${PUBLIC_VERSION_COMMIT}/`;
+        ? "https://raw.githubusercontent.com/Pokemon-Tectonic-Team/Pokemon-Tectonic-Content/refs/heads/main/"
+        : `https://raw.githubusercontent.com/Pokemon-Tectonic-Team/Pokemon-Tectonic/${PUBLIC_VERSION_COMMIT}/`;
 
     const responses = await Promise.all(paths.map((path) => fetch(baseUrl + path)));
     const files: string[] = [];
@@ -147,9 +147,7 @@ function propgatePokemonData(
             if (!evoNode) return;
 
             // Propagate tribes
-            const nodeWithTribes = evoNode.findBySelfAndParents(
-                (x) => loadData[x.getData().pokemon].tribes.length > 0,
-            );
+            const nodeWithTribes = evoNode.findBySelfAndParents((x) => loadData[x.getData().pokemon].tribes.length > 0);
             if (nodeWithTribes) {
                 const tribes: string[] = [];
                 nodeWithTribes.callSelfAndParents((x) => tribes.push(...loadData[x.getData().pokemon].tribes));
@@ -264,10 +262,7 @@ function buildTypeChart(types: Record<string, LoadedType>): number[][] {
     return typeChart;
 }
 
-function setupPokemonDataForWrite(
-    loadData: Record<string, LoadedPokemon>,
-    formData: Record<string, LoadedPokemon[]>,
-) {
+function setupPokemonDataForWrite(loadData: Record<string, LoadedPokemon>, formData: Record<string, LoadedPokemon[]>) {
     Object.values(loadData).forEach((loadMon) => {
         loadMon.evolutionTreeArray = loadMon.evolutionTree?.toArray();
         loadMon.evolutionTree = undefined;
