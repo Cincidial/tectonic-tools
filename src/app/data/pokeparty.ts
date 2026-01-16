@@ -59,9 +59,9 @@ export class PokePartyEncoding {
         versionU16 |= (parseInt(versionSplit[2]) & 0x1f) << VERSION_PATCH_SHIFT;
 
         const u16sToEncode = [pokePartyU16, versionU16];
-        for (var pokemon of party.filter((x) => x.species.id != Pokemon.NULL.id)) {
-            let has1Item = pokemon.items.length == 1;
-            let has2Items = pokemon.items.length == 2;
+        for (const pokemon of party.filter((x) => x.species.id != Pokemon.NULL.id)) {
+            const has1Item = pokemon.items.length == 1;
+            const has2Items = pokemon.items.length == 2;
 
             encodeStringId(pokemon.species.id, u16sToEncode);
             encodeStringId(pokemon.ability.id, u16sToEncode);
@@ -74,7 +74,7 @@ export class PokePartyEncoding {
             encodeStringId(pokemon.moves[3]?.id ?? "", u16sToEncode);
             u16sToEncode.push(pokemon.form);
 
-            var stats = 0;
+            let stats = 0;
             stats |= (pokemon.stylePoints.hp << STYLE_HP_SHIFT) & STYLE_HP_MASK;
             stats |= (pokemon.stylePoints.attacks << STYLE_ATK_SHIFT) & STYLE_ATK_MASK;
             stats |= (pokemon.stylePoints.defense << STYLE_DEF_SHIFT) & STYLE_DEF_MASK;
@@ -86,7 +86,7 @@ export class PokePartyEncoding {
         }
 
         const view = new DataView(new ArrayBuffer(u16sToEncode.length * 2));
-        for (var i = 0; i < u16sToEncode.length; i++) {
+        for (let i = 0; i < u16sToEncode.length; i++) {
             view.setUint16(i * 2, u16sToEncode[i]);
         }
         return convertToBase64Url(view.buffer);
@@ -97,13 +97,13 @@ export class PokePartyEncoding {
         const party: PartyPokemon[] = [];
 
         if (view.byteLength >= VERSION_BYTES) {
-            var pokePartyVersion = view.getUint16(0);
+            let pokePartyVersion = view.getUint16(0);
             if ((pokePartyVersion & OLD_CODE_CHECK_MASK) != 0) {
                 // TOOD: This must be an old code, for now use the old decoder, but eventually we will want to phase these out.
                 return decodeTeam(base64);
             }
 
-            let tectonicVersion = view.getUint16(2);
+            const tectonicVersion = view.getUint16(2);
             let versionString = "";
             versionString += `${(tectonicVersion & VERSION_MAJOR_MASK) >>> VERSION_MAJOR_SHIFT}.`;
             versionString += `${(tectonicVersion & VERSION_MINOR_MASK) >>> VERSION_MINOR_SHIFT}.`;
@@ -111,25 +111,27 @@ export class PokePartyEncoding {
             if ((tectonicVersion & VERSION_DEV_MASK) > 0) {
                 versionString += "-dev";
             }
+            console.log(versionString); // TODO: Logging to get rid of variable unused error
             pokePartyVersion = (pokePartyVersion & POKE_PARTY_VERSION_MASK) >>> POKE_PARTY_VERSION_SHIFT;
 
-            var offset = VERSION_BYTES;
+            let offset = VERSION_BYTES;
+            let monId, abilityId, item1Id, item1TypeId, item2Id, move1Id, move2Id, move3Id, move4Id: string;
             while (offset < view.byteLength) {
-                var [monId, offset] = decodeStringId(view, offset);
-                var [abilityId, offset] = decodeStringId(view, offset);
-                var [item1Id, offset] = decodeStringId(view, offset);
-                var [item1TypeId, offset] = decodeStringId(view, offset);
-                var [item2Id, offset] = decodeStringId(view, offset);
-                var [move1Id, offset] = decodeStringId(view, offset);
-                var [move2Id, offset] = decodeStringId(view, offset);
-                var [move3Id, offset] = decodeStringId(view, offset);
-                var [move4Id, offset] = decodeStringId(view, offset);
-                var form = view.getUint16(offset);
-                var lowerStats = view.getUint16(offset + 2);
-                var upperStats = view.getUint16(offset + 4);
+                [monId, offset] = decodeStringId(view, offset);
+                [abilityId, offset] = decodeStringId(view, offset);
+                [item1Id, offset] = decodeStringId(view, offset);
+                [item1TypeId, offset] = decodeStringId(view, offset);
+                [item2Id, offset] = decodeStringId(view, offset);
+                [move1Id, offset] = decodeStringId(view, offset);
+                [move2Id, offset] = decodeStringId(view, offset);
+                [move3Id, offset] = decodeStringId(view, offset);
+                [move4Id, offset] = decodeStringId(view, offset);
+                const form = view.getUint16(offset);
+                const lowerStats = view.getUint16(offset + 2);
+                const upperStats = view.getUint16(offset + 4);
                 offset += 6;
 
-                var stats = (upperStats << STATS_UPPER_SHIFT) | lowerStats;
+                const stats = (upperStats << STATS_UPPER_SHIFT) | lowerStats;
                 const styleHp = (stats & STYLE_HP_MASK) >>> STYLE_HP_SHIFT;
                 const styleAtk = (stats & STYLE_ATK_MASK) >>> STYLE_ATK_SHIFT;
                 const styleDef = (stats & STYLE_DEF_MASK) >>> STYLE_DEF_SHIFT;
@@ -148,7 +150,7 @@ export class PokePartyEncoding {
                 if (move3Id.length > 0) mon.moves[2] = TectonicData.moves[move3Id] || Move.NULL;
                 if (move4Id.length > 0) mon.moves[3] = TectonicData.moves[move4Id] || Move.NULL;
 
-                let formIndex = mon.species.forms.findIndex((f) => f.formId === form);
+                const formIndex = mon.species.forms.findIndex((f) => f.formId === form);
                 mon.form = Math.max(formIndex, 0);
                 mon.stylePoints = {
                     hp: styleHp,
@@ -168,13 +170,13 @@ export class PokePartyEncoding {
 }
 
 // Encodes the string id as (num u16s (upper) | num chars (lower)) (u16 value 1, 2, 3...)
-function encodeStringId(id: String, u16sToEncode: number[]): void {
-    let count = Math.floor(id.length / 3) + (id.length % 3 == 0 ? 0 : 1);
+function encodeStringId(id: string, u16sToEncode: number[]): void {
+    const count = Math.floor(id.length / 3) + (id.length % 3 == 0 ? 0 : 1);
     u16sToEncode.push((count << STRING_ID_NUM_U16_SHIFT) | id.length);
 
-    var currentU16 = 0;
-    for (var i = 0; i < id.length; i++) {
-        let value = id.charCodeAt(i) - CHAR_A;
+    let currentU16 = 0;
+    for (let i = 0; i < id.length; i++) {
+        const value = id.charCodeAt(i) - CHAR_A;
         currentU16 |= value << ((i % 3) * 5);
 
         if (i % 3 == 2) {
@@ -190,14 +192,14 @@ function encodeStringId(id: String, u16sToEncode: number[]): void {
 
 // Decodes the string id from (num u16s (upper) | num chars (lower)) (u16 value 1, 2, 3...). Returns [id, newOffset]
 function decodeStringId(view: DataView<ArrayBuffer>, offset: number): [string, number] {
-    let counts = view.getUint16(offset);
-    var numChars = counts & STRING_ID_NUM_CHARS_MASK;
-    let numU16s = (counts & STRING_ID_NUM_U16_MASK) >>> STRING_ID_NUM_U16_SHIFT;
+    const counts = view.getUint16(offset);
+    let numChars = counts & STRING_ID_NUM_CHARS_MASK;
+    const numU16s = (counts & STRING_ID_NUM_U16_MASK) >>> STRING_ID_NUM_U16_SHIFT;
 
-    var id = "";
-    for (var i = 0; i < numU16s; i++) {
-        var chars = view.getUint16(offset + 2 + i * 2);
-        for (var j = 0; j < 3 && numChars > 0; j++, numChars--) {
+    let id = "";
+    for (let i = 0; i < numU16s; i++) {
+        const chars = view.getUint16(offset + 2 + i * 2);
+        for (let j = 0; j < 3 && numChars > 0; j++, numChars--) {
             id += String.fromCharCode(((chars & ((1 << ((j + 1) * 5)) - 1)) >>> (j * 5)) + CHAR_A);
         }
     }
