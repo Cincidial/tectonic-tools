@@ -1,5 +1,6 @@
 import { Playthrough } from "@/app/data/playthrough";
-import { decodeTeam, encodeTeam, MAX_LEVEL } from "@/app/data/teamExport";
+import { PokePartyEncoding } from "@/app/data/pokeparty";
+import { encodeTeam, MAX_LEVEL } from "@/app/data/teamExport";
 import { Ability } from "@/app/data/tectonic/Ability";
 import { Item } from "@/app/data/tectonic/Item";
 import { Move } from "@/app/data/tectonic/Move";
@@ -122,7 +123,7 @@ export default function SavedTeamManager({
     const [savedTeamCodes, setSavedTeamCodes] = useState<Record<string, string>>({});
 
     function exportTeam() {
-        const code = encodeTeam(exportMons!);
+        const code = PokePartyEncoding.encode(exportMons!);
         setTeamCode(code);
 
         navigator.clipboard.writeText(code);
@@ -139,7 +140,7 @@ export default function SavedTeamManager({
 
         try {
             setTeamCode(code);
-            onLoad(decodeTeam(code).filter((x) => x.species != Pokemon.NULL));
+            onLoad(PokePartyEncoding.decode(code).filter((x) => x.species != Pokemon.NULL));
             if (showAlert) {
                 alert("Team imported successfully!");
             }
