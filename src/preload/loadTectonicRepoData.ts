@@ -235,7 +235,9 @@ function propagateSignatures(data: LoadedDataJson, stapleMoves: string[]): void 
         });
 
     Object.entries(abilityCounts).forEach(([k, v]) => (data.abilities[k].isSignature = v <= 1));
-    Object.entries(moveCounts).forEach(([k, v]) => (data.moves[k].isSignature = v <= 1));
+    Object.entries(moveCounts).forEach(
+        ([k, v]) => (data.moves[k].isSignature = v <= 1 || data.moves[k].flags.includes("ForceSignature")),
+    );
 }
 
 function buildTypeChart(types: Record<string, LoadedType>): number[][] {
