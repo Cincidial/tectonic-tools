@@ -1,5 +1,4 @@
 import { PokePartyEncoding } from "@/app/data/pokeparty";
-import { encodeTeam } from "@/app/data/teamExport";
 import { Pokemon } from "@/app/data/tectonic/Pokemon";
 import { PartyPokemon } from "@/app/data/types/PartyPokemon";
 import { JSX, useCallback, useEffect, useState } from "react";
@@ -84,7 +83,7 @@ export default function SavedTeamManager({
         }
 
         const newCodes = { ...savedTeamCodes };
-        newCodes[saveTeamName] = encodeTeam(exportMons!);
+        newCodes[saveTeamName] = PokePartyEncoding.encode(exportMons!);
 
         saveTeamCodes(pokePartyLocalStorageV1, newCodes);
         setSavedTeamCodes(newCodes);
