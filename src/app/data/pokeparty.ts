@@ -30,9 +30,9 @@ const STRING_ID_NUM_U16_SHIFT = 8;
 // Byte protocol masks
 const OLD_CODE_CHECK_MASK = 0xff;
 const POKE_PARTY_VERSION_MASK = 0xff << POKE_PARTY_VERSION_SHIFT;
-const VERSION_MAJOR_MASK = 0b11111 << VERSION_MAJOR_SHIFT;
-const VERSION_MINOR_MASK = 0b11111 << VERSION_MINOR_SHIFT;
-const VERSION_PATCH_MASK = 0b11111 << VERSION_PATCH_SHIFT;
+//const VERSION_MAJOR_MASK = 0b11111 << VERSION_MAJOR_SHIFT;
+//const VERSION_MINOR_MASK = 0b11111 << VERSION_MINOR_SHIFT;
+//const VERSION_PATCH_MASK = 0b11111 << VERSION_PATCH_SHIFT;
 const VERSION_DEV_MASK = 0b1 << VERSION_DEV_SHIFT; // End of header, not repeated - u16
 const STYLE_HP_MASK = 0b11111 << STYLE_HP_SHIFT;
 const STYLE_ATK_MASK = 0b11111 << STYLE_ATK_SHIFT;
@@ -44,8 +44,6 @@ const STATS_LOWER_MASK = 0xffff;
 const STATS_UPPER_MASK = 0xffff_0000;
 const STRING_ID_NUM_CHARS_MASK = 0xff;
 const STRING_ID_NUM_U16_MASK = 0xff << STRING_ID_NUM_U16_SHIFT;
-
-// TODO: Handle migrations
 
 // TODO for later poke party work: Store alongside the entry in local storage the name for the entry (ie. single mon name / team name)
 export class PokePartyEncoding {
@@ -60,7 +58,7 @@ export class PokePartyEncoding {
 
         const u16sToEncode = [pokePartyU16, versionU16];
         for (const pokemon of party.filter((x) => x.species.id != Pokemon.NULL.id)) {
-            const has1Item = pokemon.items.length == 1;
+            const has1Item = pokemon.items.length >= 1;
             const has2Items = pokemon.items.length == 2;
 
             encodeStringId(pokemon.species.id, u16sToEncode);
@@ -103,15 +101,15 @@ export class PokePartyEncoding {
                 return decodeTeam(base64);
             }
 
-            const tectonicVersion = view.getUint16(2);
-            let versionString = "";
-            versionString += `${(tectonicVersion & VERSION_MAJOR_MASK) >>> VERSION_MAJOR_SHIFT}.`;
-            versionString += `${(tectonicVersion & VERSION_MINOR_MASK) >>> VERSION_MINOR_SHIFT}.`;
-            versionString += `${(tectonicVersion & VERSION_PATCH_MASK) >>> VERSION_PATCH_SHIFT}`;
-            if ((tectonicVersion & VERSION_DEV_MASK) > 0) {
-                versionString += "-dev";
-            }
-            console.log(versionString); // TODO: Logging to get rid of variable unused error
+            // Unused for now, but leave this code in for future reference that the format does contain the tectonic version
+            // const tectonicVersion = view.getUint16(2);
+            // let versionString = "";
+            // versionString += `${(tectonicVersion & VERSION_MAJOR_MASK) >>> VERSION_MAJOR_SHIFT}.`;
+            // versionString += `${(tectonicVersion & VERSION_MINOR_MASK) >>> VERSION_MINOR_SHIFT}.`;
+            // versionString += `${(tectonicVersion & VERSION_PATCH_MASK) >>> VERSION_PATCH_SHIFT}`;
+            // if ((tectonicVersion & VERSION_DEV_MASK) > 0) {
+            //     versionString += "-dev";
+            // }
             pokePartyVersion = (pokePartyVersion & POKE_PARTY_VERSION_MASK) >>> POKE_PARTY_VERSION_SHIFT;
 
             let offset = VERSION_BYTES;
