@@ -87,6 +87,7 @@ export class PokePartyEncoding {
         for (let i = 0; i < u16sToEncode.length; i++) {
             view.setUint16(i * 2, u16sToEncode[i]);
         }
+
         return convertToBase64Url(view.buffer);
     }
 
@@ -97,19 +98,9 @@ export class PokePartyEncoding {
         if (view.byteLength >= VERSION_BYTES) {
             let pokePartyVersion = view.getUint16(0);
             if ((pokePartyVersion & OLD_CODE_CHECK_MASK) != 0) {
-                // TOOD: This must be an old code, for now use the old decoder, but eventually we will want to phase these out.
+                // TODO: This must be an old code, for now use the old decoder, but eventually we will want to phase these out.
                 return decodeTeam(base64);
             }
-
-            // Unused for now, but leave this code in for future reference that the format does contain the tectonic version
-            // const tectonicVersion = view.getUint16(2);
-            // let versionString = "";
-            // versionString += `${(tectonicVersion & VERSION_MAJOR_MASK) >>> VERSION_MAJOR_SHIFT}.`;
-            // versionString += `${(tectonicVersion & VERSION_MINOR_MASK) >>> VERSION_MINOR_SHIFT}.`;
-            // versionString += `${(tectonicVersion & VERSION_PATCH_MASK) >>> VERSION_PATCH_SHIFT}`;
-            // if ((tectonicVersion & VERSION_DEV_MASK) > 0) {
-            //     versionString += "-dev";
-            // }
             pokePartyVersion = (pokePartyVersion & POKE_PARTY_VERSION_MASK) >>> POKE_PARTY_VERSION_SHIFT;
 
             let offset = VERSION_BYTES;
