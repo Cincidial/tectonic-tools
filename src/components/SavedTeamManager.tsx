@@ -35,6 +35,7 @@ export function performSavedLegacyTeamMigrations(forceTry: boolean = false) {
         const oldTeam = PokePartyEncoding.decode(oldTeams[k]);
         newTeams[k] = PokePartyEncoding.encode(oldTeam);
     });
+    saveTeamCodes(pokePartyLocalStorageV1, newTeams);
 }
 
 export default function SavedTeamManager({
